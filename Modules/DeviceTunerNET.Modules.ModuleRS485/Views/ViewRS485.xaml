@@ -1,0 +1,226 @@
+﻿<UserControl x:Class="DeviceTunerNET.Modules.ModuleRS485.Views.ViewRS485"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DeviceTunerNET.Modules.ModuleRS485.Views"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:VM ="clr-namespace:DeviceTunerNET.Modules.ModuleRS485.ViewModels"
+             xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True" >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryStyles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <VM:DesignRS485Converter x:Key="ItemColorConverter"
+                                     ImagePathOK="{StaticResource ResourceKey=OkImage}"
+                                     ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
+            <VM:DebugConverter x:Key="DebugConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <UserControl.InputBindings>
+        <KeyBinding Key="Enter"
+                    Command="{Binding StartCommand}"
+                    CommandParameter="{Binding ElementName=SerialTxtBox, Path=Text}"/>
+    </UserControl.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical" >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="First remote IP:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="DefaultIPText" Text="{Binding RemoteDefaultFirstIP}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="IP Mask:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="IPMask" Text="{Binding IPMask}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Default RS-485 address:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="DefaultRS485Address" Text="{Binding DefaultRS485Address}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="RS-485 port:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding CurrentRS485Port}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="65" Grid.ColumnSpan="2" Margin="0,2,-15,2">
+                </ComboBox>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="RS-232 port:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding CurrentRS232Port}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="65" Grid.ColumnSpan="2" Margin="0,2,-15,2">
+                </ComboBox>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="{Binding Path=CurrentDeviceModel}" Grid.Column="1" Grid.Row="0" Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Background="Red" Foreground ="black" FontSize="18" />
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Row="0" Grid.Column="2">
+            <RadioButton Content="По шкафам" GroupName="WorkType" IsChecked="{Binding IsCheckedByCabinets}" />
+            <RadioButton Content="По площадкам" GroupName="WorkType" IsChecked="{Binding IsCheckedByArea}"/>
+            <RadioButton Content="Проверка RS-485" GroupName="WorkType" IsChecked="{Binding IsCheckedComplexVerification}"/>
+        </StackPanel>
+
+        <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="56*"/>
+                <ColumnDefinition Width="9*"/>
+                <ColumnDefinition Width="12*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="143*"/>
+            </Grid.ColumnDefinitions>
+
+            <TreeView ItemsSource="{Binding Path=CabsVM}" Grid.Column="0" Margin="5" Grid.ColumnSpan="3" >
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        <Setter Property="FontWeight" Value="Normal" />
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <TreeView.Resources>
+                    <HierarchicalDataTemplate 
+                        DataType="{x:Type VM:CabinetViewModel}"
+                        ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{StaticResource CabinetImage}"/>
+                            <TextBlock Text="{Binding GetCabinetDesignation}" />
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+
+                    <DataTemplate DataType="{x:Type VM:RS485DeviceViewModel}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{StaticResource DevRS485Image}"/>
+                            <TextBlock Text="{Binding GetDeviceDesignation}" />
+                            <!--, Converter={StaticResource DebugConverter} -->
+                        </StackPanel>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type VM:C2000EthernetDeviceViewModel}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{StaticResource DevRS232Image}"/>
+                            <TextBlock Text="{Binding GetDeviceDesignation}" />
+                            <!--, Converter={StaticResource DebugConverter} -->
+                        </StackPanel>
+                    </DataTemplate>
+                </TreeView.Resources>
+            </TreeView>
+
+            <GridSplitter Grid.Column="3" ShowsPreview="False" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch" />
+
+            <ListBox x:Name="DeviceListBox" ItemsSource="{Binding Path=DevicesForProgramming}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Column="4" Margin="5" Grid.ColumnSpan="2">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*"/>
+                                <RowDefinition Height="1*"/>
+                                <RowDefinition Height="1*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="{Binding Model}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
+                            <TextBlock Text="{Binding Designation}" Grid.Row="1" Grid.Column="0"/>
+                            <TextBlock Text="{Binding AddressRS485}" Grid.Row="1" Grid.Column="1"/>
+                            <TextBlock Text="{Binding Serial}" Grid.Row="2" Grid.Column="0"/>
+
+                            <Image Margin="3" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Center" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
+
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+
+
+        <Button Command="{Binding StartCommand}" Content="Шей да пори!" Grid.Column="2" Grid.Row="2" Margin="5">
+
+        </Button>
+        <StackPanel Orientation="Vertical" Grid.Column="2" Grid.Row="1">
+            <TextBox Name="SerialTxtBox" Text="{Binding SerialTextBox, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" HorizontalAlignment="Stretch" Margin="5" TextWrapping="Wrap" VerticalAlignment="Top"/>
+            <Grid Margin="10">
+                <ProgressBar Name="SearchPBar" Minimum="0" Maximum="100" Value="{Binding SearchProgressBar}" Height="20" VerticalAlignment="Bottom"/>
+                <TextBlock Text="{Binding ElementName=SearchPBar, Path=Value, StringFormat={}{0:0}%}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

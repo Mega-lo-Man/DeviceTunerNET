@@ -1,0 +1,178 @@
+﻿<UserControl x:Class="DeviceTunerNET.Modules.ModuleSwitch.Views.ViewSwitch"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DeviceTunerNET.Modules.ModuleSwitch.Views"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             mc:Ignorable="d" 
+             xmlns:d="clr-namespace:DeviceTunerNET.Modules.ModuleSwitch.ViewModels"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             prism:ViewModelLocator.AutoWireViewModel="True" >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryStyles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <d:DesignSwitchConverter x:Key="ItemColorConverter"
+                                     ImagePathOK="{StaticResource ResourceKey=OkImage}"
+                                     ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1.5*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Orientation="Vertical" Grid.RowSpan="2" >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Default login:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="DefaultLoginText" Text="{Binding DefaultLogin}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Default password:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="DefaultPassText" Text="{Binding DefaultPassword}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Default address:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="DefaultIPText" Text="{Binding DefaultIP}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+            </Grid>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="IP Mask:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="IPMask" Text="{Binding IPMask}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="New login:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="NewLoginText" Text="{Binding NewLogin}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="New password:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="NewPassText" Text="{Binding NewPassword}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Printer" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <ComboBox Name="PrinterName" ItemsSource="{Binding Printers}" SelectedItem="{Binding SelectedPrinter}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+        </StackPanel>
+
+        <ListBox x:Name="listBox" ItemsSource="{Binding Path=SwitchList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="0" Grid.Column="1" Margin="5" Grid.RowSpan="2" >
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{Binding Designation}" Grid.Column="0" Grid.Row="0"/>
+                        <TextBlock Text="{Binding AddressIP}" Grid.Column="0" Grid.Row="1" />
+                        <TextBlock Text="{Binding Serial}" Grid.Column="0" Grid.Row="2" />
+
+                        <Image Margin="3" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
+
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Name="Scroller" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" BorderBrush="Black" BorderThickness="1" >
+            <Border BorderThickness="1" BorderBrush="Black" Margin="5,5,5,5">
+                <TextBlock Name="ConsoleTextBlock" HorizontalAlignment="Left" Margin="10,10,10,10" Grid.Row="3" TextWrapping="Wrap" Text="{Binding Path=ObserveConsole}" VerticalAlignment="Top" FontFamily="Consolas" FontSize="16" />
+            </Border>
+        </ScrollViewer>
+        <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <Label Name="CurrentItemIP" Margin="3" Grid.Row="0" Foreground ="black" Content ="{Binding CurrentItemTextBox}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="24" FontWeight="Bold" />
+            <Label Name="ChangeDevice" Visibility="{Binding ChangeDeviceFireUp}" Margin="3" Grid.Row="1" Background ="red" Foreground ="black" Content ="{Binding MessageForUser}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+            <ToggleButton Grid.Row="2" Content="ON LINE MODE" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=SliderIsChecked, Mode=TwoWay}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Checked">
+                        <i:InvokeCommandAction Command="{Binding Path=CheckedCommand}"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="Unchecked">
+                        <i:InvokeCommandAction Command="{Binding Path=UncheckedCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ToggleButton>
+        </Grid>
+    </Grid>
+</UserControl>
