@@ -10,11 +10,10 @@ namespace DeviceTunerNET.SharedDataModel
     public class C2000Ethernet : RS232device
     {
         private enum _duplex { half = 0, full = 1 }
+        private enum _mode { transparent = 0, master = 1, slave = 2 }
 
         private string _remoteDefaultFirstIP = "192.168.2.1";
         
-        
-
         private List<byte[]> _configLineList;
 
         #region Properties
@@ -40,6 +39,13 @@ namespace DeviceTunerNET.SharedDataModel
             set => _secondDns = value;
         }
 
+        private _mode _networkMode;
+        public int NetworkMode
+        {
+            get => (int)_networkMode;
+            set => _networkMode = (_mode)value;
+        }
+
         private List<int> _remoteUDPList = new List<int>();
         public List<int> RemoteUDPList
         {
@@ -47,13 +53,20 @@ namespace DeviceTunerNET.SharedDataModel
             set { _remoteUDPList = value; }
         }
 
-        private List<string> _remoteIpList = new List<string>();
-        public List<string> RemoteIpList
+        private List<C2000Ethernet> _listOfRemoteDevices = new List<C2000Ethernet>();
+        public List<C2000Ethernet> ListOfRemoteDevices
         {
-            get { return _remoteIpList; }
-            set { _remoteIpList = value; }
+            get => _listOfRemoteDevices;
+            set => _listOfRemoteDevices = value;
         }
-
+        
+        private string _remoteIpTrasparentMode;
+        public string RemoteIpTrasparentMode
+        {
+            get { return _remoteIpTrasparentMode; }
+            set { _remoteIpTrasparentMode = value; }
+        }
+        
         private int _duplexMode;
         public int DuplexMode
         {
@@ -100,11 +113,13 @@ namespace DeviceTunerNET.SharedDataModel
         public C2000Ethernet()
         {
             //------------------------------------------------
+            /*
             RemoteIpList.Add(_remoteDefaultFirstIP);
             for (int i = 0; i < 8; i++)
             {
                 RemoteIpList.Add("0.0.0.0");
             }
+            */
             //------------------------------------------------
             for (int i = 0; i < 9; i++)
             {
@@ -136,7 +151,7 @@ namespace DeviceTunerNET.SharedDataModel
             SendPromoter(addr);
             SendGatewayAndUDP(addr, DefaultGateway);
             SendPromoter2(addr);
-            SendOtherDevicesIP(addr, RemoteIpList, AddressIP);
+            //SendOtherDevicesIP(addr, RemoteIpList, AddressIP);
             SendPromoter3(addr);
             SendNetmaskAndDevicesUDP(addr, Netmask, RemoteUDPList, UDPSender, FreeUDPRemote);
 

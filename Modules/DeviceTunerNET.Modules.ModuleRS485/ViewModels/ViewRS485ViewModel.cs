@@ -292,8 +292,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         {
                             C2000Ethernet c2000Ethernet = (C2000Ethernet)DevicesForProgramming[DeviceCounter];
                             c2000Ethernet.Netmask = IPMask;
-                            c2000Ethernet.RemoteIpList = GetRemoteDefaultFirstIpList();
-
+                            if (c2000Ethernet.NetworkMode == 2)
+                            {
+                                c2000Ethernet.RemoteIpTrasparentMode = RemoteDefaultFirstIP;
+                            }
                             if (_serialTasks.SendConfig(c2000Ethernet,
                                                    CurrentRS485Port,
                                                    DefaultRS485Address) == 1)
@@ -326,6 +328,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 }
             }
         }
+        /*
         private List<string> GetRemoteDefaultFirstIpList()
         {
             List<string> RemoteIpList = new List<string>();
@@ -336,7 +339,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
             return RemoteIpList;
         }
-
+        */
         private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
