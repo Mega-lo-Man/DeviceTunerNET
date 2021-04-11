@@ -151,12 +151,17 @@ namespace DeviceTunerNET.Services
                 _serialPort.DataReceived += sp_DataReceived;
 
                 //receiveBuffer = "";
+                for(int i = 0; i < 4; i++)
+                {
+                    SendPacket(new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 });
+                    while (portReceive == true) { }
+                    Thread.Sleep(30);
+                    
+                }
 
-                SendPacket(new byte[] { deviceAddress, 0x00, 0x0D, 0x00, 0x00 });
-                while (portReceive == true) { }
-                Thread.Sleep(30);
+
                 
-                Debug.WriteLine(receiveBuffer);
+
                 _serialPort.Close();
                 if (receiveBuffer != null)
                 {
@@ -285,11 +290,12 @@ namespace DeviceTunerNET.Services
 
                 
                 result = SendPromoter();
-                result = SendGatewayAndUDP(device.DefaultGateway);
-                result = SendPromoter2();
-                result = SendOtherDevicesIP(device.RemoteIpList, device.AddressIP);
-                result = SendPromoter3();
-                result = SendNetmaskAndOtherDevicesUDP(device.Netmask, device.RemoteUDPList, device.UDPSender, device.UDPRemote);
+                result = SendDeviceNetName(device.NetName);
+                result = SendEthernetTune(device.AddressIP, device.Netmask, device.DefaultGateway, device.FirstDns, device.SecondDns);
+                //result = SendUnrecognized2();
+                //result = SendOtherDevicesIP(device.RemoteIpList, device.AddressIP);
+                //result = SendUnrecognized3();
+                //result = SendNetmaskAndOtherDevicesUDP(device.Netmask, device.RemoteUDPList, device.UDPSender, device.UDPRemote);
 
                 _serialPort.Close();
             }
@@ -298,27 +304,44 @@ namespace DeviceTunerNET.Services
 
         private bool SendPromoter()
         {
-            CommandSend(new byte[] { 0x7F, 0xca, 0x0D, 0x00, 0x00 }); // 7f 06 ca 0d 00 00
-            CommandSend(new byte[] { 0x7F, 0x01, 0x43, 0x00, 0x00, 0x00, 0x10 }); // 7f 08 01 43 00 00 00 10
-            CommandSend(new byte[] { 0x7F, 0x1F, 0x43, 0x00, 0x00, 0x00, 0x10 }); // 7f 08 1f 43 00 00 00 10
+            //CommandSend(new byte[] { 0x7F, 0x70, 0x0D, 0x00, 0x00 }); // 7f 06 70 0d 00 00
+            
+            CommandSend(new byte[] { 0x7F, 0x6E, 0x43, 0x00, 0x00, 0x00, 0x40 }); // 7f 08 6e 43 00 00 00 40
+            CommandSend(new byte[] { 0x7F, 0x3D, 0x43, 0x00, 0x00, 0x00, 0x40 }); // 7f 08 3d 43 00 00 00 40
             return true;
         }
 
-        private bool SendGatewayAndUDP(string ip)
+        private bool SendDeviceNetName(string name)
         {
-            byte[] ipAddr = IpToByteArray(ip);
-            CommandSend(new byte[] { 0x7F, 0xA1, 0x41, 0x00, 0x1C, 0x00, ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3], 0x01, 0x02, 0x41, 0x9C, 0x01, 0x01 });
+            byte[] deviceName = StringToByteArray(name);
+            byte[] header = new byte[] { 0x7F, 0x16, 0x7B, 0x41, 0x00, 0x00, 0x00 };
+            byte[] resultCmd = CombineArrays(header, deviceName);
+
+            CommandSend(resultCmd);
             return true;
         }
 
-        private bool SendPromoter2()
+        private bool SendEthernetTune(string ip, string netmask, string gateway, string firstDNS, string secondDNS)
+        {
+            byte[] _ip = IpToByteArray(ip);
+            byte[] _netmask = IpToByteArray(netmask);
+            byte[] _gateway = IpToByteArray(gateway);
+            byte[] _firstDNS = IpToByteArray(firstDNS);
+            byte[] _secondDNS = IpToByteArray(secondDNS);
+            byte[] _header = new byte[] { 0x7F, 0xC9, 0x41, 0x20, 0x00, 0x00 };
+            byte[] _cmd = CombineArrays(_header, _ip, _netmask, _gateway, _firstDNS, _secondDNS);
+            CommandSend(_cmd);
+            return true;
+        }
+
+        private bool SendUnrecognized2()
         {
             CommandSend(new byte[] { 0x7F, 0xB5, 0x41, 0x07, 0x1D, 0x00, 0x01 }); // 7f 08 b5 41 07 1d 00 01
             CommandSend(new byte[] { 0x7F, 0xF4, 0x41, 0x22, 0x1D, 0x00, 0x02, 0x01, 0x00 });
             return true;
         }
 
-        private bool SendPromoter3()
+        private bool SendUnrecognized3()
         {
             CommandSend(new byte[] { 0x7F, 0xC8, 0x41, 0x60, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }); // 7f 17 c8 41 60 1d 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
             CommandSend(new byte[] { 0x7F, 0xBE, 0x41, 0x70, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }); // 7f 17 be 41 70 1d 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -370,9 +393,14 @@ namespace DeviceTunerNET.Services
 
         private string CommandSend(byte[] command)
         {
-            SendPacket(command);
-            while (portReceive == true) { }
-            Thread.Sleep(200);
+            for (int i = 0; i < 3; i++)
+            {
+                SendPacket(command);
+                while (portReceive == true) { }
+                Thread.Sleep(200);
+                if (receiveBuffer?.Length > 0)
+                    break;
+            }
             string str = BitConverter.ToString(Encoding.ASCII.GetBytes(receiveBuffer));
             receiveBuffer = "";
             return str;
@@ -390,14 +418,33 @@ namespace DeviceTunerNET.Services
         {
             string[] ipWithoutDots = ipAddress.Split(new char[] { '.' });
             byte[] ipBytes = new byte[] { 0, 0, 0, 0 };
+            int numberOfBytesIpV4 = 3;
 
-            for (int counter = 0; counter < 4; counter++)
+            for (int counter = 0; counter <= numberOfBytesIpV4; counter++)
             {
-                int numbInt32 = Int32.Parse(ipWithoutDots[counter]);
+                int numbInt32 = Int32.Parse(ipWithoutDots[numberOfBytesIpV4 - counter]);
                 byte numbByte = Convert.ToByte(numbInt32);
                 ipBytes[counter] = numbByte;
             }
             return ipBytes;
+        }
+
+        private static byte[] CombineArrays(params byte[][] arrays)
+        {
+            byte[] resultArray = new byte[arrays.Sum(a => a.Length)];
+            int offset = 0;
+            foreach(byte[] item in arrays)
+            {
+                System.Buffer.BlockCopy(item, 0, resultArray, offset, item.Length);
+                offset += item.Length;
+            }
+            return resultArray;
+        }
+
+        private static byte[] StringToByteArray(string str)
+        {
+            byte[] barr = Encoding.ASCII.GetBytes(str);
+            return barr;
         }
     }
 }

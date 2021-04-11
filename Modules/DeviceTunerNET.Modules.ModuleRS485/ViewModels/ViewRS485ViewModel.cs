@@ -138,16 +138,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
         }
 
-        private string _currentRS232Port;
-        public string CurrentRS232Port
-        {
-            get { return _currentRS232Port; }
-            set
-            {
-                SetProperty(ref _currentRS232Port, value);
-            }
-        }
-
         private ObservableCollection<Cabinet> _cabinetList = new ObservableCollection<Cabinet>();
         public ObservableCollection<Cabinet> CabinetList
         {
@@ -305,7 +295,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                             c2000Ethernet.RemoteIpList = GetRemoteDefaultFirstIpList();
 
                             if (_serialTasks.SendConfig(c2000Ethernet,
-                                                   CurrentRS232Port,
+                                                   CurrentRS485Port,
                                                    DefaultRS485Address) == 1)
                             {
                                 device1.Serial = SerialTextBox;

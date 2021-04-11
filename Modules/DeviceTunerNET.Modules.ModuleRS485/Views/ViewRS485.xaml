@@ -91,19 +91,7 @@
                 <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding CurrentRS485Port}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="65" Grid.ColumnSpan="2" Margin="0,2,-15,2">
                 </ComboBox>
             </Grid>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="5*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="3*"/>
-                </Grid.ColumnDefinitions>
-                <Label Content="RS-232 port:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding CurrentRS232Port}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="65" Grid.ColumnSpan="2" Margin="0,2,-15,2">
-                </ComboBox>
-            </Grid>
+            
         </StackPanel>
 
         <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="1">

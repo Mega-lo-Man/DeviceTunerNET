@@ -12,18 +12,42 @@ namespace DeviceTunerNET.SharedDataModel
         private enum _duplex { half = 0, full = 1 }
 
         private string _remoteDefaultFirstIP = "192.168.2.1";
-        private List<string> _remoteIpList = new List<string>();
-        private List<int> _remoteUDPList = new List<int>();
+        
+        
 
         private List<byte[]> _configLineList;
 
         #region Properties
+
+        private string _netName = "ABCDEFG";
+        public string NetName
+        {
+            get => _netName;
+            set => _netName = value;
+        }
+
+        private string _firstDns = "0.0.0.0";
+        public string FirstDns
+        {
+            get => _firstDns;
+            set => _firstDns = value;
+        }
+
+        private string _secondDns = "0.0.0.0";
+        public string SecondDns
+        {
+            get => _secondDns;
+            set => _secondDns = value;
+        }
+
+        private List<int> _remoteUDPList = new List<int>();
         public List<int> RemoteUDPList
         {
             get { return _remoteUDPList; }
             set { _remoteUDPList = value; }
         }
 
+        private List<string> _remoteIpList = new List<string>();
         public List<string> RemoteIpList
         {
             get { return _remoteIpList; }
