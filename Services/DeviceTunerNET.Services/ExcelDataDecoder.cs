@@ -15,8 +15,8 @@ namespace DeviceTunerNET.Services
     {
         #region Constants
         private const char transparent = 'T';
-        private const char master = 'T';
-        private const char slave = 'T';
+        private const char master = 'M';
+        private const char slave = 'S';
         #endregion Constants
 
         private int IPaddressCol = 0; // Index of column that containing device addresses
@@ -159,15 +159,14 @@ namespace DeviceTunerNET.Services
 
         private Tuple<char, int> GetRangTuple(string rang)
         {
-            string _rang = rang;
-            
-            if(_rang[0] == master || _rang[0] == slave || _rang[0] == transparent)
+            char _rang = rang[0];
+            string lineStr = rang.Substring(1); //right part of rang
+
+            if (_rang == master || _rang == slave || _rang == transparent)
             {
-                string rightPart = _rang.Substring(1);
-                int lineNumb = 0;
-                if (Int32.TryParse(rightPart, out lineNumb))
+                if (Int32.TryParse(lineStr, out int lineNumb))
                 {
-                    return new Tuple<char, int>(_rang[0], lineNumb);
+                    return new Tuple<char, int>(_rang, lineNumb);
                 }
             }
             return null;

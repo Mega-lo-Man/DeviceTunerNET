@@ -19,7 +19,7 @@ namespace DeviceTunerNET.Services
     {
         private readonly int _packetLengthIndex = 1; //индекс байта в посылаемом пакете отвечающего за общую длину пакета
         private bool portReceive;
-        private string receiveBuffer = "";
+        private string receiveBuffer = null;
         private readonly SerialPort _serialPort;
         private readonly IEventAggregator _ea;
 
@@ -111,22 +111,17 @@ namespace DeviceTunerNET.Services
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = comPortName;
-                receiveBuffer = null;
+                
                 _serialPort.Open();
-                // make DataReceived event handler
-                _serialPort.DataReceived += sp_DataReceived;
-
-                byte[] cmd = new byte[] { deviceAddress, 0x00, 0x0F, newDeviceAddress, newDeviceAddress }; ;
-                SendPacket(cmd);
-                while (portReceive == true) { }
-                Thread.Sleep(100);
 
 
-                Debug.WriteLine(receiveBuffer);
+                byte[] result = Transaction(new byte[] { deviceAddress, 0xB0, 0x0F, newDeviceAddress, newDeviceAddress });
+                
                 _serialPort.Close();
-                if(receiveBuffer != null)
+                if(result.Length > 1)
                 {
-                    return true;
+                    if (result[4] == newDeviceAddress)
+                        return true;
                 }
             }
             return false;
@@ -134,7 +129,7 @@ namespace DeviceTunerNET.Services
 
         public string GetDeviceModel(string comPortName, byte deviceAddress)
         {
-            receiveBuffer = "";
+            
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = comPortName;
@@ -147,41 +142,24 @@ namespace DeviceTunerNET.Services
                     MessageBox.Show("Не удалось открыть порт!");
                     return "";
                 }
-                // make DataReceived event handler
-                _serialPort.DataReceived += sp_DataReceived;
 
-                //receiveBuffer = "";
-                for(int i = 0; i < 4; i++)
-                {
-                    SendPacket(new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 });
-                    while (portReceive == true) { }
-                    Thread.Sleep(30);
-                    
-                }
-
-
+                byte[] deviceModel = Transaction(new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 });
                 
-
                 _serialPort.Close();
-                if (receiveBuffer != null)
+                if (deviceModel?.Length > 1)
                 {
-                    if (receiveBuffer.Length > 0)
-                    {
-                        byte devType = (byte)receiveBuffer[3];
-                        return BolidDict[devType];
-                    }
+                    byte devType = deviceModel[3];
+                    return BolidDict[devType];
                 }
             }
             else
             {
+                byte[] deviceModel = Transaction(new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 });
 
-                _serialPort.DataReceived += sp_DataReceived;
-                SendPacket(new byte[] { deviceAddress, 0x00/*0xE9*/, 0x0D/*0x01*/, 0x00, 0x00 });
-                while (portReceive == true) { }
-                Thread.Sleep(30);
-                if (receiveBuffer != String.Empty)
+                if (deviceModel?.Length > 1)
                 {
-                    return BolidDict[(byte)receiveBuffer[3]];
+                    byte devType = deviceModel[3];
+                    return BolidDict[devType];
                 }
             }
             
@@ -218,6 +196,33 @@ namespace DeviceTunerNET.Services
             return result;
         }
 
+        private byte[] Transaction(byte[] sendArray)
+        {
+            
+            // make DataReceived event handler
+            _serialPort.DataReceived += sp_DataReceived;
+
+            for (int i = 0; i < 4; i++)
+            {
+                SendPacket(sendArray);
+                while (portReceive == true) { }
+                Thread.Sleep(250);
+                if (receiveBuffer != null)
+                    break;
+            }
+            if (receiveBuffer != null)
+            {
+                string result = receiveBuffer;
+                receiveBuffer = null;
+                return Encoding.ASCII.GetBytes(result);
+            }
+            else
+            {
+                return new byte[1] { 0x00 };
+            }
+                
+        }
+
         private void SendPacket(byte[] sendArray)
         {
             byte bytesCounter = 1; //сразу начнём считать с единицы, т.к. всё равно придётся добавить один байт(сам байт длины команды)
@@ -229,7 +234,6 @@ namespace DeviceTunerNET.Services
             }
 
             lst.Insert(1, bytesCounter); //вставляем вторым байтом в пакет длину всего пакета + байт длины пакета
-
 
             _serialPort.Write(lst.ToArray(), 0, bytesCounter);
             _serialPort.Write(CRC8(lst.ToArray()), 0, 1);
@@ -274,6 +278,7 @@ namespace DeviceTunerNET.Services
                 //Console.Write(value.ToString("X") + " ");
             }
             receiveBuffer += data;
+            Debug.WriteLine("ReceiveBuffer: " + receiveBuffer + "  Length: " + receiveBuffer.Length);
             portReceive = false;
         }
 
@@ -283,7 +288,7 @@ namespace DeviceTunerNET.Services
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = ComPortName;
-                receiveBuffer = null;
+                
                 _serialPort.Open();
                 // make DataReceived event handler
                 _serialPort.DataReceived += sp_DataReceived;

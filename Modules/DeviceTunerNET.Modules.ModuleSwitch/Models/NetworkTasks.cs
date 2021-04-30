@@ -106,7 +106,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
             Dictionary<string, string> _sDict = settings;
             int State = 0;
             bool IsSendComplete = false;
-            while (State < 6 && !token.IsCancellationRequested)
+            while (State < 7 && !token.IsCancellationRequested)
             {
                 switch (State)
                 {
@@ -156,6 +156,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
                         break;
                     case 6:
                         IsSendComplete = true;
+                        State = 7;
                         break;
                     default:
                         break;
