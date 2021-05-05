@@ -79,8 +79,7 @@ namespace DeviceTunerNET.SharedDataModel
             string addr = address;
             uint range = (uint)ConvertStringToRange(addr);
             int bitsCounter = 0;
-            int cidr = 0;
-
+            
             while (range > 0)
             {
                 if ((range & 1) >= 0)

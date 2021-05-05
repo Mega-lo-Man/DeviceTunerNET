@@ -246,7 +246,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             Dictionary<string, string> printDict = new Dictionary<string, string>();
             printDict.Add("ITextObjectIPaddress", ethSwitch.AddressIP);
             printDict.Add("ITextObjectDesignation", ethSwitch.Designation);
-            printDict.Add("ITextObjectMask", ethSwitch.Netmask.ToString()); ;
+            printDict.Add("ITextObjectMask", ethSwitch.CIDR.ToString()); ;
             printDict.Add("ITextObjectSerial", ethSwitch.Serial);
             return printDict;        
         }
@@ -264,7 +264,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             return settingsDict;
         }
 
-        private void MessageReceived(Message message)//(Tuple<int, string> message)
+        private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
             {

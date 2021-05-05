@@ -22,7 +22,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
         private ISender _telnetSender = null;
         private ISender _sshSender = null;
 
-        private string RSAfile = "id_rsa.key";
+        private string RSAfile = "Resources\\Files\\id_rsa.key";
 
         public NetworkTasks(IEventAggregator ea, IEnumerable<ISender> senders)
         {

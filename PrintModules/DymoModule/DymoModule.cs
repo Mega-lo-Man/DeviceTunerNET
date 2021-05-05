@@ -23,7 +23,7 @@ namespace DeviceTunerNET.DymoModules
             
         }
 
-        public string LabelSwitchFileName = "C:\\Users\\Andrew\\source\\repos\\DeviceTunerNET\\DeviceTunerNET\\bin\\Debug\\label25x25switch.dymo";
+        public string LabelSwitchFileName = "Resources\\Files\\label25x25switch.dymo";
 
         public List<string> CommonGetAvailablePrinters()
         {
