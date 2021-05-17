@@ -248,6 +248,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             printDict.Add("ITextObjectDesignation", ethSwitch.Designation);
             printDict.Add("ITextObjectMask", ethSwitch.CIDR.ToString()); ;
             printDict.Add("ITextObjectSerial", ethSwitch.Serial);
+            printDict.Add("ITextObjectCabinet", ethSwitch.Cabinet);
             return printDict;        
         }
 
