@@ -206,7 +206,7 @@ namespace DeviceTunerNET.Services
             {
                 SendPacket(sendArray);
                 while (portReceive == true) { }
-                Thread.Sleep(250);
+                Thread.Sleep(400);
                 if (receiveBuffer != null)
                     break;
             }

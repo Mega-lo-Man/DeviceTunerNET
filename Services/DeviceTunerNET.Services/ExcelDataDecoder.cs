@@ -124,7 +124,8 @@ namespace DeviceTunerNET.Services
                             Designation = devName,
                             Model = devModel,
                             Serial = devSerial,
-                            AddressIP = devIPAddr
+                            AddressIP = devIPAddr,
+                            Cabinet = cabinet.Designation
                         });
                         break;
                     case 2:
