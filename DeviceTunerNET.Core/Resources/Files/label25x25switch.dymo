@@ -684,7 +684,7 @@
           <IsVertical>False</IsVertical>
           <FormattedText>
             <FitMode>None</FitMode>
-            <HorizontalAlignment>Center</HorizontalAlignment>
+            <HorizontalAlignment>Left</HorizontalAlignment>
             <VerticalAlignment>Middle</VerticalAlignment>
             <IsVertical>False</IsVertical>
             <LineTextSpan>
