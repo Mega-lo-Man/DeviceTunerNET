@@ -160,8 +160,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         }
 
         private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
-
-
         public ObservableCollection<string> AvailableComPorts
         {
             get { return _availableComPorts; }
@@ -189,7 +187,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         #region Constructor
         public ViewRS485ViewModel(IRegionManager regionManager,
-                                  
                                   ISerialTasks serialTasks,
                                   IDataRepositoryService dataRepositoryService,
                                   IEventAggregator ea) : base(regionManager)
