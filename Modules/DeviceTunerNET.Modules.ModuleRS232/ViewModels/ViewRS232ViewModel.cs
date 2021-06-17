@@ -20,8 +20,9 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
 
         #region Commands
-        //ShiftAddressesCommand
+        
         public DelegateCommand ShiftAddressesCommand { get; private set; }
+        public DelegateCommand ScanNetworkCommand { get; private set; }
 
         #endregion Commands
 
@@ -34,6 +35,8 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             set { SetProperty(ref _availableComPorts, value); }
         }
 
+
+
         private string _currentRS485Port;
         public string CurrentRS485Port
         {
@@ -44,11 +47,25 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             }
         }
 
-        private string _startAddressTextBox = "";
+        private int  _startAddressTextBox;
         public string StartAddressTextBox
         {
-            get { return _startAddressTextBox; }
-            set { SetProperty(ref _startAddressTextBox, value); }
+            get { return _startAddressTextBox.ToString(); }
+            set { SetProperty(ref _startAddressTextBox, Int32.Parse(value)); }
+        }
+
+        private int _targetAddressTextBox;
+        public string TargetAddressTextBox
+        {
+            get { return _targetAddressTextBox.ToString(); }
+            set { SetProperty(ref _targetAddressTextBox, Int32.Parse(value)); }
+        }
+
+        private int _rangeTextBox;
+        public string RangeTextBox
+        {
+            get { return _rangeTextBox.ToString(); }
+            set { SetProperty(ref _rangeTextBox, Int32.Parse(value)); }
         }
         #endregion Properties
 
@@ -74,9 +91,24 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
             AvailableComPorts = _serialTasks.GetAvailableCOMPorts();
 
+            ScanNetworkCommand = new DelegateCommand(async () => await ScanNetworkCommandExecuteAsync(), ScanNetworkCommandCanExecute)
+                .ObservesProperty(() => CurrentRS485Port); 
+
             ShiftAddressesCommand = new DelegateCommand(async () => await ShiftAddressesCommandExecuteAsync(), ShiftAddressesCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => StartAddressTextBox);
+        }
+
+        private bool ScanNetworkCommandCanExecute()
+        {
+            if (CurrentRS485Port != null)
+                return true;
+            return false;
+        }
+
+        private Task ScanNetworkCommandExecuteAsync()
+        {
+            return Task.Run(() => _serialTasks.GetOnlineDevices(CurrentRS485Port));
         }
 
         private bool ShiftAddressesCommandCanExecute()
@@ -87,7 +119,10 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         private Task ShiftAddressesCommandExecuteAsync()
         {
-            throw new NotImplementedException();
+            return Task.Run(() => _serialTasks.ShiftDevicesAddresses(CurrentRS485Port,
+                                               _startAddressTextBox,
+                                               _targetAddressTextBox,
+                                               _rangeTextBox));
         }
         #endregion Constructor
 

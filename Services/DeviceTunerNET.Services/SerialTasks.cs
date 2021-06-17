@@ -24,7 +24,8 @@ namespace DeviceTunerNET.Services
 
         private byte _rsAddress = 127;
         private string _comPort = "";
-        private const int LAST_USAGE_ADDRESS = 126;
+        private const int LAST_ADDRESS = 127;
+        private const int FIRST_ADDRESS = 1;
 
         public SerialTasks(ISerialSender serialSender)
         {
@@ -103,7 +104,7 @@ namespace DeviceTunerNET.Services
 
         public int ShiftDevicesAddresses(string ComPort, int StartAddress, int TargetAddress, int Range)
         {
-            if((TargetAddress + Range) <= LAST_USAGE_ADDRESS)
+            if((TargetAddress + Range) < LAST_ADDRESS)
             {
                 string _comPort = ComPort;
                 byte _startAddress = Convert.ToByte(StartAddress);
@@ -127,6 +128,21 @@ namespace DeviceTunerNET.Services
                 }
             }
             return (int)resultCode.undefinedError;
+        }
+
+        public Dictionary<int, string> GetOnlineDevices(string ComPort)
+        {
+            string _comPort = ComPort;
+            var deviceDict = new Dictionary<int, string>();
+            for(byte currAddr = FIRST_ADDRESS; currAddr <= LAST_ADDRESS; currAddr++)
+            {
+                string devType = _serialSender.GetDeviceModel(_comPort, currAddr);
+                if (devType.Length > 0)
+                {
+                    deviceDict.Add(currAddr, devType);
+                }
+            }
+            return deviceDict;
         }
     }
 }

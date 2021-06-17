@@ -30,6 +30,13 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <returns></returns>
         public int ShiftDevicesAddresses(string ComPort, int StartAddress, int TargetAddress, int Range);
 
+        /// <summary>
+        /// Get all online devices on the RS-485 Line
+        /// </summary>
+        /// <param name="ComPort">Com port name</param>
+        /// <returns>Dictionary("RS-485 address", "Device type")></returns>
+        public Dictionary<int, string> GetOnlineDevices(string ComPort);
+
         public ObservableCollection<string> GetAvailableCOMPorts();
     }
 }
