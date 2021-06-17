@@ -15,7 +15,6 @@ using DeviceTunerNET.Core;
 using System;
 using System.IO.Ports;
 using DeviceTunerNET.Modules.ModuleRS232;
-using DeviceTunerNET.Modules.ModuleRS485.Models;
 
 namespace DeviceTunerNET
 {

@@ -16,7 +16,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
     public class ViewRS232ViewModel : BindableBase
     {
         private string _message;
-        private readonly ISerialSender _serialSender;
+        private readonly ISerialTasks _serialTasks;
 
 
         #region Commands
@@ -64,15 +64,15 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         #region Constructor
         public ViewRS232ViewModel(IRegionManager regionManager,
-                                  ISerialSender serialTasks,
-                                  IDataRepositoryService dataRepositoryService,
+                                  ISerialSender serialSender,
+                                  ISerialTasks serialTasks,
                                   IEventAggregator ea)
         {
             Title = "ПНР";
 
-            _serialSender = serialTasks;
+            _serialTasks = serialTasks;
 
-            AvailableComPorts = _serialSender.GetAvailableCOMPorts();
+            AvailableComPorts = _serialTasks.GetAvailableCOMPorts();
 
             ShiftAddressesCommand = new DelegateCommand(async () => await ShiftAddressesCommandExecuteAsync(), ShiftAddressesCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeviceTunerNET.Modules.ModuleRS485.Models
+namespace DeviceTunerNET.Services
 {
     public class SerialTasks : ISerialTasks
     {
@@ -24,6 +24,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.Models
 
         private byte _rsAddress = 127;
         private string _comPort = "";
+        private const int LAST_USAGE_ADDRESS = 126;
 
         public SerialTasks(ISerialSender serialSender)
         {
@@ -50,7 +51,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.Models
             }
             
             string deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
-            
             if (deviceModel.Length == 0)
             {
                 return (int)resultCode.deviceNotRespond;
@@ -78,7 +78,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.Models
             }
 
             string deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
-
             if (deviceModel.Length == 0)
             {
                 return (int)resultCode.deviceNotRespond;
@@ -100,6 +99,34 @@ namespace DeviceTunerNET.Modules.ModuleRS485.Models
         public ObservableCollection<string> GetAvailableCOMPorts()
         {
             return _serialSender.GetAvailableCOMPorts();
+        }
+
+        public int ShiftDevicesAddresses(string ComPort, int StartAddress, int TargetAddress, int Range)
+        {
+            if((TargetAddress + Range) <= LAST_USAGE_ADDRESS)
+            {
+                string _comPort = ComPort;
+                byte _startAddress = Convert.ToByte(StartAddress);
+                byte _targetAddress = Convert.ToByte(TargetAddress);
+                byte _range = Convert.ToByte(Range);
+                byte oldEndAddress = (byte)(_startAddress + _range);
+
+                for(byte currAddr = oldEndAddress; currAddr >= _startAddress; currAddr--)
+                {
+                    string deviceModel = _serialSender.GetDeviceModel(_comPort, currAddr);
+                    if (deviceModel.Length == 0)
+                    {
+                        return (int)resultCode.deviceNotRespond;
+                    }
+
+                    byte newAddr = (byte)(currAddr + _range);
+                    if (_serialSender.SetDeviceRS485Address(_comPort, currAddr, newAddr))
+                    {
+                        return (int)resultCode.ok;
+                    }
+                }
+            }
+            return (int)resultCode.undefinedError;
         }
     }
 }

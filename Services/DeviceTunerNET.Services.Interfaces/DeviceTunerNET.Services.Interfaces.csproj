@@ -87,6 +87,7 @@
     <Compile Include="IPrintService.cs" />
     <Compile Include="ISender.cs" />
     <Compile Include="ISerialSender.cs" />
+    <Compile Include="ISerialTasks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

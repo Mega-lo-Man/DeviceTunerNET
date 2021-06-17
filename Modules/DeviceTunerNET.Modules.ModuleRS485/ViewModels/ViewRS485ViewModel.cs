@@ -1,6 +1,5 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Core.Mvvm;
-using DeviceTunerNET.Modules.ModuleRS485.Models;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Commands;
