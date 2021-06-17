@@ -402,7 +402,7 @@ namespace DeviceTunerNET.Services
             {
                 SendPacket(command);
                 while (portReceive == true) { }
-                Thread.Sleep(200);
+                Thread.Sleep(300);
                 if (receiveBuffer?.Length > 0)
                     break;
             }
