@@ -140,5 +140,6 @@
   <ItemGroup>
     <Resource Include="Resources\Images\drive_link.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

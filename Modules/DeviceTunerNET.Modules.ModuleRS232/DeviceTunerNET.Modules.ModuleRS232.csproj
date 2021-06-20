@@ -88,6 +88,10 @@
       <Project>{cf97fa8a-ee79-4cb1-9ff2-f6c5c3f3c0c0}</Project>
       <Name>DeviceTunerNET.Services.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\SharedDataModels\DeviceTunerNET.SharedDataModel\DeviceTunerNET.SharedDataModel.csproj">
+      <Project>{3A424B22-FF53-4C43-B4E9-5BF93E32E376}</Project>
+      <Name>DeviceTunerNET.SharedDataModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Views\ViewRS232.xaml">

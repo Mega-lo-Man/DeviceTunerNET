@@ -35,7 +35,9 @@ namespace DeviceTunerNET.Services.Interfaces
         /// </summary>
         /// <param name="ComPort">Com port name</param>
         /// <returns>Dictionary("RS-485 address", "Device type")></returns>
-        public Dictionary<int, string> GetOnlineDevices(string ComPort);
+        public Dictionary<int, string> GetOnlineDevicesDict(string ComPort);
+
+        public IEnumerable<RS485device> GetOnlineRS485Devices(string ComPort);
 
         public ObservableCollection<string> GetAvailableCOMPorts();
     }

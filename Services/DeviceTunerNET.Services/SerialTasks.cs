@@ -130,7 +130,7 @@ namespace DeviceTunerNET.Services
             return (int)resultCode.undefinedError;
         }
 
-        public Dictionary<int, string> GetOnlineDevices(string ComPort)
+        public Dictionary<int, string> GetOnlineDevicesDict(string ComPort)
         {
             string _comPort = ComPort;
             var deviceDict = new Dictionary<int, string>();
@@ -143,6 +143,23 @@ namespace DeviceTunerNET.Services
                 }
             }
             return deviceDict;
+        }
+
+        public IEnumerable<RS485device> GetOnlineRS485Devices(string ComPort)
+        {
+            var _comPort = ComPort;
+            var deviceDict = GetOnlineDevicesDict(_comPort);
+            var RS485deviceList = new List<RS485device>();
+            foreach (var item in deviceDict)
+            {
+                var device = new RS485device()
+                {
+                    AddressRS485 = item.Key,
+                    DeviceType = item.Value
+                };
+                yield return device;
+            }
+            
         }
     }
 }
