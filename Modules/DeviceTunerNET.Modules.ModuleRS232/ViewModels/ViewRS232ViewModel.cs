@@ -45,6 +45,13 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             set { SetProperty(ref _onlineDevicesList, value); }
         }
 
+        private RS485device _selectedDevice;
+        public RS485device SelectedDevice
+        {
+            get { return _selectedDevice; }
+            set { _selectedDevice = value; }
+        }
+
         private string _currentRS485Port;
         public string CurrentRS485Port
         {
@@ -120,16 +127,18 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         {
             return Task.Run(() =>
             {
-                var list1 = _serialTasks.GetOnlineRS485Devices(CurrentRS485Port);
-                
+                var enumerator = _serialTasks.GetOnlineDevices(CurrentRS485Port);
                 dispatcher.Invoke(() =>
                 {
                     OnlineDevicesList.Clear();
-                    foreach (var item in list1)
+                });
+                foreach (var item in enumerator)
+                {
+                    dispatcher.Invoke(() =>
                     {
                         OnlineDevicesList.Add(item);
-                    }
-                });
+                    });
+                }
             });
         }
 
@@ -141,10 +150,16 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         private Task ShiftAddressesCommandExecuteAsync()
         {
-            return Task.Run(() => _serialTasks.ShiftDevicesAddresses(CurrentRS485Port,
-                                               _startAddress,
-                                               _targetAddress,
-                                               _addressRange));
+            return Task.Run(() =>
+            {
+                if (SelectedDevice.AddressRS485 != null)
+                {
+                    _serialTasks.ShiftDevicesAddresses(CurrentRS485Port,
+                                                   (int)SelectedDevice.AddressRS485,
+                                                   _targetAddress,
+                                                   _addressRange);
+                }
+            });
         }
 
         #endregion Constructor

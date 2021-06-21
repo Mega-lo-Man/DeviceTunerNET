@@ -37,7 +37,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <returns>Dictionary("RS-485 address", "Device type")></returns>
         public Dictionary<int, string> GetOnlineDevicesDict(string ComPort);
 
-        public IEnumerable<RS485device> GetOnlineRS485Devices(string ComPort);
+        public IEnumerable<RS485device> GetOnlineDevices(string ComPort);
 
         public ObservableCollection<string> GetAvailableCOMPorts();
     }

@@ -104,7 +104,7 @@ namespace DeviceTunerNET.Services
 
         public int ShiftDevicesAddresses(string ComPort, int StartAddress, int TargetAddress, int Range)
         {
-            if((TargetAddress + Range) < LAST_ADDRESS)
+            if( ((TargetAddress + Range) < LAST_ADDRESS) && (TargetAddress > 0) && ((TargetAddress < StartAddress) || (TargetAddress > StartAddress + Range)) )
             {
                 string _comPort = ComPort;
                 byte _startAddress = Convert.ToByte(StartAddress);
@@ -112,22 +112,23 @@ namespace DeviceTunerNET.Services
                 byte _range = Convert.ToByte(Range);
                 byte oldEndAddress = (byte)(_startAddress + _range);
 
-                for(byte currAddr = oldEndAddress; currAddr >= _startAddress; currAddr--)
+                for(byte counter = _range; counter >= 0; counter--)
                 {
-                    string deviceModel = _serialSender.GetDeviceModel(_comPort, currAddr);
+                    byte currentAddress = (byte)(counter + _startAddress);
+                    string deviceModel = _serialSender.GetDeviceModel(_comPort, currentAddress);
                     if (deviceModel.Length == 0)
                     {
                         return (int)resultCode.deviceNotRespond;
                     }
 
-                    byte newAddr = (byte)(currAddr + _range);
-                    if (_serialSender.SetDeviceRS485Address(_comPort, currAddr, newAddr))
+                    byte newAddr = (byte)(_targetAddress + counter);
+                    if ( !_serialSender.SetDeviceRS485Address(_comPort, currentAddress, newAddr) )
                     {
-                        return (int)resultCode.ok;
+                        return (int)resultCode.deviceNotRespond;
                     }
                 }
             }
-            return (int)resultCode.undefinedError;
+            return (int)resultCode.ok;
         }
 
         public Dictionary<int, string> GetOnlineDevicesDict(string ComPort)
@@ -145,21 +146,23 @@ namespace DeviceTunerNET.Services
             return deviceDict;
         }
 
-        public IEnumerable<RS485device> GetOnlineRS485Devices(string ComPort)
+        public IEnumerable<RS485device> GetOnlineDevices(string ComPort)
         {
             var _comPort = ComPort;
-            var deviceDict = GetOnlineDevicesDict(_comPort);
-            var RS485deviceList = new List<RS485device>();
-            foreach (var item in deviceDict)
+            //var deviceDict = GetOnlineDevicesDict(_comPort);
+            //var RS485deviceList = new List<RS485device>();
+            for (byte currAddr = FIRST_ADDRESS; currAddr <= LAST_ADDRESS; currAddr++)
             {
-                var device = new RS485device()
+                string devType = _serialSender.GetDeviceModel(_comPort, currAddr);
+                if (devType.Length > 0)
                 {
-                    AddressRS485 = item.Key,
-                    DeviceType = item.Value
-                };
-                yield return device;
+                    yield return new RS485device()
+                    {
+                        AddressRS485 = currAddr,
+                        DeviceType = devType
+                    };
+                }                
             }
-            
         }
     }
 }

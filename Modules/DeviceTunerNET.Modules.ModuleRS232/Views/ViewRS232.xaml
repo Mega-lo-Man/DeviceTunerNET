@@ -142,7 +142,7 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="{Binding DeviceType}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
-                        <TextBlock Text="{Binding AddressRS485}" Grid.Row="1" Grid.Column="1"/>
+                        <TextBlock Text="{Binding AddressRS485}" Grid.Row="0" Grid.Column="1"/>
 
                     </Grid>
                 </DataTemplate>
