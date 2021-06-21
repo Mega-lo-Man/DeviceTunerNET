@@ -161,8 +161,8 @@
             </TextBox.Text>
         </TextBox>
         <StackPanel Grid.Row="0" Grid.Column="2">
-            <Button Content="Сканировать сеть" Grid.Row="1" Grid.Column="2" Command="{Binding ScanNetworkCommand}" />
-            <Button Content="Сдвинуть адреса" Grid.Row="0" Grid.Column="2" Command="{Binding ShiftAddressesCommand}" />
+            <Button Content="Сканировать сеть" Grid.Row="1" Grid.Column="2" Margin="5" Command="{Binding ScanNetworkCommand}" />
+            <Button Content="Сдвинуть адреса" Grid.Row="0" Grid.Column="2" Margin="5" Command="{Binding ShiftAddressesCommand}" />
         </StackPanel>
 
     </Grid>

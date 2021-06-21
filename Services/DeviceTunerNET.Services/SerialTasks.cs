@@ -111,7 +111,7 @@ namespace DeviceTunerNET.Services
                 byte _targetAddress = Convert.ToByte(TargetAddress);
                 byte _range = Convert.ToByte(Range);
                 byte oldEndAddress = (byte)(_startAddress + _range);
-
+                //для сдвига адресов вправо
                 for(byte counter = _range; counter >= 0; counter--)
                 {
                     byte currentAddress = (byte)(counter + _startAddress);
@@ -127,6 +127,7 @@ namespace DeviceTunerNET.Services
                         return (int)resultCode.deviceNotRespond;
                     }
                 }
+                //для сдвига адресов вправо
             }
             return (int)resultCode.ok;
         }
@@ -149,8 +150,7 @@ namespace DeviceTunerNET.Services
         public IEnumerable<RS485device> GetOnlineDevices(string ComPort)
         {
             var _comPort = ComPort;
-            //var deviceDict = GetOnlineDevicesDict(_comPort);
-            //var RS485deviceList = new List<RS485device>();
+
             for (byte currAddr = FIRST_ADDRESS; currAddr <= LAST_ADDRESS; currAddr++)
             {
                 string devType = _serialSender.GetDeviceModel(_comPort, currAddr);

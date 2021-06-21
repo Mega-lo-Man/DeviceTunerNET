@@ -144,7 +144,10 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         private bool ShiftAddressesCommandCanExecute()
         {
-            if (CurrentRS485Port != null && StartAddress.Length > 0) return true;
+            if (CurrentRS485Port != null && 
+                StartAddress.Length > 0 && 
+                OnlineDevicesList.Count > 0 &&
+                _addressRange > 0) return true;
             return false;
         }
 

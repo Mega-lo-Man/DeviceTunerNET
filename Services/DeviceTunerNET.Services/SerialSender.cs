@@ -23,6 +23,9 @@ namespace DeviceTunerNET.Services
         private readonly SerialPort _serialPort;
         private readonly IEventAggregator _ea;
 
+        private const int ADDRESS_CHANGE_TIMEOUT = 400; // Сингал-20П V3.10 после смены адреса подтвержает через 400 мс (остальные быстрее)
+        private const int READ_MODEL_TIMEOUT = 50; // Чтение типа прибора занимает не более 50 мс
+
         /// <summary>
         /// Болидовская таблица CRC
         /// </summary>
@@ -114,8 +117,10 @@ namespace DeviceTunerNET.Services
                 
                 _serialPort.Open();
 
+                // формируем команду на отправку
+                byte[] cmdString = new byte[] { deviceAddress, 0xB0, 0x0F, newDeviceAddress, newDeviceAddress };
 
-                byte[] result = Transaction(new byte[] { deviceAddress, 0xB0, 0x0F, newDeviceAddress, newDeviceAddress });
+                byte[] result = Transaction(cmdString , ADDRESS_CHANGE_TIMEOUT);
                 
                 _serialPort.Close();
                 if(result.Length > 1)
@@ -129,7 +134,9 @@ namespace DeviceTunerNET.Services
 
         public string GetDeviceModel(string comPortName, byte deviceAddress)
         {
-            
+            // формируем команду на отправку
+            byte[] cmdString = new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 };
+
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = comPortName;
@@ -143,7 +150,7 @@ namespace DeviceTunerNET.Services
                     return "";
                 }
 
-                byte[] deviceModel = Transaction(new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 });
+                byte[] deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
                 
                 _serialPort.Close();
                 if (deviceModel?.Length > 1)
@@ -154,7 +161,7 @@ namespace DeviceTunerNET.Services
             }
             else
             {
-                byte[] deviceModel = Transaction(new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 });
+                byte[] deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
 
                 if (deviceModel?.Length > 1)
                 {
@@ -196,7 +203,7 @@ namespace DeviceTunerNET.Services
             return result;
         }
 
-        private byte[] Transaction(byte[] sendArray)
+        private byte[] Transaction(byte[] sendArray, int timeout)
         {
             
             // make DataReceived event handler
@@ -206,7 +213,7 @@ namespace DeviceTunerNET.Services
             {
                 SendPacket(sendArray);
                 while (portReceive == true) { }
-                Thread.Sleep(400);
+                Thread.Sleep(timeout);
                 if (receiveBuffer != null)
                     break;
             }
