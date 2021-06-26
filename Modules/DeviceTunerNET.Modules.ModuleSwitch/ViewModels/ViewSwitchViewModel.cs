@@ -5,13 +5,10 @@ using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -83,6 +80,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         {
             get { return _selectedPrinter; }
             set { SetProperty(ref _selectedPrinter, value); }
+        }
+
+        private string _printLabelPath = "Resources\\Files\\label25x25switch.dymo";
+        public string PrintLabelPath
+        {
+            get { return _printLabelPath; }
+            set { SetProperty(ref _printLabelPath, value); }
         }
 
         private string _currentItemTextBox = "0";
@@ -223,7 +227,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     else
                     {
                         _dataRepositoryService.SaveSerialNumber(ethernetSwitch.Id, ethernetSwitch.Serial);
-                        _printerService.CommonPrintLabel(SelectedPrinter, 0, GetPrintingDict(ethernetSwitch));
+                        _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(ethernetSwitch));
                     }
                     // Обновляем всю коллекцию d UI целиком
                     _dispatcher.BeginInvoke(new Action(() =>
@@ -231,7 +235,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                         CollectionViewSource.GetDefaultView(SwitchList).Refresh();
                     }));
 
-                    
+
                 }
                 if (token.IsCancellationRequested)
                 {
@@ -249,7 +253,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             printDict.Add("ITextObjectMask", ethSwitch.CIDR.ToString()); ;
             printDict.Add("ITextObjectSerial", ethSwitch.Serial);
             printDict.Add("ITextObjectCabinet", ethSwitch.Cabinet);
-            return printDict;        
+            return printDict;
         }
 
         // Формирование словаря с необходимыми данными для настройки коммутаторов (логин, пароль, адрес по умолчанию и т.п.)

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DeviceTunerNET.SharedDataModel
+﻿namespace DeviceTunerNET.SharedDataModel
 {
     public class EthernetSwitch : RS232device
     {
@@ -10,7 +6,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// LogIn user name
         /// </summary>
         private string _username = "";
-        public string Username 
+        public string Username
         {
             get { return _username; }
             set { _username = value; }

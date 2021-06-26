@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 
@@ -30,8 +28,8 @@ namespace DeviceTunerNET.SharedDataModel
             foreach (var item in objLst)
             {
                 if (item.GetType() == typeof(T))
-                { 
-                    lst.Add((T)item); 
+                {
+                    lst.Add((T)item);
                 }
             }
             return lst;
@@ -65,7 +63,7 @@ namespace DeviceTunerNET.SharedDataModel
         }
 
 
-        
+
         private bool _isSelected = false;
         /// <summary>
         /// Gets/sets whether the TreeViewItem 

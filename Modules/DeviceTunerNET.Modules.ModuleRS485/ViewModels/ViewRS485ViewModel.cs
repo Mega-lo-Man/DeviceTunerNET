@@ -9,8 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO.Ports;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
@@ -52,7 +50,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         public int DefaultRS485Address
         {
             get { return _defaultRS485Address; }
-            set 
+            set
             {
                 if (value <= 127)
                 {
@@ -103,7 +101,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     {
                         DevicesForProgramming.Add(item);
                     }
-                    foreach(C2000Ethernet item in _dataRepositoryService.GetAllDevices<C2000Ethernet>())
+                    foreach (C2000Ethernet item in _dataRepositoryService.GetAllDevices<C2000Ethernet>())
                     {
                         DevicesForProgramming.Add(item);
                     }
@@ -131,9 +129,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         public string CurrentRS485Port
         {
             get { return _currentRS485Port; }
-            set 
+            set
             {
-                SetProperty(ref _currentRS485Port, value); 
+                SetProperty(ref _currentRS485Port, value);
             }
         }
 
@@ -217,7 +215,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private Task StartCommandExecuteAsync()
         {
-            
+
             if (IsCheckedByArea || IsCheckedByCabinets)
             {
                 return Task.Run(() => DownloadLoop());
@@ -342,10 +340,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 CabinetList.Clear();
                 CabsVM.Clear();
-                
+
 
                 IList<Cabinet> cabOut = _dataRepositoryService.GetCabinetsWithTwoTypeDevices<C2000Ethernet, RS485device>();
-                
+
                 foreach (Cabinet cabinet in cabOut)
                 {
                     CabinetList.Add(cabinet);

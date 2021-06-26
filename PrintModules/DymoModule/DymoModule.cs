@@ -1,16 +1,12 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
-using DymoSDK.Implementations;
-using DymoSDK.Interfaces;
-using System;
+using Microsoft.Win32;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.DymoModules
 {
     public class DymoModule : IPrintService
     {
+        /*
         private IEnumerable<DymoSDK.Interfaces.IPrinter> Printers;
         private List<DymoSDK.Interfaces.ILabelObject> LabelObjects;
         private DymoSDK.Implementations.DymoLabel dymoSDKLabel;
@@ -106,6 +102,91 @@ namespace DeviceTunerNET.DymoModules
                 }
             }
             return false;
+        }
+        */
+        private const string _availablePrintersRegPath = "SOFTWARE\\DymoModule\\AvaliablePrinters";
+        private const string _DymoModuleExecutorPath = @"C:\Users\texvi\source\repos\DymoModule\DymoModule\bin\Debug\DymoModule.exe";
+        private const int APP_GENERATE_SUCCESS = 100;
+
+        #region Commands
+        private const string _cmdPrinterName = "Command_PrinterName";
+        private const string _cmdGetPrinters = "Command_GetPrinters";
+        private const string _cmdPrintLabel = "Command_PrintLabel";
+
+        #endregion Commands
+
+        private const char separateString = '=';
+
+
+        public DymoModule()
+        {
+
+        }
+
+        public List<string> CommonGetAvailablePrinters()
+        {
+            var avaliablePrinters = new List<string>();
+            if (StartExternalApp(_DymoModuleExecutorPath, GetCommand(_cmdGetPrinters, "")))
+            {
+                var regBranch = Registry.CurrentUser;
+                if (regBranch.OpenSubKey(_availablePrintersRegPath) != null)
+                {
+                    var key = regBranch.OpenSubKey(_availablePrintersRegPath);
+                    string[] valueNames = key.GetValueNames();
+                    foreach (var item in valueNames)
+                    {
+                        avaliablePrinters.Add(item);
+                    }
+                }
+            }
+            return avaliablePrinters;
+        }
+
+        public bool CommonPrintLabel(string PrinterName, string LabelPath, Dictionary<string, string> LabelDict)
+        {
+            var _printerName = PrinterName;
+            var _labelDict = LabelDict;
+            var _labelPath = LabelPath;
+
+
+            GetCommand(_cmdPrinterName, _printerName);
+
+
+            var resultArgsString = GetCommand(_cmdPrintLabel, _labelPath) +
+                                   GetCommand(_cmdPrinterName, _printerName) +
+                                   GetLabelArguments(_labelDict);
+
+            return StartExternalApp(_DymoModuleExecutorPath, resultArgsString);
+        }
+
+        private string GetLabelArguments(Dictionary<string, string> LabelDict)
+        {
+            var result = "";
+            foreach (var item in LabelDict)
+            {
+                var pair = " \"" + item.Key + separateString + item.Value + "\"";
+                result += item.Key;
+            }
+            return result;
+        }
+
+        public static bool StartExternalApp(string InstallApp, string InstallArgs)
+        {
+            System.Diagnostics.Process installProcess = new System.Diagnostics.Process();
+            //settings up parameters for the install process
+            installProcess.StartInfo.FileName = InstallApp;
+            installProcess.StartInfo.Arguments = InstallArgs;
+
+            installProcess.Start();
+
+            installProcess.WaitForExit();
+            // Check for sucessful completion
+            return (installProcess.ExitCode == APP_GENERATE_SUCCESS) ? true : false;
+        }
+
+        private string GetCommand(string CommandName, string CommandValue)
+        {
+            return " \"" + CommandName + separateString + CommandValue + "\"";
         }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 
 namespace DeviceTunerNET.SharedDataModel
 {
@@ -34,7 +31,7 @@ namespace DeviceTunerNET.SharedDataModel
             set { _netmask = value; }
         }
 
-        
+
         public int CIDR
         {
             get { return ConvertToCidr(Netmask); }
@@ -79,7 +76,7 @@ namespace DeviceTunerNET.SharedDataModel
             string addr = address;
             uint range = (uint)ConvertStringToRange(addr);
             int bitsCounter = 0;
-            
+
             while (range > 0)
             {
                 if ((range & 1) >= 0)

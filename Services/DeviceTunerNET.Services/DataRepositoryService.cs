@@ -2,12 +2,7 @@
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Events;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services
 {
@@ -96,7 +91,7 @@ namespace DeviceTunerNET.Services
             {
                 List<T1> devicesListT1 = (List<T1>)cabinet.GetDevicesList<T1>();
                 List<T2> devicesListT2 = (List<T2>)cabinet.GetDevicesList<T2>();
-                 
+
                 // Будем работать только с теми шкафами в которых есть приборы типа T1 или T2
                 if (devicesListT1.Count > 0 || devicesListT2.Count > 0)
                 {

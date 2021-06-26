@@ -1,13 +1,11 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using OfficeOpenXml;
-using System.IO;
-using System.Net;
-using System.CodeDom;
 using System.Diagnostics;
+using System.IO;
+using System.Text;
 
 namespace DeviceTunerNET.Services
 {
@@ -58,7 +56,7 @@ namespace DeviceTunerNET.Services
         private int GetDeviceType(string DevModel)
         {
             int devType = 0;
-            if (DevModel.Contains("MES3508")) 
+            if (DevModel.Contains("MES3508"))
                 devType = 1;
             if (DevModel.Contains("MES2308"))
                 devType = 1;
@@ -98,14 +96,14 @@ namespace DeviceTunerNET.Services
 
                 if (!string.Equals(devParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
                 {
-                    if(!(rowIndex == CaptionRow + 1)) cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
+                    if (!(rowIndex == CaptionRow + 1)) cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
                     cabinet = new Cabinet
                     {
                         Designation = devParent
                     };
                 }
-                
-                switch(GetDeviceType(devModel))
+
+                switch (GetDeviceType(devModel))
                 {
                     case 0:
                         cabinet.AddItem(new RS485device
@@ -129,7 +127,7 @@ namespace DeviceTunerNET.Services
                         });
                         break;
                     case 2:
-                        
+
                         var c2000Ethernet = new C2000Ethernet
                         {
                             Id = rowIndex,
@@ -147,7 +145,7 @@ namespace DeviceTunerNET.Services
                         cabinet.AddItem(c2000Ethernet);
                         break;
                 }
-                if(rowIndex == rows) // В последней строчке таблицы надо добавить последний шкаф в список шкафов, иначе (исходя из условия) он туда не попадёт
+                if (rowIndex == rows) // В последней строчке таблицы надо добавить последний шкаф в список шкафов, иначе (исходя из условия) он туда не попадёт
                 {
                     cabinetsLst.Add(cabinet);
                 }

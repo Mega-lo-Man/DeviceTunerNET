@@ -41,13 +41,13 @@ namespace DeviceTunerNET.Services
                                     new PrivateKeyFile(KeyFile/*@"id_rsa.key"*/, "testrsa")
                                 }),
                     });
-                
+
                 _sshClient = new SshClient(ConnNfo);
                 _sshClient.Connect();
             }
             catch (Exception ex)
             {
-                Debug.Print( "Fault SSH connect." + ex.ToString() );
+                Debug.Print("Fault SSH connect." + ex.ToString());
                 return false;
             }
             return true;
@@ -137,7 +137,8 @@ namespace DeviceTunerNET.Services
 
             while ((line = stream.ReadLine(TimeSpan.FromSeconds(2))) != null)
             {
-                ev.Publish(new Message {
+                ev.Publish(new Message
+                {
                     ActionCode = MessageSentEvent.StringToConsole,
                     MessageString = line
                 });//Tuple.Create(MessageSentEvent.StringToConsole, line));

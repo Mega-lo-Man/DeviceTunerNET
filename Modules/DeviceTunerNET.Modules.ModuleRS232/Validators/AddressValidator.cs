@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace DeviceTunerNET.Modules.ModuleRS232.Validators
@@ -25,14 +21,14 @@ namespace DeviceTunerNET.Modules.ModuleRS232.Validators
             ValidationResult result = new ValidationResult(true, null);
             string inputString = (value ?? string.Empty).ToString();
 
-            if(Int32.TryParse(inputString, out int int32str))
+            if (Int32.TryParse(inputString, out int int32str))
             {
-                if(int32str <= MIN_ADDRESS || int32str >= MAX_ADDRESS)
+                if (int32str <= MIN_ADDRESS || int32str >= MAX_ADDRESS)
                 {
                     result = new ValidationResult(false, this.ErrorMessage);
                 }
             }
-            
+
             return result;
         }
     }

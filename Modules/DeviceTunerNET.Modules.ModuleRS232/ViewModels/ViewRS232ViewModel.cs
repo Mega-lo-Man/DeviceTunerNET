@@ -5,11 +5,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -22,7 +18,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
 
         #region Commands
-        
+
         public DelegateCommand ShiftAddressesCommand { get; private set; }
         public DelegateCommand ScanNetworkCommand { get; private set; }
 
@@ -62,7 +58,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             }
         }
 
-        private int  _startAddress;
+        private int _startAddress;
         public string StartAddress
         {
             get { return _startAddress.ToString(); }
@@ -86,7 +82,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         public string Title { get; private set; }
 
-        
+
 
         public string Message
         {
@@ -109,7 +105,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             dispatcher = Dispatcher.CurrentDispatcher;
 
             ScanNetworkCommand = new DelegateCommand(async () => await ScanNetworkCommandExecuteAsync(), ScanNetworkCommandCanExecute)
-                .ObservesProperty(() => CurrentRS485Port); 
+                .ObservesProperty(() => CurrentRS485Port);
 
             ShiftAddressesCommand = new DelegateCommand(async () => await ShiftAddressesCommandExecuteAsync(), ShiftAddressesCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
@@ -144,8 +140,8 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         private bool ShiftAddressesCommandCanExecute()
         {
-            if (CurrentRS485Port != null && 
-                StartAddress.Length > 0 && 
+            if (CurrentRS485Port != null &&
+                StartAddress.Length > 0 &&
                 OnlineDevicesList.Count > 0 &&
                 _addressRange > 0) return true;
             return false;

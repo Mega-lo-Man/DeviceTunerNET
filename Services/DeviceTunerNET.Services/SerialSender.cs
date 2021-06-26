@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Dynamic;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -49,7 +48,7 @@ namespace DeviceTunerNET.Services
             0x74, 0x2A, 0x0C8, 0x96, 0x15, 0x4B, 0x0A9, 0x0F7, 0x0B6, 0x0FC, 0x0A, 0x54, 0x0D7, 0x89, 0x6B, 0x35
         };
 
-        
+
 
         private Dictionary<byte, string> BolidDict = new Dictionary<byte, string>()
         {
@@ -114,16 +113,16 @@ namespace DeviceTunerNET.Services
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = comPortName;
-                
+
                 _serialPort.Open();
 
                 // формируем команду на отправку
                 byte[] cmdString = new byte[] { deviceAddress, 0xB0, 0x0F, newDeviceAddress, newDeviceAddress };
 
-                byte[] result = Transaction(cmdString , ADDRESS_CHANGE_TIMEOUT);
-                
+                byte[] result = Transaction(cmdString, ADDRESS_CHANGE_TIMEOUT);
+
                 _serialPort.Close();
-                if(result.Length > 1)
+                if (result.Length > 1)
                 {
                     if (result[4] == newDeviceAddress)
                         return true;
@@ -151,7 +150,7 @@ namespace DeviceTunerNET.Services
                 }
 
                 byte[] deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
-                
+
                 _serialPort.Close();
                 if (deviceModel?.Length > 1)
                 {
@@ -169,7 +168,7 @@ namespace DeviceTunerNET.Services
                     return BolidDict[devType];
                 }
             }
-            
+
             return "";
         }
 
@@ -205,7 +204,7 @@ namespace DeviceTunerNET.Services
 
         private byte[] Transaction(byte[] sendArray, int timeout)
         {
-            
+
             // make DataReceived event handler
             _serialPort.DataReceived += sp_DataReceived;
 
@@ -227,7 +226,7 @@ namespace DeviceTunerNET.Services
             {
                 return new byte[1] { 0x00 };
             }
-                
+
         }
 
         private void SendPacket(byte[] sendArray)
@@ -261,7 +260,7 @@ namespace DeviceTunerNET.Services
         {
             string[] ports = SerialPort.GetPortNames();
             ObservableCollection<string> portsList = new ObservableCollection<string>();
-            foreach(string port in ports)
+            foreach (string port in ports)
             {
                 portsList.Add(port);
             }
@@ -295,12 +294,12 @@ namespace DeviceTunerNET.Services
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = ComPortName;
-                
+
                 _serialPort.Open();
                 // make DataReceived event handler
                 _serialPort.DataReceived += sp_DataReceived;
 
-                
+
                 result = SendPromoter();
                 result = SendDeviceNetName(device.NetName);
                 result = SendEthernetTune(device.AddressIP, device.Netmask, device.DefaultGateway, device.FirstDns, device.SecondDns);
@@ -317,7 +316,7 @@ namespace DeviceTunerNET.Services
         private bool SendPromoter()
         {
             //CommandSend(new byte[] { 0x7F, 0x70, 0x0D, 0x00, 0x00 }); // 7f 06 70 0d 00 00
-            
+
             CommandSend(new byte[] { 0x7F, 0x6E, 0x43, 0x00, 0x00, 0x00, 0x40 }); // 7f 08 6e 43 00 00 00 40
             CommandSend(new byte[] { 0x7F, 0x3D, 0x43, 0x00, 0x00, 0x00, 0x40 }); // 7f 08 3d 43 00 00 00 40
             return true;
@@ -445,7 +444,7 @@ namespace DeviceTunerNET.Services
         {
             byte[] resultArray = new byte[arrays.Sum(a => a.Length)];
             int offset = 0;
-            foreach(byte[] item in arrays)
+            foreach (byte[] item in arrays)
             {
                 System.Buffer.BlockCopy(item, 0, resultArray, offset, item.Length);
                 offset += item.Length;

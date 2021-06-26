@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.SharedDataModel
 {
@@ -13,7 +9,7 @@ namespace DeviceTunerNET.SharedDataModel
         private enum _mode { transparent = 0, master = 1, slave = 2 }
 
         private string _remoteDefaultFirstIP = "192.168.2.1";
-        
+
         private List<byte[]> _configLineList;
 
         #region Properties
@@ -59,14 +55,14 @@ namespace DeviceTunerNET.SharedDataModel
             get => _listOfRemoteDevices;
             set => _listOfRemoteDevices = value;
         }
-        
+
         private string _remoteIpTrasparentMode;
         public string RemoteIpTrasparentMode
         {
             get { return _remoteIpTrasparentMode; }
             set { _remoteIpTrasparentMode = value; }
         }
-        
+
         private int _duplexMode;
         public int DuplexMode
         {
@@ -109,7 +105,7 @@ namespace DeviceTunerNET.SharedDataModel
             set { _useSingleReadWriteUDP = value; }
         }
         #endregion Properties
-        
+
         public C2000Ethernet()
         {
             //------------------------------------------------
@@ -142,7 +138,7 @@ namespace DeviceTunerNET.SharedDataModel
             _configLineList = new List<byte[]>();
         }
 
-        
+
         public IList<byte[]> GetConfigCommandLine(byte RS232address)
         {
             byte addr = RS232address;

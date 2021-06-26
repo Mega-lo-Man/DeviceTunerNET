@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Text;
 using System.Windows.Data;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels

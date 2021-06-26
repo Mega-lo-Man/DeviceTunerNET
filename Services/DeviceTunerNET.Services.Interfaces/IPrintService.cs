@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace DeviceTunerNET.Services.Interfaces
 {
@@ -12,10 +8,10 @@ namespace DeviceTunerNET.Services.Interfaces
         /// Print the label with information from LabelDict using the selected printer name
         /// </summary>
         /// <param name="PrinterName"></param>
-        /// <param name="LabelType"></param>
+        /// <param name="LabelPath"></param>
         /// <param name="LabelDict"></param>
         /// <returns>"true" if label is printed</returns>
-        public bool CommonPrintLabel(string PrinterName, int LabelType, Dictionary<string, string> LabelDict);
+        public bool CommonPrintLabel(string PrinterName, string LabelPath, Dictionary<string, string> LabelDict);
 
         /// <summary>
         /// Get available printers

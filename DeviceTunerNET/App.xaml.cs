@@ -1,20 +1,19 @@
-﻿using DeviceTunerNET.Modules.ModuleRS485;
+﻿using DeviceTunerNET.Core;
+using DeviceTunerNET.DymoModules;
+using DeviceTunerNET.Modules.ModuleRS232;
+using DeviceTunerNET.Modules.ModuleRS485;
 using DeviceTunerNET.Modules.ModuleSwitch;
 using DeviceTunerNET.Modules.ModuleSwitch.Models;
 using DeviceTunerNET.Services;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.Views;
+using DryIoc;
 using Prism.DryIoc;
+using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
-using System.Windows;
-using DryIoc;
-using DeviceTunerNET.DymoModules;
-using Prism.Events;
-using DeviceTunerNET.Core;
-using System;
 using System.IO.Ports;
-using DeviceTunerNET.Modules.ModuleRS232;
+using System.Windows;
 
 namespace DeviceTunerNET
 {

@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace DeviceTunerNET.SharedDataModel
 {
     public class Project
     {
         private List<ConstructionSite> _constructionSites = new List<ConstructionSite>();
-        
+
 
         public List<ConstructionSite> SetProject
         {

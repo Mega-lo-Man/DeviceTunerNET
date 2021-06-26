@@ -3,10 +3,7 @@ using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using MinimalisticTelnet;
 using Prism.Events;
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace DeviceTunerNET.Services
 {
@@ -16,7 +13,7 @@ namespace DeviceTunerNET.Services
         private EventAggregator _ea;
         private Dictionary<string, string> _sDict;
         private EthernetSwitch _ethernetDevice;
-        
+
 
         public Telnet_Sender(EventAggregator ea, TelnetConnection tc)
         {
@@ -36,7 +33,8 @@ namespace DeviceTunerNET.Services
             {
                 var ev = _ea.GetEvent<MessageSentEvent>();
                 string returnStrFromConsole = _tc.Login(Username, Password, 1000);
-                ev.Publish(new Message {
+                ev.Publish(new Message
+                {
                     ActionCode = MessageSentEvent.StringToConsole,
                     MessageString = returnStrFromConsole
                 });
@@ -49,18 +47,18 @@ namespace DeviceTunerNET.Services
             }
             else
                 return false;
-            
-            
+
+
         }
 
         public EthernetSwitch Send(EthernetSwitch ethernetDevice, Dictionary<string, string> SettingsDict)
         {
             _sDict = SettingsDict;
             _ethernetDevice = ethernetDevice;
-            
+
             PacketSendToTelnet(); // Передаём настройки по Telnet-протоколу
             _tc.ConnectionClose(); // Закрываем Telnet-соединение
-            
+
             return ethernetDevice; // Возвращаем объект с заполненными свойствами полученными из коммутатора
         }
 
@@ -69,7 +67,8 @@ namespace DeviceTunerNET.Services
             string commandResult = _tc.WriteRead(command); //Комманда в коммутатор
 
             // Сообщаем всем, что получена строка-ответ от коммутатора которую нужно вывести в консоль
-            _ea.GetEvent<MessageSentEvent>().Publish(new Message {
+            _ea.GetEvent<MessageSentEvent>().Publish(new Message
+            {
                 ActionCode = MessageSentEvent.StringToConsole,
                 MessageString = commandResult
             });
@@ -98,10 +97,10 @@ namespace DeviceTunerNET.Services
             SendMessage("exit");
 
             SendMessage("username " + _sDict["NewAdminLogin"] + " privilege 15 " + "password " + _sDict["NewAdminPassword"]);
-            
+
             SendMessage("interface vlan 1");
             SendMessage("ip address " + _ethernetDevice.AddressIP + " /" + _sDict["IPmask"]);
-            
+
             return true;
         }
     }
