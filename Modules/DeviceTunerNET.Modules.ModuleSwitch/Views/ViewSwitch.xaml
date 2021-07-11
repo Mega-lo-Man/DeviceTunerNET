@@ -173,6 +173,7 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
+                <RowDefinition Height="0.5*"/>
             </Grid.RowDefinitions>
             <Label Name="CurrentItemIP" Margin="3" Grid.Row="0" Foreground ="black" Content ="{Binding CurrentItemTextBox}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="24" FontWeight="Bold" />
             <Label Name="ChangeDevice" Visibility="{Binding ChangeDeviceFireUp}" Margin="3" Grid.Row="1" Background ="red" Foreground ="black" Content ="{Binding MessageForUser}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalContentAlignment="Center"/>
@@ -186,6 +187,7 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </ToggleButton>
+            <Button Grid.Row="3" Margin="5" Content="Print Test Label" Command="{Binding PrintTestLabel}"/>
         </Grid>
     </Grid>
 </UserControl>

@@ -125,28 +125,30 @@ namespace DeviceTunerNET.DymoModules
 
         public List<string> CommonGetAvailablePrinters()
         {
-            var avaliablePrinters = new List<string>();
-            if (StartExternalApp(_DymoModuleExecutorPath, GetCommand(_cmdGetPrinters, "")))
+            var availablePrinters = new List<string>();
+            // Второй параметр в GetCommand при _cmdGetPrinters может быть любой строкой
+            if (StartExternalApp(_DymoModuleExecutorPath, GetCommand(_cmdGetPrinters, "1")))
             {
                 var regBranch = Registry.CurrentUser;
                 if (regBranch.OpenSubKey(_availablePrintersRegPath) != null)
                 {
                     var key = regBranch.OpenSubKey(_availablePrintersRegPath);
-                    string[] valueNames = key.GetValueNames();
+                    var valueNames = key.GetValueNames();
                     foreach (var item in valueNames)
                     {
-                        avaliablePrinters.Add(item);
+                        availablePrinters.Add(item);
                     }
                 }
             }
-            return avaliablePrinters;
+            return availablePrinters;
         }
 
-        public bool CommonPrintLabel(string PrinterName, string LabelPath, Dictionary<string, string> LabelDict)
+        public bool CommonPrintLabel(string printerName, string labelPath, Dictionary<string, string> labelDict)
         {
-            var _printerName = PrinterName;
-            var _labelDict = LabelDict;
-            var _labelPath = LabelPath;
+            var _printerName = printerName;
+            var _labelDict = labelDict;
+            var _labelPath = labelPath;
+
 
 
             GetCommand(_cmdPrinterName, _printerName);
@@ -159,34 +161,35 @@ namespace DeviceTunerNET.DymoModules
             return StartExternalApp(_DymoModuleExecutorPath, resultArgsString);
         }
 
-        private string GetLabelArguments(Dictionary<string, string> LabelDict)
+        private string GetLabelArguments(Dictionary<string, string> labelDict)
         {
             var result = "";
-            foreach (var item in LabelDict)
+            foreach (var item in labelDict)
             {
                 var pair = " \"" + item.Key + separateString + item.Value + "\"";
-                result += item.Key;
+                result += pair;
             }
             return result;
         }
 
-        public static bool StartExternalApp(string InstallApp, string InstallArgs)
+        public static bool StartExternalApp(string installApp, string installArgs)
         {
-            System.Diagnostics.Process installProcess = new System.Diagnostics.Process();
+            System.Diagnostics.Process installProcess = new System.Diagnostics.Process
+            {
+                StartInfo = {FileName = installApp, Arguments = installArgs}
+            };
             //settings up parameters for the install process
-            installProcess.StartInfo.FileName = InstallApp;
-            installProcess.StartInfo.Arguments = InstallArgs;
 
             installProcess.Start();
 
             installProcess.WaitForExit();
-            // Check for sucessful completion
+            // Check for successful completion
             return (installProcess.ExitCode == APP_GENERATE_SUCCESS) ? true : false;
         }
 
-        private string GetCommand(string CommandName, string CommandValue)
+        private string GetCommand(string commandName, string commandValue)
         {
-            return " \"" + CommandName + separateString + CommandValue + "\"";
+            return " \"" + commandName + separateString + commandValue + "\"";
         }
     }
 }

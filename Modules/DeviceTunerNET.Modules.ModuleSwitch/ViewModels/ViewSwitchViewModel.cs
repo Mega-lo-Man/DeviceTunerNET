@@ -9,6 +9,7 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -22,113 +23,113 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         private string _message;
         public string Message
         {
-            get { return _message; }
-            set { SetProperty(ref _message, value); }
+            get => _message;
+            set => SetProperty(ref _message, value);
         }
 
         private string _defaultLogin = "admin";
         public string DefaultLogin
         {
-            get { return _defaultLogin; }
-            set { SetProperty(ref _defaultLogin, value); }
+            get => _defaultLogin;
+            set => SetProperty(ref _defaultLogin, value);
         }
 
         private string _newLogin = "admin";
         public string NewLogin
         {
-            get { return _newLogin; }
-            set { SetProperty(ref _newLogin, value); }
+            get => _newLogin;
+            set => SetProperty(ref _newLogin, value);
         }
 
         private string _defaultPassword = "admin";
         public string DefaultPassword
         {
-            get { return _defaultPassword; }
-            set { SetProperty(ref _defaultPassword, value); }
+            get => _defaultPassword;
+            set => SetProperty(ref _defaultPassword, value);
         }
 
         private string _newPassword = "admin123";
         public string NewPassword
         {
-            get { return _newPassword; }
-            set { SetProperty(ref _newPassword, value); }
+            get => _newPassword;
+            set => SetProperty(ref _newPassword, value);
         }
 
         private string _defaultIP = "192.168.1.239";
         public string DefaultIP
         {
-            get { return _defaultIP; }
-            set { SetProperty(ref _defaultIP, value); }
+            get => _defaultIP;
+            set => SetProperty(ref _defaultIP, value);
         }
 
         private int _ipMask = 22;
         public int IPMask
         {
-            get { return _ipMask; }
-            set { SetProperty(ref _ipMask, value); }
+            get => _ipMask;
+            set => SetProperty(ref _ipMask, value);
         }
 
         private string _selectedDevice;
         public string SelectedDevice
         {
-            get { return _selectedDevice; }
-            set { SetProperty(ref _selectedDevice, value); }
+            get => _selectedDevice;
+            set => SetProperty(ref _selectedDevice, value);
         }
 
         private string _selectedPrinter;
         public string SelectedPrinter
         {
-            get { return _selectedPrinter; }
-            set { SetProperty(ref _selectedPrinter, value); }
+            get => _selectedPrinter;
+            set => SetProperty(ref _selectedPrinter, value);
         }
 
         private string _printLabelPath = "Resources\\Files\\label25x25switch.dymo";
         public string PrintLabelPath
         {
-            get { return _printLabelPath; }
-            set { SetProperty(ref _printLabelPath, value); }
+            get => _printLabelPath;
+            set => SetProperty(ref _printLabelPath, value);
         }
 
         private string _currentItemTextBox = "0";
         public string CurrentItemTextBox
         {
-            get { return _currentItemTextBox; }
-            set { SetProperty(ref _currentItemTextBox, value); }
+            get => _currentItemTextBox;
+            set => SetProperty(ref _currentItemTextBox, value);
         }
 
         private string _messageForUser = "Подключи \r\n коммутатор";
         public string MessageForUser
         {
-            get { return _messageForUser; }
-            set { SetProperty(ref _messageForUser, value); }
+            get => _messageForUser;
+            set => SetProperty(ref _messageForUser, value);
         }
 
         private bool _sliderIsChecked = false;
         public bool SliderIsChecked
         {
-            get { return _sliderIsChecked; }
-            set { SetProperty(ref _sliderIsChecked, value); }
+            get => _sliderIsChecked;
+            set => SetProperty(ref _sliderIsChecked, value);
         }
 
         private string _observeConsole;
         public string ObserveConsole
         {
-            get { return _observeConsole; }
-            set { SetProperty(ref _observeConsole, value); }
+            get => _observeConsole;
+            set => SetProperty(ref _observeConsole, value);
         }
 
         private ObservableCollection<EthernetSwitch> _switchList;
         public ObservableCollection<EthernetSwitch> SwitchList //Список коммутаторов
         {
-            get { return _switchList; }
-            set { SetProperty(ref _switchList, value); }
+            get => _switchList;
+            set => SetProperty(ref _switchList, value);
         }
 
         private ObservableCollection<string> _printers = new ObservableCollection<string>();
         public ObservableCollection<string> Printers
         {
-            get { return _printers; }
-            set { SetProperty(ref _printers, value); }
+            get => _printers;
+            set => SetProperty(ref _printers, value);
         }
 
         #endregion
@@ -160,6 +161,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
             CheckedCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
             UncheckedCommand = new DelegateCommand(StopCommandExecute, StopCommandCanExecute);
+            PrintTestLabel = new DelegateCommand(async () => await PrintLabelCommandExecute(), CanPrintLabelCommandExecute);
 
             Title = "Switch"; // Заголовок вкладки
 
@@ -177,6 +179,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         #region Commands
         public DelegateCommand CheckedCommand { get; private set; }
         public DelegateCommand UncheckedCommand { get; private set; }
+        public DelegateCommand PrintTestLabel { get; private set; }
 
         private bool StopCommandCanExecute()
         {
@@ -200,6 +203,46 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             _tokenSource = new CancellationTokenSource();
             CancellationToken token = _tokenSource.Token;
             return Task.Run(() => DownloadLoop(token));
+        }
+
+        private bool CanPrintLabelCommandExecute()
+        {
+            return true;
+        }
+
+        private Task PrintLabelCommandExecute()
+        {
+            return Task.Run(() =>
+            {
+                // Выводим в консоль Printing...
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ObserveConsole += "Starting print..." + "\r\n";
+                }));
+
+                if (_printerService.CommonPrintLabel(SelectedPrinter, @PrintLabelPath, GetPrintingDict(
+                    new EthernetSwitch()
+                    {
+                        AddressIP = "192.168.1.239",
+                        CIDR = 22,
+                        Designation = "SW1",
+                        Serial = "ES50003704",
+                        Cabinet = "ШКО1"
+                    })))
+                {
+                    _dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        ObserveConsole += "Printing module return \"Complete\"" + "\r\n";
+                    }));
+                }
+                else
+                {
+                    _dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        ObserveConsole += "Printing module return \"False\"";
+                    }));
+                }
+            });
         }
         #endregion
 
