@@ -69,12 +69,8 @@ namespace DeviceTunerNET.Services
             stream.WriteLine("no ip telnet server");
             stream.WriteLine("exit");
             stream.WriteLine("wr mem");
-#if DEBUG
-            stream.WriteLine("N");
-#endif
-#if !DEBUG
             stream.WriteLine("Y");
-#endif
+
             GetDeviceResponse(stream);
 
             stream.Close();
@@ -131,9 +127,9 @@ namespace DeviceTunerNET.Services
         private string GetDeviceResponse(ShellStream stream)
         {
             string line;
-            string result = "";
+            var result = "";
             // Сократим начало выражения "_ea.GetEvent<MessageSentEvent>()" обозвав его "ev"
-            MessageSentEvent ev = _ea.GetEvent<MessageSentEvent>();
+            var ev = _ea.GetEvent<MessageSentEvent>();
 
             while ((line = stream.ReadLine(TimeSpan.FromSeconds(2))) != null)
             {
