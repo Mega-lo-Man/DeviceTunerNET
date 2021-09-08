@@ -9,8 +9,8 @@ namespace DeviceTunerNET.Services
 {
     public class Telnet_Sender : ISender
     {
-        private TelnetConnection _tc;
-        private EventAggregator _ea;
+        private readonly TelnetConnection _tc;
+        private readonly EventAggregator _ea;
         private Dictionary<string, string> _sDict;
         private EthernetSwitch _ethernetDevice;
 
@@ -32,21 +32,19 @@ namespace DeviceTunerNET.Services
             if (_tc.CreateConnection(IPaddress, Port))
             {
                 var ev = _ea.GetEvent<MessageSentEvent>();
-                string returnStrFromConsole = _tc.Login(Username, Password, 1000);
+                var returnStrFromConsole = _tc.Login(Username, Password, 1000);
                 ev.Publish(new Message
                 {
                     ActionCode = MessageSentEvent.StringToConsole,
                     MessageString = returnStrFromConsole
                 });
                 // server output should end with "$" or ">" or "#", otherwise the connection failed
-                string prompt = returnStrFromConsole.TrimEnd();
+                var prompt = returnStrFromConsole.TrimEnd();
                 prompt = returnStrFromConsole.Substring(prompt.Length - 1, 1);
-                if (prompt != "$" && prompt != ">" && prompt != "#")
-                    return false;
-                return true;
+                return prompt == "$" || prompt == ">" || prompt == "#";
             }
-            else
-                return false;
+
+            return false;
 
 
         }
@@ -64,7 +62,7 @@ namespace DeviceTunerNET.Services
 
         private string SendMessage(string command)
         {
-            string commandResult = _tc.WriteRead(command); //Комманда в коммутатор
+            var commandResult = _tc.WriteRead(command); //Комманда в коммутатор
 
             // Сообщаем всем, что получена строка-ответ от коммутатора которую нужно вывести в консоль
             _ea.GetEvent<MessageSentEvent>().Publish(new Message

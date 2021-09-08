@@ -8,8 +8,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
     public class CabinetViewModel : TreeViewItemViewModel
     {
-        private Cabinet _cabinet;
-        private IEventAggregator _ea;
+        private readonly Cabinet _cabinet;
+        private readonly IEventAggregator _ea;
 
         public CabinetViewModel(Cabinet cabinet, IEventAggregator ea) : base(null, true)
         {
@@ -17,18 +17,15 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             _cabinet = cabinet;
         }
 
-        public String GetCabinetDesignation
-        {
-            get { return _cabinet.Designation; }
-        }
+        public string GetCabinetDesignation => _cabinet.Designation;
 
         protected override void LoadChildren()
         {
-            foreach (RS485device device in _cabinet.GetDevicesList<RS485device>())
+            foreach (var device in _cabinet.GetDevicesList<RS485device>())
             {
                 Children.Add(new RS485DeviceViewModel(device, this, _ea));
             }
-            foreach (C2000Ethernet item in _cabinet.GetDevicesList<C2000Ethernet>())
+            foreach (var item in _cabinet.GetDevicesList<C2000Ethernet>())
             {
                 Children.Add(new C2000EthernetDeviceViewModel(item, this, _ea));
             }

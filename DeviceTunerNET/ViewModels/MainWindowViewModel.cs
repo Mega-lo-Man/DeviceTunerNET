@@ -10,18 +10,18 @@ namespace DeviceTunerNET.ViewModels
         private string _title = "Prism Application";
         public string Title
         {
-            get { return _title; }
-            set { SetProperty(ref _title, value); }
+            get => _title;
+            set => SetProperty(ref _title, value);
         }
 
-        private Services.Interfaces.IDialogService _dialogService;
-        private IDataRepositoryService _dataRepositoryService;
+        private readonly IDialogService _dialogService;
+        private readonly IDataRepositoryService _dataRepositoryService;
 
-        public DelegateCommand OpenFileCommand { get; private set; }
-        public DelegateCommand SaveFileCommand { get; private set; }
-        public DelegateCommand CloseAppCommand { get; private set; }
+        public DelegateCommand OpenFileCommand { get; }
+        public DelegateCommand SaveFileCommand { get; }
+        public DelegateCommand CloseAppCommand { get; }
 
-        public MainWindowViewModel(Services.Interfaces.IDialogService dialogService, IDataRepositoryService dataRepositoryService)
+        public MainWindowViewModel(IDialogService dialogService, IDataRepositoryService dataRepositoryService)
         {
             _dialogService = dialogService;
             _dataRepositoryService = dataRepositoryService;
@@ -58,12 +58,12 @@ namespace DeviceTunerNET.ViewModels
 
         private void OpenFileExecute()
         {
-            if (_dialogService.OpenFileDialog())
-            {
-                string selectedFile = _dialogService.FullFileNames; // Путь к Excel-файлу
-                // 1 - Поставщик данных - Excel
-                _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
-            }
+            if (!_dialogService.OpenFileDialog()) 
+                return;
+
+            var selectedFile = _dialogService.FullFileNames; // Путь к Excel-файлу
+            // 1 - Поставщик данных - Excel
+            _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
         }
     }
 }

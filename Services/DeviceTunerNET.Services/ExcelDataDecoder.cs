@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using static System.Int32;
 
 namespace DeviceTunerNET.Services
 {
@@ -55,7 +56,8 @@ namespace DeviceTunerNET.Services
 
         private int GetDeviceType(string DevModel)
         {
-            int devType = 0;
+            var devType = 0;
+
             if (DevModel.Contains("MES3508"))
                 devType = 1;
             if (DevModel.Contains("MES2308"))
@@ -64,6 +66,7 @@ namespace DeviceTunerNET.Services
                 devType = 1;
             if (DevModel.Contains("2000-Ethernet"))
                 devType = 2;
+
             return devType;
         }
 
@@ -79,24 +82,26 @@ namespace DeviceTunerNET.Services
 
         private List<Cabinet> GetCabinetContent()
         {
-            List<Cabinet> cabinetsLst = new List<Cabinet>();
-            Cabinet cabinet = new Cabinet();
-            string lastDevParent = ""; //= worksheet.Cells[CaptionRow + 1, parentCol].Value?.ToString();;
-            for (int rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
+            var cabinetsLst = new List<Cabinet>();
+            var cabinet = new Cabinet();
+            var lastDevParent = ""; //= worksheet.Cells[CaptionRow + 1, parentCol].Value?.ToString();;
+            for (var rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
             {
-                string devParent = worksheet.Cells[rowIndex, parentCol].Value?.ToString();
-                string devName = worksheet.Cells[rowIndex, nameCol].Value?.ToString();
-                string devModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString();
-                string devIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString();
-                string devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
-                string devRang = worksheet.Cells[rowIndex, rangCol].Value?.ToString();
+                var devParent = worksheet.Cells[rowIndex, parentCol].Value?.ToString();
+                var devName = worksheet.Cells[rowIndex, nameCol].Value?.ToString();
+                var devModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString();
+                var devIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString();
+                var devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
+                var devRang = worksheet.Cells[rowIndex, rangCol].Value?.ToString();
 
-                int.TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out int devRS232Addr);
-                int.TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out int devRS485Addr);
+                TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out int devRS232Addr);
+                TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out int devRS485Addr);
 
                 if (!string.Equals(devParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
                 {
-                    if (!(rowIndex == CaptionRow + 1)) cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
+                    if (rowIndex != CaptionRow + 1) 
+                        cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
+                    
                     cabinet = new Cabinet
                     {
                         Designation = devParent
@@ -158,53 +163,18 @@ namespace DeviceTunerNET.Services
 
         private Tuple<char, int> GetRangTuple(string rang)
         {
-            char _rang = rang[0];
-            string lineStr = rang.Substring(1); //right part of rang
+            var _rang = rang[0];
+            var lineStr = rang.Substring(1); //right part of rang
 
-            if (_rang == master || _rang == slave || _rang == transparent)
-            {
-                if (Int32.TryParse(lineStr, out int lineNumb))
-                {
-                    return new Tuple<char, int>(_rang, lineNumb);
-                }
-            }
-            return null;
+            if (_rang != master && _rang != slave && _rang != transparent)
+                return null;
+
+            if (!TryParse(lineStr, out var lineNumb)) 
+                return null;
+
+            return new Tuple<char, int>(_rang, lineNumb);
         }
 
-        /*
-        private void FormingMasterSlaveTransparent(Dictionary<C2000Ethernet, Tuple<char, int>> ethDevices)
-        {
-            foreach(var device in ethDevices)
-            {
-                if (device.Value.Item1 == 'M')
-                {
-                    foreach (var item in ethDevices)
-                    {
-                        if(item.Value.Item1 == 'S' && device.Value.Item2 == item.Value.Item2)
-                        {
-                            device.Key.ListOfDestinationDevices.Add(item.Key);
-                            Debug.WriteLine(item.Key.AddressIP +  " добавлен в " + device.Key.AddressIP + " как адрес слейва" + item.Value.Item2);
-                        }
-                    }
-                }
-            }
-            Debug.WriteLine("--------");
-            foreach (var device in ethDevices)
-            {
-                if (device.Value.Item1 == 'S')
-                {
-                    foreach (var item in ethDevices)
-                    {
-                        if (item.Value.Item1 == 'M' && device.Value.Item2 == item.Value.Item2)
-                        {
-                            device.Key.ListOfDestinationDevices.Add(item.Key);
-                            Debug.WriteLine(item.Key.AddressIP + " добавлен в " + device.Key.AddressIP + " как адрес мастера" + item.Value.Item2);
-                        }
-                    }
-                }
-            }
-        }
-        */
         private void FillDevicesDependencies(Dictionary<C2000Ethernet, Tuple<char, int>> ethDevices, char dep1, char dep2)
         {
             foreach (var device in ethDevices)
@@ -221,16 +191,17 @@ namespace DeviceTunerNET.Services
                 {
                     device.Key.NetworkMode = 2; // slave
                 }
-                if (device.Value.Item1 == dep1)
+
+                if (device.Value.Item1 != dep1)
+                    continue;
+
+                foreach (var item in ethDevices)
                 {
-                    foreach (var item in ethDevices)
-                    {
-                        if (item.Value.Item1 == dep2 && device.Value.Item2 == item.Value.Item2)
-                        {
-                            device.Key.ListOfRemoteDevices.Add(item.Key);
-                            Debug.WriteLine(item.Key.AddressIP + " добавлен в " + device.Key.AddressIP + " (" + item.Value.Item2 + ")");
-                        }
-                    }
+                    if (item.Value.Item1 != dep2 || device.Value.Item2 != item.Value.Item2)
+                        continue;
+
+                    device.Key.ListOfRemoteDevices.Add(item.Key);
+                    Debug.WriteLine(item.Key.AddressIP + " добавлен в " + device.Key.AddressIP + " (" + item.Value.Item2 + ")");
                 }
             }
             Debug.WriteLine("----------------");
@@ -254,9 +225,9 @@ namespace DeviceTunerNET.Services
 
         private void FindColumnIndexesByHeader()
         {
-            for (int colIndex = 1; colIndex <= columns; colIndex++)
+            for (var colIndex = 1; colIndex <= columns; colIndex++)
             {
-                string content = worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
+                var content = worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
                 if (content == ColNamesCaption) { nameCol = colIndex; }
                 if (content == ColIPAddressCaption) { IPaddressCol = colIndex; }
                 if (content == ColRS485AddressCaption) { RS485addressCol = colIndex; }
@@ -270,69 +241,15 @@ namespace DeviceTunerNET.Services
 
         public bool SaveSerialNumber(int id, string serialNumber)
         {
-            int _id = id;
-            string _serialNumber = serialNumber;
-            SaveSerialById(_id, _serialNumber);
+            SaveSerialById(id, serialNumber);
             return true;
-        }
-
-        /*public bool SaveDevice<T>(T arg) where T : SimplestСomponent
-        {
-            object someDevice = arg;
-            if (typeof(T) == typeof(EthernetSwitch)) return SaveSwitchDevice((EthernetSwitch)someDevice);
-            if (typeof(T) == typeof(RS485device)) return SaveRS485Device((RS485device)someDevice);
-            return false;
-        }
-
-        private bool SaveRS485Device(RS485device rs485Device)
-        {
-            bool result = SaveSerialByAddress(rs485Device.AddressRS485.ToString(), rs485Device.Serial, RS485addressCol);
-            // Recording other parameters
-            return result;
-        }
-
-        private bool SaveSwitchDevice(EthernetSwitch ethernetSwitch)
-        {
-            bool result = SaveSerialByAddress(ethernetSwitch.AddressIP, ethernetSwitch.Serial, IPaddressCol);
-            // Recording other parameters
-            return result;
         }
         
-
-        private bool SaveSerialByAddress(string address, string serial, int addrColumn)
-        {
-            //поиск в таблице строки которая содержит IP-адрес такой же как в networkDevice
-            int? foundRow = SearchRowByCellValue(address, addrColumn);
-            if (foundRow != null)
-            {
-                // записываем серийник коммутатора в графу "Серийный номер" напротив IP-адреса этого коммутатора
-                worksheet.Cells[foundRow.Value, serialCol].Value = serial;
-                package.Save();
-                return true;
-            }
-            return true;
-        }
-*/
-
         private void SaveSerialById(int id, string serialNumber)
         {
             // записываем серийник коммутатора в графу "Серийный номер" напротив номера строки указанного в id
             worksheet.Cells[id, serialCol].Value = serialNumber;
             package.Save();
         }
-
-        // Поиск номера строки к которой относится только что сконфигурированный дивайс
-        // searchValue - что ищем, column - столбец в котором ищем
-        /*
-        private int? SearchRowByCellValue(string searchValue, int column)
-        {
-            //Return first entry
-            for (int rowCounter = CaptionRow + 2; rowCounter <= rows; rowCounter++)
-            {
-                if(searchValue.Equals(worksheet.Cells[rowCounter, column].Value?.ToString())) return rowCounter;
-            }
-            return null;
-        }
-        */
     }
 }

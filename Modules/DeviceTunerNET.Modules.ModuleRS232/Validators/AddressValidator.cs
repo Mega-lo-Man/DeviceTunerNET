@@ -1,6 +1,6 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Controls;
+using static System.Int32;
 
 namespace DeviceTunerNET.Modules.ModuleRS232.Validators
 {
@@ -12,21 +12,21 @@ namespace DeviceTunerNET.Modules.ModuleRS232.Validators
         private string _errorMessage;
         public string ErrorMessage
         {
-            get { return _errorMessage; }
-            set { _errorMessage = value; }
+            get => _errorMessage;
+            set => _errorMessage = value;
         }
 
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
-            ValidationResult result = new ValidationResult(true, null);
-            string inputString = (value ?? string.Empty).ToString();
+            var result = new ValidationResult(true, null);
+            var inputString = (value ?? string.Empty).ToString();
 
-            if (Int32.TryParse(inputString, out int int32str))
+            if (!TryParse(inputString, out var int32str))
+                return result;
+
+            if (int32str <= MIN_ADDRESS || int32str >= MAX_ADDRESS)
             {
-                if (int32str <= MIN_ADDRESS || int32str >= MAX_ADDRESS)
-                {
-                    result = new ValidationResult(false, this.ErrorMessage);
-                }
+                result = new ValidationResult(false, ErrorMessage);
             }
 
             return result;

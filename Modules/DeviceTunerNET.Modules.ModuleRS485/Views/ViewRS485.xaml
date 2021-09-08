@@ -17,7 +17,7 @@
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <VM:DesignRS485Converter x:Key="ItemColorConverter"
-                                     ImagePathOK="{StaticResource ResourceKey=OkImage}"
+                                     ImagePathOk="{StaticResource ResourceKey=OkImage}"
                                      ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
             <VM:DebugConverter x:Key="DebugConverter"/>
         </ResourceDictionary>

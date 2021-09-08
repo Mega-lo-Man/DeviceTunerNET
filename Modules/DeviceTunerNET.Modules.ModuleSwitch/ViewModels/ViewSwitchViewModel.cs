@@ -168,7 +168,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             // Fill ComboBox with available printers
-            foreach (string item in _printerService.CommonGetAvailablePrinters())
+            foreach (var item in _printerService.CommonGetAvailablePrinters())
             {
                 Printers.Add(item);
             }
@@ -193,16 +193,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private bool StartCommandCanExecute()
         {
-            if (SwitchList.Count > 0) // В списке для настройки есть коммутаторы?
-                return true;
-            else return false;
+            return SwitchList.Count > 0;
         }
 
         private Task StartCommandExecuteAsync()
         {
             _tokenSource = new CancellationTokenSource();
-            CancellationToken token = _tokenSource.Token;
-            return Task.Run(() => DownloadLoop(token));
+            var token = _tokenSource.Token;
+            return Task.Run(() => DownloadLoop(token), token);
         }
 
         private bool CanPrintLabelCommandExecute()
@@ -290,25 +288,29 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private Dictionary<string, string> GetPrintingDict(EthernetSwitch ethSwitch)
         {
-            Dictionary<string, string> printDict = new Dictionary<string, string>();
-            printDict.Add("ITextObjectIPaddress", ethSwitch.AddressIP);
-            printDict.Add("ITextObjectDesignation", ethSwitch.Designation);
-            printDict.Add("ITextObjectMask", ethSwitch.CIDR.ToString()); ;
-            printDict.Add("ITextObjectSerial", ethSwitch.Serial);
-            printDict.Add("ITextObjectCabinet", ethSwitch.Cabinet);
+            var printDict = new Dictionary<string, string>
+            {
+                {"ITextObjectIPaddress", ethSwitch.AddressIP},
+                {"ITextObjectDesignation", ethSwitch.Designation},
+                {"ITextObjectMask", ethSwitch.CIDR.ToString()},
+                {"ITextObjectSerial", ethSwitch.Serial},
+                {"ITextObjectCabinet", ethSwitch.Cabinet}
+            };
             return printDict;
         }
 
         // Формирование словаря с необходимыми данными для настройки коммутаторов (логин, пароль, адрес по умолчанию и т.п.)
         private Dictionary<string, string> GetSettingsDict()
         {
-            Dictionary<string, string> settingsDict = new Dictionary<string, string>();
-            settingsDict.Add("DefaultIPAddress", DefaultIP);
-            settingsDict.Add("DefaultAdminLogin", DefaultLogin);
-            settingsDict.Add("DefaultAdminPassword", DefaultPassword);
-            settingsDict.Add("NewAdminPassword", NewPassword);
-            settingsDict.Add("NewAdminLogin", NewLogin);
-            settingsDict.Add("IPmask", IPMask.ToString());
+            var settingsDict = new Dictionary<string, string>
+            {
+                {"DefaultIPAddress", DefaultIP},
+                {"DefaultAdminLogin", DefaultLogin},
+                {"DefaultAdminPassword", DefaultPassword},
+                {"NewAdminPassword", NewPassword},
+                {"NewAdminLogin", NewLogin},
+                {"IPmask", IPMask.ToString()}
+            };
             return settingsDict;
         }
 
@@ -317,10 +319,10 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();
-                List<Cabinet> cabinets = (List<Cabinet>)_dataRepositoryService.GetCabinetsWithDevices<EthernetSwitch>();
-                foreach (Cabinet cabinet in cabinets)
+                var cabinets = (List<Cabinet>)_dataRepositoryService.GetCabinetsWithDevices<EthernetSwitch>();
+                foreach (var cabinet in cabinets)
                 {
-                    foreach (EthernetSwitch item in cabinet.GetDevicesList<EthernetSwitch>()) // масло масляное, в шкафах cabinets не может быть приборов отличных от EthernetSwitch
+                    foreach (var item in cabinet.GetDevicesList<EthernetSwitch>()) // масло масляное, в шкафах cabinets не может быть приборов отличных от EthernetSwitch
                     {
                         SwitchList.Add(item);
                     }

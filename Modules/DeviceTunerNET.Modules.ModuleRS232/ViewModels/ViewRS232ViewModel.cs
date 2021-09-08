@@ -4,10 +4,10 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using static System.Int32;
 
 namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 {
@@ -19,8 +19,8 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         #region Commands
 
-        public DelegateCommand ShiftAddressesCommand { get; private set; }
-        public DelegateCommand ScanNetworkCommand { get; private set; }
+        public DelegateCommand ShiftAddressesCommand { get; }
+        public DelegateCommand ScanNetworkCommand { get; }
 
         #endregion Commands
 
@@ -29,54 +29,51 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
         public ObservableCollection<string> AvailableComPorts
         {
-            get { return _availableComPorts; }
-            set { SetProperty(ref _availableComPorts, value); }
+            get => _availableComPorts;
+            set => SetProperty(ref _availableComPorts, value);
         }
 
         private readonly Dispatcher dispatcher;
         private ObservableCollection<RS485device> _onlineDevicesList = new ObservableCollection<RS485device>();
         public ObservableCollection<RS485device> OnlineDevicesList
         {
-            get { return _onlineDevicesList; }
-            set { SetProperty(ref _onlineDevicesList, value); }
+            get => _onlineDevicesList;
+            set => SetProperty(ref _onlineDevicesList, value);
         }
 
         private RS485device _selectedDevice;
         public RS485device SelectedDevice
         {
-            get { return _selectedDevice; }
-            set { _selectedDevice = value; }
+            get => _selectedDevice;
+            set => _selectedDevice = value;
         }
 
         private string _currentRS485Port;
         public string CurrentRS485Port
         {
-            get { return _currentRS485Port; }
-            set
-            {
-                SetProperty(ref _currentRS485Port, value);
-            }
+            get => _currentRS485Port;
+            set => SetProperty(ref _currentRS485Port, value);
         }
 
         private int _startAddress;
         public string StartAddress
         {
-            get { return _startAddress.ToString(); }
-            set { SetProperty(ref _startAddress, Int32.Parse(value)); }
+            get => _startAddress.ToString();
+            set => SetProperty(ref _startAddress, Parse(value));
         }
 
         private int _targetAddress;
         public string TargetAddress
         {
-            get { return _targetAddress.ToString(); }
-            set { SetProperty(ref _targetAddress, Int32.Parse(value)); }
+            get => _targetAddress.ToString();
+            set => SetProperty(ref _targetAddress, Parse(value));
         }
 
         private int _addressRange;
         public string AddressRange
         {
-            get { return _addressRange.ToString(); }
-            set { SetProperty(ref _addressRange, Int32.Parse(value)); }
+            get => _addressRange.ToString();
+            set => SetProperty(ref _addressRange, Parse(value));
         }
         #endregion Properties
 
@@ -86,8 +83,8 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         public string Message
         {
-            get { return _message; }
-            set { SetProperty(ref _message, value); }
+            get => _message;
+            set => SetProperty(ref _message, value);
         }
 
         #region Constructor
@@ -114,9 +111,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         private bool ScanNetworkCommandCanExecute()
         {
-            if (CurrentRS485Port != null)
-                return true;
-            return false;
+            return CurrentRS485Port != null;
         }
 
         private Task ScanNetworkCommandExecuteAsync()
@@ -140,11 +135,10 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         private bool ShiftAddressesCommandCanExecute()
         {
-            if (CurrentRS485Port != null &&
-                StartAddress.Length > 0 &&
-                OnlineDevicesList.Count > 0 &&
-                _addressRange > 0) return true;
-            return false;
+            return CurrentRS485Port != null 
+                   && StartAddress.Length > 0 
+                   && OnlineDevicesList.Count > 0 
+                   && _addressRange > 0;
         }
 
         private Task ShiftAddressesCommandExecuteAsync()
@@ -162,7 +156,5 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         }
 
         #endregion Constructor
-
-
     }
 }

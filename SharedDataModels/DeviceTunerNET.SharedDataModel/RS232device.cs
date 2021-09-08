@@ -1,4 +1,5 @@
 ﻿using System;
+using static System.String;
 
 namespace DeviceTunerNET.SharedDataModel
 {
@@ -10,32 +11,25 @@ namespace DeviceTunerNET.SharedDataModel
         private int? _address_RS232;
         public int? AddressRS232
         {
-            get { return _address_RS232; }
-            set { if (value > 0 && value <= 127) _address_RS232 = value; }
+            get => _address_RS232;
+            set
+            {
+                if (value > 0 && value <= 127) _address_RS232 = value;
+            }
         }
 
         /// <summary>
         /// IP адрес прибора ("192.168.2.12")
         /// </summary>
-        private string _address_IP;
-        public string AddressIP
-        {
-            get { return _address_IP; }
-            set { _address_IP = value; }
-        }
+        public string AddressIP { get; set; }
 
-        private string _netmask;
-        public string Netmask
-        {
-            get { return _netmask; }
-            set { _netmask = value; }
-        }
+        public string Netmask { get; set; }
 
 
         public int CIDR
         {
-            get { return ConvertToCidr(Netmask); }
-            set { _netmask = CidrToString(value); }
+            get => ConvertToCidr(Netmask);
+            set => Netmask = CidrToString(value);
         }
 
         /// <summary>
@@ -44,38 +38,36 @@ namespace DeviceTunerNET.SharedDataModel
         private string _macAddress;
         public string MACaddress
         {
-            get { return _macAddress; }
-            set { if (value.Length <= 17 && value.Length >= 12) _macAddress = value; }
+            get => _macAddress;
+            set
+            {
+                if (value.Length <= 17 && value.Length >= 12) _macAddress = value;
+            }
         }
 
-        private string _defaultGateway;
-        public string DefaultGateway
-        {
-            get { return _defaultGateway; }
-            set { _defaultGateway = value; }
-        }
+        public string DefaultGateway { get; set; }
 
         private string CidrToString(int cidr)
         {
-            uint range = 0xFFFFFFFF;
+            var range = 0xFFFFFFFF;
             range <<= 32 - cidr;
-            string[] fourBytes = new[] { "0", "0", "0", "0" };
+            var fourBytes = new[] { "0", "0", "0", "0" };
 
-            for (int i = 3; i >= 0; i--)
+            for (var i = 3; i >= 0; i--)
             {
-                uint x = range & 255;
+                var x = range & 255;
                 fourBytes[i] = x.ToString();
                 range >>= 8;
 
             }
-            return String.Join(".", fourBytes);
+            return Join(".", fourBytes);
         }
 
         private int ConvertToCidr(string address)
         {
-            string addr = address;
-            uint range = (uint)ConvertStringToRange(addr);
-            int bitsCounter = 0;
+            var addr = address;
+            var range = (uint)ConvertStringToRange(addr);
+            var bitsCounter = 0;
 
             while (range > 0)
             {
@@ -88,13 +80,13 @@ namespace DeviceTunerNET.SharedDataModel
 
         private int ConvertStringToRange(string addrStr)
         {
-            string textAddress = addrStr;
-            int result = 0;
-            string[] bytesArray = textAddress.Split(new char[] { '.' });
-            for (int i = 0; i < 4; i++)
+            var textAddress = addrStr;
+            var result = 0;
+            var bytesArray = textAddress.Split(new char[] { '.' });
+            for (var i = 0; i < 4; i++)
             {
                 result <<= 8;
-                result |= Int32.Parse(bytesArray[i]);
+                result |= int.Parse(bytesArray[i]);
 
             }
             return result;

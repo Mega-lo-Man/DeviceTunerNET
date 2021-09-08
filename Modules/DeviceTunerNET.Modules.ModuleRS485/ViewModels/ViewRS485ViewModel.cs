@@ -28,28 +28,28 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private string _message;
         public string Message
         {
-            get { return _message; }
-            set { SetProperty(ref _message, value); }
+            get => _message;
+            set => SetProperty(ref _message, value);
         }
 
         private string _remoteDefaultFirstIP;
         public string RemoteDefaultFirstIP
         {
-            get { return _remoteDefaultFirstIP; }
-            set { SetProperty(ref _remoteDefaultFirstIP, value); }
+            get => _remoteDefaultFirstIP;
+            set => SetProperty(ref _remoteDefaultFirstIP, value);
         }
 
         private string _ipMask = "255.255.252.0";
         public string IPMask
         {
-            get { return _ipMask; }
-            set { SetProperty(ref _ipMask, value); }
+            get => _ipMask;
+            set => SetProperty(ref _ipMask, value);
         }
 
         private int _defaultRS485Address = 127;
         public int DefaultRS485Address
         {
-            get { return _defaultRS485Address; }
+            get => _defaultRS485Address;
             set
             {
                 if (value <= 127)
@@ -62,21 +62,21 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private string _currentDeviceModel = "";
         public string CurrentDeviceModel
         {
-            get { return _currentDeviceModel; }
-            set { SetProperty(ref _currentDeviceModel, value); }
+            get => _currentDeviceModel;
+            set => SetProperty(ref _currentDeviceModel, value);
         }
 
         private string _serialTextBox = "";
         public string SerialTextBox
         {
-            get { return _serialTextBox; }
-            set { SetProperty(ref _serialTextBox, value); }
+            get => _serialTextBox;
+            set => SetProperty(ref _serialTextBox, value);
         }
 
         private bool _isCheckedByCabinets = true;
         public bool IsCheckedByCabinets
         {
-            get { return _isCheckedByCabinets; }
+            get => _isCheckedByCabinets;
             set
             {
                 if (value)
@@ -90,18 +90,18 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private bool _isCheckedByArea = false;
         public bool IsCheckedByArea
         {
-            get { return _isCheckedByArea; }
+            get => _isCheckedByArea;
             set
             {
                 if (value)
                 {
                     DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
 
-                    foreach (RS485device item in _dataRepositoryService.GetAllDevices<RS485device>())
+                    foreach (var item in _dataRepositoryService.GetAllDevices<RS485device>())
                     {
                         DevicesForProgramming.Add(item);
                     }
-                    foreach (C2000Ethernet item in _dataRepositoryService.GetAllDevices<C2000Ethernet>())
+                    foreach (var item in _dataRepositoryService.GetAllDevices<C2000Ethernet>())
                     {
                         DevicesForProgramming.Add(item);
                     }
@@ -114,7 +114,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private bool _isCheckedComplexVerification = false;
         public bool IsCheckedComplexVerification
         {
-            get { return _isCheckedComplexVerification; }
+            get => _isCheckedComplexVerification;
             set
             {
                 if (value)
@@ -128,67 +128,66 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private string _currentRS485Port;
         public string CurrentRS485Port
         {
-            get { return _currentRS485Port; }
-            set
-            {
-                SetProperty(ref _currentRS485Port, value);
-            }
+            get => _currentRS485Port;
+            set => SetProperty(ref _currentRS485Port, value);
         }
 
         private ObservableCollection<Cabinet> _cabinetList = new ObservableCollection<Cabinet>();
         public ObservableCollection<Cabinet> CabinetList
         {
-            get { return _cabinetList; }
-            set { SetProperty(ref _cabinetList, value); }
+            get => _cabinetList;
+            set => SetProperty(ref _cabinetList, value);
         }
 
         private ObservableCollection<CabinetViewModel> _cabsVM = new ObservableCollection<CabinetViewModel>();
         public ObservableCollection<CabinetViewModel> CabsVM
         {
-            get { return _cabsVM; }
-            set { SetProperty(ref _cabsVM, value); }
+            get => _cabsVM;
+            set => SetProperty(ref _cabsVM, value);
         }
 
-        private ObservableCollection<Object> _devicesForProgramming = new ObservableCollection<Object>();
-        public ObservableCollection<Object> DevicesForProgramming
+        private ObservableCollection<object> _devicesForProgramming = new ObservableCollection<object>();
+        public ObservableCollection<object> DevicesForProgramming
         {
-            get { return _devicesForProgramming; }
-            set { SetProperty(ref _devicesForProgramming, value); }
+            get => _devicesForProgramming;
+            set => SetProperty(ref _devicesForProgramming, value);
         }
 
         private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
         public ObservableCollection<string> AvailableComPorts
         {
-            get { return _availableComPorts; }
-            set { SetProperty(ref _availableComPorts, value); }
+            get => _availableComPorts;
+            set => SetProperty(ref _availableComPorts, value);
         }
 
         private int _searchProgressBar = 0;
         public int SearchProgressBar
         {
-            get { return _searchProgressBar; }
+            get => _searchProgressBar;
             set
             {
-                int percent = value * 100 / 127;
+                var percent = value * 100 / 127;
                 SetProperty(ref _searchProgressBar, _searchProgressBar = percent);
             }
         }
 
         #endregion
 
-        private IEventAggregator _ea;
-        private IDataRepositoryService _dataRepositoryService;
-        private ISerialSender _serialSender;
-        private ISerialTasks _serialTasks;
-        private Dispatcher _dispatcher;
+        private readonly IEventAggregator _ea;
+        private readonly IDataRepositoryService _dataRepositoryService;
+        private readonly ISerialSender _serialSender;
+        private readonly ISerialTasks _serialTasks;
+        private readonly Dispatcher _dispatcher;
 
         #region Constructor
         public ViewRS485ViewModel(IRegionManager regionManager,
                                   ISerialTasks serialTasks,
                                   IDataRepositoryService dataRepositoryService,
-                                  IEventAggregator ea) : base(regionManager)
+                                  IEventAggregator ea, 
+                                  ISerialSender serialSender) : base(regionManager)
         {
             _ea = ea;
+            _serialSender = serialSender;
             _dataRepositoryService = dataRepositoryService;
             //_serialSender = serialSender;
             _serialTasks = serialTasks;
@@ -209,8 +208,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private bool StartCommandCanExecute()
         {
-            if (CurrentRS485Port != null && SerialTextBox.Length > 0 && DevicesForProgramming.Count > 0) return true;
-            return false;
+            return CurrentRS485Port != null && SerialTextBox.Length > 0 && DevicesForProgramming.Count > 0;
         }
 
         private Task StartCommandExecuteAsync()
@@ -218,122 +216,111 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             if (IsCheckedByArea || IsCheckedByCabinets)
             {
-                return Task.Run(() => DownloadLoop());
+                return Task.Run(DownloadLoop);
             }
             else
             {
                 SearchProgressBar = 1;
-                return Task.Run(() => VerificationCabinetsLoop());
+                return Task.Run(VerificationCabinetsLoop);
             }
         }
 
         private void VerificationCabinetsLoop()
         {
             //SerialPort sp = SerialPortInit();
-            Dictionary<byte, string> onlineDevices = _serialSender.SearchOnlineDevices(CurrentRS485Port);
+            var onlineDevices = _serialSender.SearchOnlineDevices(CurrentRS485Port);
 
             foreach (RS485device device in DevicesForProgramming)
             {
-                byte intAddr = Convert.ToByte(device.AddressRS485);
-                string expectedStr = device.Model.ToUpper();
+                var intAddr = Convert.ToByte(device.AddressRS485);
+                var expectedStr = device.Model.ToUpper();
 
-                if (onlineDevices.ContainsKey(intAddr))
+                if (!onlineDevices.ContainsKey(intAddr)) 
+                    continue;
+                // проверяем содержит ли название модели (в списке приборов шкафа) с моделью предоставленнной самим прибором
+                if (expectedStr.Contains(onlineDevices[intAddr].ToUpper()))
                 {
-                    // проверяем содержит ли название модели (в списке приборов шкафа) с моделью предоставленнной самим прибором
-                    if (expectedStr.Contains(onlineDevices[intAddr].ToUpper()))
-                    {
-                        Debug.WriteLine(intAddr);
-                    }
+                    Debug.WriteLine(intAddr);
                 }
             }
         }
 
         private void DownloadLoop()
         {
-            if (DeviceCounter < DevicesForProgramming.Count)
+            if (DeviceCounter >= DevicesForProgramming.Count) 
+                return;
+
+            var device = DevicesForProgramming[DeviceCounter];
+
+            var devSerial = "";
+
+            if (!(device is Device device1))
+                return;
+
+            devSerial = device1.Serial;
+
+            if (devSerial == null)//исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
             {
-                var device = DevicesForProgramming[DeviceCounter];
-
-                string devSerial = "";
-
-                if (device is Device device1)
+                _dispatcher.BeginInvoke(new Action(() =>
                 {
-                    devSerial = device1.Serial;
-
-                    if (devSerial == null)//исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
+                    CurrentDeviceModel = device1.Model;
+                }));
+                if (DevicesForProgramming[DeviceCounter].GetType() == typeof(RS485device))
+                {
+                    if (_serialTasks.SendConfig(DevicesForProgramming[DeviceCounter],
+                        CurrentRS485Port,
+                        DefaultRS485Address) == 1)
                     {
-                        _dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            CurrentDeviceModel = device1.Model;
-                        }));
-                        if (DevicesForProgramming[DeviceCounter].GetType() == typeof(RS485device))
-                        {
-                            if (_serialTasks.SendConfig(DevicesForProgramming[DeviceCounter],
-                                                   CurrentRS485Port,
-                                                   DefaultRS485Address) == 1)
-                            {
-                                device1.Serial = SerialTextBox;
-                                _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
-                                SerialTextBox = "";// Очищаем строку ввода серийника для ввода следующего
-                                DeviceCounter++;
-                            }
-                            else
-                            {
-                                MessageBox.Show("Устройство с адресом 127 не отвечает!");
-                            }
-                        }
-                        else if (DevicesForProgramming[DeviceCounter].GetType() == typeof(C2000Ethernet))
-                        {
-                            C2000Ethernet c2000Ethernet = (C2000Ethernet)DevicesForProgramming[DeviceCounter];
-                            c2000Ethernet.Netmask = IPMask;
-                            if (c2000Ethernet.NetworkMode == 2)
-                            {
-                                c2000Ethernet.RemoteIpTrasparentMode = RemoteDefaultFirstIP;
-                            }
-                            if (_serialTasks.SendConfig(c2000Ethernet,
-                                                   CurrentRS485Port,
-                                                   DefaultRS485Address) == 1)
-                            {
-                                device1.Serial = SerialTextBox;
-                                _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
-                                SerialTextBox = "";// Очищаем строку ввода серийника для ввода следующего
-                                DeviceCounter++;
-                            }
-                            else
-                            {
-                                MessageBox.Show("Устройство с адресом 127 не отвечает!");
-                            }
-                        }
-                        // Обновляем всю коллекцию в UI целиком
-                        _dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
-                        }));
-                        if (DeviceCounter >= DevicesForProgramming.Count)
-                        {
-                            DeviceCounter = 0;
-                            MessageBox.Show("Alles!");
-                        }
-                    }
-                    else //Переходим к следующему прибру из списка
-                    {
+                        device1.Serial = SerialTextBox;
+                        _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
+                        SerialTextBox = "";// Очищаем строку ввода серийника для ввода следующего
                         DeviceCounter++;
                     }
+                    else
+                    {
+                        MessageBox.Show("Устройство с адресом 127 не отвечает!");
+                    }
                 }
+                else if (DevicesForProgramming[DeviceCounter].GetType() == typeof(C2000Ethernet))
+                {
+                    var c2000Ethernet = (C2000Ethernet)DevicesForProgramming[DeviceCounter];
+                    c2000Ethernet.Netmask = IPMask;
+                    if (c2000Ethernet.NetworkMode == 2)
+                    {
+                        c2000Ethernet.RemoteIpTrasparentMode = RemoteDefaultFirstIP;
+                    }
+                    if (_serialTasks.SendConfig(c2000Ethernet,
+                        CurrentRS485Port,
+                        DefaultRS485Address) == 1)
+                    {
+                        device1.Serial = SerialTextBox;
+                        _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
+                        SerialTextBox = "";// Очищаем строку ввода серийника для ввода следующего
+                        DeviceCounter++;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Устройство с адресом 127 не отвечает!");
+                    }
+                }
+                // Обновляем всю коллекцию в UI целиком
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+                }));
+
+                if (DeviceCounter < DevicesForProgramming.Count) 
+                    return;
+
+                DeviceCounter = 0;
+                MessageBox.Show("Alles!");
             }
-        }
-        /*
-        private List<string> GetRemoteDefaultFirstIpList()
-        {
-            List<string> RemoteIpList = new List<string>();
-            RemoteIpList.Add(_remoteDefaultFirstIP);
-            for (int i = 0; i < 8; i++)
+            else //Переходим к следующему прибру из списка
             {
-                RemoteIpList.Add("0.0.0.0");
+                DeviceCounter++;
             }
-            return RemoteIpList;
         }
-        */
+        
         private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
@@ -342,9 +329,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 CabsVM.Clear();
 
 
-                IList<Cabinet> cabOut = _dataRepositoryService.GetCabinetsWithTwoTypeDevices<C2000Ethernet, RS485device>();
+                var cabOut = _dataRepositoryService.GetCabinetsWithTwoTypeDevices<C2000Ethernet, RS485device>();
 
-                foreach (Cabinet cabinet in cabOut)
+                foreach (var cabinet in cabOut)
                 {
                     CabinetList.Add(cabinet);
                     CabsVM.Add(new CabinetViewModel(cabinet, _ea));// Fill the TreeView with cabinets
@@ -352,7 +339,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
             if (message.ActionCode == MessageSentEvent.UserSelectedItemInTreeView)
             {
-                object dev = message.AttachedObject;
+                var dev = message.AttachedObject;
                 if (IsCheckedByCabinets)
                 {
                     if (dev.GetType() == typeof(RS485device)) // Юзер кликнул на прибор RS485 в дереве
@@ -368,8 +355,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     if (dev.GetType() == typeof(Cabinet)) //Юзер кликнул на шкаф в дереве
                     {
                         DevicesForProgramming.Clear();
-                        Cabinet cab = (Cabinet)message.AttachedObject;
-                        foreach (object item in cab.GetAllDevicesList)//GetDevicesList<RS485device>())
+                        var cab = (Cabinet)message.AttachedObject;
+                        foreach (var item in cab.GetAllDevicesList)//GetDevicesList<RS485device>())
                         {
                             DevicesForProgramming.Add(item);
                         }

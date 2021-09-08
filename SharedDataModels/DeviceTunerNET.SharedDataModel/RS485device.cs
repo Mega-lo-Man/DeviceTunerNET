@@ -10,17 +10,17 @@ namespace DeviceTunerNET.SharedDataModel
         private int? _address_RS485;
         public int? AddressRS485
         {
-            get { return _address_RS485; }
-            set { if (value > 0 && value <= 127) _address_RS485 = value; }
+            get => _address_RS485;
+            set
+            {
+                if (value > 0 && value <= 127) _address_RS485 = value;
+            }
         }
+        
+        private List<byte[]> _getConfigCommandLines;
         /// <summary>
         /// Получить список команд которые содержат конфигурацию устройства в формате Болид
         /// </summary>
-        private List<byte[]> _getConfigCommandLines;
-        public List<byte[]> GetConfigCommandLines
-        {
-            get { return _getConfigCommandLines; }
-            private set { _getConfigCommandLines = value; }
-        }
+        public List<byte[]> GetConfigCommandLines => _getConfigCommandLines;
     }
 }

@@ -9,10 +9,7 @@ namespace DeviceTunerNET.Services
     {
 
         private string _fullFileNames;
-        public string FullFileNames
-        {
-            get { return _fullFileNames; }
-        }
+        public string FullFileNames => _fullFileNames;
 
         public event Action<string> DataArrived;
 
@@ -28,14 +25,14 @@ namespace DeviceTunerNET.Services
 
         public bool OpenFileDialog()
         {
-            CommonOpenFileDialog openfileDlg = new CommonOpenFileDialog();
+            var openfileDlg = new CommonOpenFileDialog();
             openfileDlg.Title = "MyTitle";
-            if (openfileDlg.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                _fullFileNames = openfileDlg.FileName;
-                return true;
-            }
-            return false;
+            if (openfileDlg.ShowDialog() != CommonFileDialogResult.Ok) 
+                return false;
+
+            _fullFileNames = openfileDlg.FileName;
+
+            return true;
         }
 
         public bool SaveFileDialog()

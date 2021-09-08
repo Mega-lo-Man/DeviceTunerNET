@@ -31,7 +31,7 @@ namespace DeviceTunerNET.Services
             try
             {
                 // => Dependency injection!
-                ConnectionInfo ConnNfo = new ConnectionInfo(IPaddress, Username,
+                var ConnNfo = new ConnectionInfo(IPaddress, Username,
                     new AuthenticationMethod[] {
                                 //Password based Authentication
                                 new PasswordAuthenticationMethod(Username, Password),
@@ -57,7 +57,7 @@ namespace DeviceTunerNET.Services
         {
             _sDict = SettingsDict;
 
-            ShellStream stream = _sshClient.CreateShellStream("", 0, 0, 0, 0, 0);
+            var stream = _sshClient.CreateShellStream("", 0, 0, 0, 0, 0);
 
             stream.WriteLine("sh system id");
 
@@ -80,7 +80,7 @@ namespace DeviceTunerNET.Services
 
         private void GetIDoverSSH(string strForParse, EthernetSwitch ethernetDevice)
         {
-            string answer = strForParse;
+            var answer = strForParse;
 
             string MACaddress;
             string HardwareVersion;
@@ -103,7 +103,7 @@ namespace DeviceTunerNET.Services
             {
                 answer = answer.Trim();
                 //"\rSWITCH_1_2>sh system id\rUnit    MAC address    Hardware version Serial number ---- ----------------- ---------------- -------------  1   e8:28:c1:5d:5f:60     01.02.01      ES5E004602"
-                int LastWordIndex = answer.LastIndexOf(' ') + 1;
+                var LastWordIndex = answer.LastIndexOf(' ') + 1;
                 SerialNumber = answer.Substring(LastWordIndex, answer.Length - LastWordIndex);
                 answer = answer.Remove(LastWordIndex);
                 answer = answer.Trim();

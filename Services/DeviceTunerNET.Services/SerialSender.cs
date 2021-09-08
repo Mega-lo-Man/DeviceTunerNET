@@ -50,7 +50,7 @@ namespace DeviceTunerNET.Services
 
 
 
-        private Dictionary<byte, string> BolidDict = new Dictionary<byte, string>()
+        private readonly Dictionary<byte, string> BolidDict = new Dictionary<byte, string>()
         {
             { 1, "Сигнал-20" },
             { 2, "Сигнал-20П" },
@@ -110,31 +110,30 @@ namespace DeviceTunerNET.Services
 
         public bool SetDeviceRS485Address(string comPortName, byte deviceAddress, byte newDeviceAddress)
         {
-            if (!_serialPort.IsOpen)
-            {
-                _serialPort.PortName = comPortName;
+            if (_serialPort.IsOpen)
+                return false;
 
-                _serialPort.Open();
+            _serialPort.PortName = comPortName;
 
-                // формируем команду на отправку
-                byte[] cmdString = new byte[] { deviceAddress, 0xB0, 0x0F, newDeviceAddress, newDeviceAddress };
+            _serialPort.Open();
 
-                byte[] result = Transaction(cmdString, ADDRESS_CHANGE_TIMEOUT);
+            // формируем команду на отправку
+            var cmdString = new byte[] { deviceAddress, 0xB0, 0x0F, newDeviceAddress, newDeviceAddress };
 
-                _serialPort.Close();
-                if (result.Length > 1)
-                {
-                    if (result[4] == newDeviceAddress)
-                        return true;
-                }
-            }
-            return false;
+            var result = Transaction(cmdString, ADDRESS_CHANGE_TIMEOUT);
+
+            _serialPort.Close();
+
+            if (result.Length <= 1)
+                return false;
+
+            return result[4] == newDeviceAddress;
         }
 
         public string GetDeviceModel(string comPortName, byte deviceAddress)
         {
             // формируем команду на отправку
-            byte[] cmdString = new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 };
+            var cmdString = new byte[] { deviceAddress, 0x92, 0x0D, 0x00, 0x00 };
 
             if (!_serialPort.IsOpen)
             {
@@ -149,27 +148,27 @@ namespace DeviceTunerNET.Services
                     return "";
                 }
 
-                byte[] deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
+                var deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
 
                 _serialPort.Close();
-                if (deviceModel?.Length > 1)
-                {
-                    byte devType = deviceModel[3];
-                    return BolidDict[devType];
-                }
+
+                if (!(deviceModel?.Length > 1))
+                    return "";
+
+                var devType = deviceModel[3];
+                return BolidDict[devType];
             }
             else
             {
-                byte[] deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
+                var deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
 
-                if (deviceModel?.Length > 1)
-                {
-                    byte devType = deviceModel[3];
-                    return BolidDict[devType];
-                }
+                if (!(deviceModel?.Length > 1)) 
+                    return "";
+
+                var devType = deviceModel[3];
+
+                return BolidDict[devType];
             }
-
-            return "";
         }
 
         public bool IsDeviceOnline(string comPortName, byte deviceAddress)
@@ -184,11 +183,11 @@ namespace DeviceTunerNET.Services
                 _serialPort.PortName = comPortName;
                 _serialPort.Open();
             }
-            Dictionary<byte, string> result = new Dictionary<byte, string>();
+            var result = new Dictionary<byte, string>();
             for (byte devAddr = 1; devAddr <= 127; devAddr++)
             {
-                string OnlineDevicesModel = GetDeviceModel(comPortName, devAddr);
-                if (OnlineDevicesModel != String.Empty)
+                var OnlineDevicesModel = GetDeviceModel(comPortName, devAddr);
+                if (OnlineDevicesModel != string.Empty)
                 {
                     result.Add(devAddr, OnlineDevicesModel);
                 }
@@ -208,32 +207,30 @@ namespace DeviceTunerNET.Services
             // make DataReceived event handler
             _serialPort.DataReceived += sp_DataReceived;
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 SendPacket(sendArray);
-                while (portReceive == true) { }
+                while (portReceive) { }
                 Thread.Sleep(timeout);
-                if (receiveBuffer != null)
-                    break;
+                if (receiveBuffer == null) 
+                    continue;
+                break;
             }
-            if (receiveBuffer != null)
-            {
-                string result = receiveBuffer;
-                receiveBuffer = null;
-                return Encoding.ASCII.GetBytes(result);
-            }
-            else
-            {
-                return new byte[1] { 0x00 };
-            }
+
+            if (receiveBuffer == null)
+                return new byte[1] {0x00};
+
+            var result = receiveBuffer;
+            receiveBuffer = null;
+            return Encoding.ASCII.GetBytes(result);
 
         }
 
         private void SendPacket(byte[] sendArray)
         {
             byte bytesCounter = 1; //сразу начнём считать с единицы, т.к. всё равно придётся добавить один байт(сам байт длины команды)
-            List<byte> lst = new List<byte>();
-            foreach (byte bt in sendArray)
+            var lst = new List<byte>();
+            foreach (var bt in sendArray)
             {
                 lst.Add(bt);
                 bytesCounter++;
@@ -248,19 +245,19 @@ namespace DeviceTunerNET.Services
         private byte[] CRC8(byte[] bytes)
         {
             byte crc = 0;
-            for (var i = 0; i < bytes.Length; i++)
-                crc = crc8Table[crc ^ bytes[i]];
+            for (byte i = 0; i < bytes.Length; i++)
+                crc = crc8Table[crc ^ i];
 
-            byte[] chr = new byte[1];
+            var chr = new byte[1];
             chr[0] = crc;
             return chr;
         }
 
         public ObservableCollection<string> GetAvailableCOMPorts()
         {
-            string[] ports = SerialPort.GetPortNames();
-            ObservableCollection<string> portsList = new ObservableCollection<string>();
-            foreach (string port in ports)
+            var ports = SerialPort.GetPortNames();
+            var portsList = new ObservableCollection<string>();
+            foreach (var port in ports)
             {
                 portsList.Add(port);
             }
@@ -276,11 +273,11 @@ namespace DeviceTunerNET.Services
         {
             portReceive = true;
             //Console.WriteLine("I am in event handler");
-            SerialPort sPort = (SerialPort)sender;
-            string data = sPort.ReadExisting();
-            foreach (char ch in data)
+            var sPort = (SerialPort)sender;
+            var data = sPort.ReadExisting();
+            foreach (var ch in data)
             {
-                int value = Convert.ToInt32(ch);
+                var value = Convert.ToInt32(ch);
                 //Console.Write(value.ToString("X") + " ");
             }
             receiveBuffer += data;
@@ -290,26 +287,26 @@ namespace DeviceTunerNET.Services
 
         public bool SetC2000EthernetConfig(string ComPortName, byte deviceAddress, C2000Ethernet device)
         {
-            bool result = false;
-            if (!_serialPort.IsOpen)
-            {
-                _serialPort.PortName = ComPortName;
+            var result = false;
+            if (_serialPort.IsOpen)
+                return result;
 
-                _serialPort.Open();
-                // make DataReceived event handler
-                _serialPort.DataReceived += sp_DataReceived;
+            _serialPort.PortName = ComPortName;
+
+            _serialPort.Open();
+            // make DataReceived event handler
+            _serialPort.DataReceived += sp_DataReceived;
 
 
-                result = SendPromoter();
-                result = SendDeviceNetName(device.NetName);
-                result = SendEthernetTune(device.AddressIP, device.Netmask, device.DefaultGateway, device.FirstDns, device.SecondDns);
-                //result = SendUnrecognized2();
-                //result = SendOtherDevicesIP(device.RemoteIpList, device.AddressIP);
-                //result = SendUnrecognized3();
-                //result = SendNetmaskAndOtherDevicesUDP(device.Netmask, device.RemoteUDPList, device.UDPSender, device.UDPRemote);
+            result = SendPromoter();
+            result = SendDeviceNetName(device.NetName);
+            result = SendEthernetTune(device.AddressIP, device.Netmask, device.DefaultGateway, device.FirstDns, device.SecondDns);
+            //result = SendUnrecognized2();
+            //result = SendOtherDevicesIP(device.RemoteIpList, device.AddressIP);
+            //result = SendUnrecognized3();
+            //result = SendNetmaskAndOtherDevicesUDP(device.Netmask, device.RemoteUDPList, device.UDPSender, device.UDPRemote);
 
-                _serialPort.Close();
-            }
+            _serialPort.Close();
             return result;
         }
 
@@ -324,9 +321,9 @@ namespace DeviceTunerNET.Services
 
         private bool SendDeviceNetName(string name)
         {
-            byte[] deviceName = StringToByteArray(name);
-            byte[] header = new byte[] { 0x7F, 0x16, 0x7B, 0x41, 0x00, 0x00, 0x00 };
-            byte[] resultCmd = CombineArrays(header, deviceName);
+            var deviceName = StringToByteArray(name);
+            var header = new byte[] { 0x7F, 0x16, 0x7B, 0x41, 0x00, 0x00, 0x00 };
+            var resultCmd = CombineArrays(header, deviceName);
 
             CommandSend(resultCmd);
             return true;
@@ -334,13 +331,13 @@ namespace DeviceTunerNET.Services
 
         private bool SendEthernetTune(string ip, string netmask, string gateway, string firstDNS, string secondDNS)
         {
-            byte[] _ip = IpToByteArray(ip);
-            byte[] _netmask = IpToByteArray(netmask);
-            byte[] _gateway = IpToByteArray(gateway);
-            byte[] _firstDNS = IpToByteArray(firstDNS);
-            byte[] _secondDNS = IpToByteArray(secondDNS);
-            byte[] _header = new byte[] { 0x7F, 0xC9, 0x41, 0x20, 0x00, 0x00 };
-            byte[] _cmd = CombineArrays(_header, _ip, _netmask, _gateway, _firstDNS, _secondDNS);
+            var _ip = IpToByteArray(ip);
+            var _netmask = IpToByteArray(netmask);
+            var _gateway = IpToByteArray(gateway);
+            var _firstDNS = IpToByteArray(firstDNS);
+            var _secondDNS = IpToByteArray(secondDNS);
+            var _header = new byte[] { 0x7F, 0xC9, 0x41, 0x20, 0x00, 0x00 };
+            var _cmd = CombineArrays(_header, _ip, _netmask, _gateway, _firstDNS, _secondDNS);
             CommandSend(_cmd);
             return true;
         }
@@ -361,19 +358,19 @@ namespace DeviceTunerNET.Services
 
         private bool SendNetmaskAndOtherDevicesUDP(string netmask, List<int> UDPlist, int UDPsender, int FreeRemoteDeviceUDP)
         {
-            byte[] udp1 = IntToByteArray(UDPlist[0]);
-            byte[] udp2 = IntToByteArray(UDPlist[1]);
-            byte[] udp3 = IntToByteArray(UDPlist[2]);
-            byte[] udp4 = IntToByteArray(UDPlist[3]);
-            byte[] udp5 = IntToByteArray(UDPlist[4]);
-            byte[] udp6 = IntToByteArray(UDPlist[5]);
-            byte[] udp7 = IntToByteArray(UDPlist[6]);
-            byte[] udp8 = IntToByteArray(UDPlist[7]);
-            byte[] udp9 = IntToByteArray(UDPlist[8]);
+            var udp1 = IntToByteArray(UDPlist[0]);
+            var udp2 = IntToByteArray(UDPlist[1]);
+            var udp3 = IntToByteArray(UDPlist[2]);
+            var udp4 = IntToByteArray(UDPlist[3]);
+            var udp5 = IntToByteArray(UDPlist[4]);
+            var udp6 = IntToByteArray(UDPlist[5]);
+            var udp7 = IntToByteArray(UDPlist[6]);
+            var udp8 = IntToByteArray(UDPlist[7]);
+            var udp9 = IntToByteArray(UDPlist[8]);
 
-            byte[] mask = IpToByteArray(netmask);
-            byte[] udpSender = IntToByteArray(UDPsender);
-            byte[] freeRemoteUDP = IntToByteArray(FreeRemoteDeviceUDP);
+            var mask = IpToByteArray(netmask);
+            var udpSender = IntToByteArray(UDPsender);
+            var freeRemoteUDP = IntToByteArray(FreeRemoteDeviceUDP);
 
             CommandSend(new byte[] { 0x7F, 0x1C, 0x41, 0x80, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, mask[0], mask[1], mask[2], mask[3], udpSender[0], udpSender[1], udp1[0], udp1[1], udp2[0], udp2[1] }); // 7f 17 1c 41 80 1d 00 00 00 00 00 00 00 ff ff ff 00 40 9c 40 9c 40 9c
             CommandSend(new byte[] { 0x7F, 0x2D, 0x41, 0x90, 0x1D, 0x00, udp3[0], udp3[1], udp4[0], udp4[1], udp5[0], udp5[1], udp6[0], udp6[1], udp7[0], udp7[1], udp8[0], udp8[1], udp9[0], udp9[1], freeRemoteUDP[0], freeRemoteUDP[1] }); // 7f 17 2d 41 90 1d 00 40 9c 40 9c 40 9c 40 9c 40 9c 40 9c 40 9c 41 9c
@@ -383,17 +380,17 @@ namespace DeviceTunerNET.Services
         private bool SendOtherDevicesIP(List<string> otherDevicesIpList, string deviceIp)
         {
 
-            byte[] ipAddr1 = IpToByteArray(otherDevicesIpList[0]);
-            byte[] ipAddr2 = IpToByteArray(otherDevicesIpList[1]);
-            byte[] ipAddr3 = IpToByteArray(otherDevicesIpList[2]);
-            byte[] ipAddr4 = IpToByteArray(otherDevicesIpList[3]);
-            byte[] ipAddr5 = IpToByteArray(otherDevicesIpList[4]);
-            byte[] ipAddr6 = IpToByteArray(otherDevicesIpList[5]);
-            byte[] ipAddr7 = IpToByteArray(otherDevicesIpList[6]);
-            byte[] ipAddr8 = IpToByteArray(otherDevicesIpList[7]);
-            byte[] ipAddr9 = IpToByteArray(otherDevicesIpList[8]);
+            var ipAddr1 = IpToByteArray(otherDevicesIpList[0]);
+            var ipAddr2 = IpToByteArray(otherDevicesIpList[1]);
+            var ipAddr3 = IpToByteArray(otherDevicesIpList[2]);
+            var ipAddr4 = IpToByteArray(otherDevicesIpList[3]);
+            var ipAddr5 = IpToByteArray(otherDevicesIpList[4]);
+            var ipAddr6 = IpToByteArray(otherDevicesIpList[5]);
+            var ipAddr7 = IpToByteArray(otherDevicesIpList[6]);
+            var ipAddr8 = IpToByteArray(otherDevicesIpList[7]);
+            var ipAddr9 = IpToByteArray(otherDevicesIpList[8]);
 
-            byte[] ipSelf = IpToByteArray(deviceIp);
+            var ipSelf = IpToByteArray(deviceIp);
 
             CommandSend(new byte[] { 0x7F, 0x9A, 0x41, 0x26, 0x1D, 0x00, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x50, 0x00, ipAddr1[0], ipAddr1[1], ipAddr1[2], ipAddr1[3] });
             CommandSend(new byte[] { 0x7F, 0x7B, 0x41, 0x36, 0x1D, 0x00, ipAddr2[0], ipAddr2[1], ipAddr2[2], ipAddr2[3], ipAddr3[0], ipAddr3[1], ipAddr3[2], ipAddr3[3], ipAddr4[0], ipAddr4[1] });
@@ -404,37 +401,39 @@ namespace DeviceTunerNET.Services
 
         private string CommandSend(byte[] command)
         {
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 SendPacket(command);
                 while (portReceive == true) { }
                 Thread.Sleep(300);
-                if (receiveBuffer?.Length > 0)
-                    break;
+                if (!(receiveBuffer?.Length > 0)) 
+                    continue;
+
+                break;
             }
-            string str = BitConverter.ToString(Encoding.ASCII.GetBytes(receiveBuffer));
+            var str = BitConverter.ToString(Encoding.ASCII.GetBytes(receiveBuffer));
             receiveBuffer = "";
             return str;
         }
 
         private static byte[] IntToByteArray(int intValue)
         {
-            UInt16 intVal16 = (UInt16)intValue;
-            byte[] result = BitConverter.GetBytes(intVal16);
+            var intVal16 = (ushort)intValue;
+            var result = BitConverter.GetBytes(intVal16);
             //Array.Reverse(result);
             return result;
         }
 
         private static byte[] IpToByteArray(string ipAddress)
         {
-            string[] ipWithoutDots = ipAddress.Split(new char[] { '.' });
-            byte[] ipBytes = new byte[] { 0, 0, 0, 0 };
-            int numberOfBytesIpV4 = 3;
+            var ipWithoutDots = ipAddress.Split(new char[] { '.' });
+            var ipBytes = new byte[] { 0, 0, 0, 0 };
+            var numberOfBytesIpV4 = 3;
 
-            for (int counter = 0; counter <= numberOfBytesIpV4; counter++)
+            for (var counter = 0; counter <= numberOfBytesIpV4; counter++)
             {
-                int numbInt32 = Int32.Parse(ipWithoutDots[numberOfBytesIpV4 - counter]);
-                byte numbByte = Convert.ToByte(numbInt32);
+                var numbInt32 = Int32.Parse(ipWithoutDots[numberOfBytesIpV4 - counter]);
+                var numbByte = Convert.ToByte(numbInt32);
                 ipBytes[counter] = numbByte;
             }
             return ipBytes;
@@ -442,11 +441,11 @@ namespace DeviceTunerNET.Services
 
         private static byte[] CombineArrays(params byte[][] arrays)
         {
-            byte[] resultArray = new byte[arrays.Sum(a => a.Length)];
-            int offset = 0;
-            foreach (byte[] item in arrays)
+            var resultArray = new byte[arrays.Sum(a => a.Length)];
+            var offset = 0;
+            foreach (var item in arrays)
             {
-                System.Buffer.BlockCopy(item, 0, resultArray, offset, item.Length);
+                Buffer.BlockCopy(item, 0, resultArray, offset, item.Length);
                 offset += item.Length;
             }
             return resultArray;
@@ -454,7 +453,7 @@ namespace DeviceTunerNET.Services
 
         private static byte[] StringToByteArray(string str)
         {
-            byte[] barr = Encoding.ASCII.GetBytes(str);
+            var barr = Encoding.ASCII.GetBytes(str);
             return barr;
         }
     }

@@ -7,8 +7,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
     class RS485DeviceViewModel : TreeViewItemViewModel
     {
-        private RS485device _device;
-        private IEventAggregator _ea;
+        private readonly RS485device _device;
+        private readonly IEventAggregator _ea;
 
         public RS485DeviceViewModel(RS485device device, CabinetViewModel cabinetParent, IEventAggregator ea)
             : base(cabinetParent, false)
@@ -17,10 +17,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             _device = device;
         }
 
-        public string GetDeviceDesignation
-        {
-            get { return _device.Designation; }
-        }
+        public string GetDeviceDesignation => _device.Designation;
 
         protected override void OnSelectedItemChanged()
         {
