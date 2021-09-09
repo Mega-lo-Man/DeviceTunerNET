@@ -1,6 +1,7 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
 using Microsoft.Win32;
 using System.Collections.Generic;
+using System.Windows;
 
 namespace DeviceTunerNET.DymoModules
 {
@@ -74,17 +75,24 @@ namespace DeviceTunerNET.DymoModules
 
         public static bool StartExternalApp(string installApp, string installArgs)
         {
+            //settings up parameters for the install process
             var installProcess = new System.Diagnostics.Process
             {
                 StartInfo = {FileName = installApp, Arguments = installArgs}
             };
-            //settings up parameters for the install process
-
-            installProcess.Start();
-
-            installProcess.WaitForExit();
-            // Check for successful completion
-            return (installProcess.ExitCode == APP_GENERATE_SUCCESS) ? true : false;
+            
+            try
+            {
+                installProcess.Start();
+                installProcess.WaitForExit();
+                // Check for successful completion
+                return (installProcess.ExitCode == APP_GENERATE_SUCCESS);
+            }
+            catch
+            {
+                MessageBox.Show("Print module: \"" + _DymoModuleExecutorPath + "\" not found.");
+                return false;
+            }
         }
 
         private string GetCommand(string commandName, string commandValue)
