@@ -22,6 +22,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         #region Commands
         public DelegateCommand StartCommand { get; private set; }
+        public DelegateCommand CheckCommand { get; private set; }
         #endregion
 
         #region Properties
@@ -82,7 +83,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 if (value)
                 {
                     DevicesForProgramming.Clear(); // При переключении режима работы надо очистить список приборов для программирования
+                    StartButtonVisibilty = true; // и показать кнопку DownloadAddressButton, если погашена.
                 }
+                
                 SetProperty(ref _isCheckedByCabinets, value);
             }
         }
@@ -106,7 +109,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         DevicesForProgramming.Add(item);
                     }
                     //CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+                    StartButtonVisibilty = true; // показать кнопку DownloadAddressButton, если погашена.
                 }
+                
                 SetProperty(ref _isCheckedByArea, value);
             }
         }
@@ -120,6 +125,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 if (value)
                 {
                     DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
+                    StartButtonVisibilty = false; // и скрыть кнопку DownloadAddressButton и показать кнопку CheckButton (она покажется с помощью св-ва IsCheckedComplexVerification.
                 }
                 SetProperty(ref _isCheckedComplexVerification, value);
             }
@@ -171,6 +177,13 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
         }
 
+        private bool _startButtonVisibility = true;
+        public bool StartButtonVisibilty
+        {
+            get => _startButtonVisibility;
+            set => SetProperty(ref _startButtonVisibility, value);
+        }
+
         #endregion
 
         private readonly IEventAggregator _ea;
@@ -183,7 +196,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         public ViewRS485ViewModel(IRegionManager regionManager,
                                   ISerialTasks serialTasks,
                                   IDataRepositoryService dataRepositoryService,
-                                  IEventAggregator ea, 
+                                  IEventAggregator ea,
                                   ISerialSender serialSender) : base(regionManager)
         {
             _ea = ea;
@@ -202,7 +215,21 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => SerialTextBox);
 
+            CheckCommand = new DelegateCommand(async () => await CheckCommandExecuteAsync(), CheckCommandCanExecute)
+                .ObservesProperty(() => CurrentRS485Port)
+                .ObservesProperty(() => SerialTextBox);
+
             Title = "RS485";
+        }
+
+        private bool CheckCommandCanExecute()
+        {
+            return CurrentRS485Port != null && DevicesForProgramming.Count > 0;
+        }
+
+        private Task CheckCommandExecuteAsync()
+        {
+            throw new NotImplementedException();
         }
         #endregion Constructor
 
