@@ -48,7 +48,7 @@ namespace DeviceTunerNET.Services
                 return (int)resultCode.addressFieldNotValid;
             }
 
-            string deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
+            var deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
             if (deviceModel.Length == 0)
             {
                 return (int)resultCode.deviceNotRespond;
@@ -59,7 +59,7 @@ namespace DeviceTunerNET.Services
                 return (int)resultCode.deviceTypeMismatch;
             }
 
-            byte newAddress = Convert.ToByte(device.AddressRS485);
+            var newAddress = Convert.ToByte(device.AddressRS485);
             if (_serialSender.SetDeviceRS485Address(_comPort, _rsAddress, newAddress))
             {
                 return (int)resultCode.ok;
@@ -75,7 +75,7 @@ namespace DeviceTunerNET.Services
                 return (int)resultCode.addressFieldNotValid;
             }
 
-            string deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
+            var deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
             if (deviceModel.Length == 0)
             {
                 return (int)resultCode.deviceNotRespond;
@@ -101,31 +101,34 @@ namespace DeviceTunerNET.Services
 
         public int ShiftDevicesAddresses(string ComPort, int StartAddress, int TargetAddress, int Range)
         {
-            if (((TargetAddress + Range) < LAST_ADDRESS) && (TargetAddress > 0) && ((TargetAddress < StartAddress) || (TargetAddress > StartAddress + Range)))
-            {
-                string _comPort = ComPort;
-                byte _startAddress = Convert.ToByte(StartAddress);
-                byte _targetAddress = Convert.ToByte(TargetAddress);
-                byte _range = Convert.ToByte(Range);
-                //byte oldEndAddress = (byte)(_startAddress + _range);
-                //для сдвига адресов вправо
-                for (byte counter = _range; counter >= 0; counter--)
-                {
-                    byte currentAddress = (byte)(counter + _startAddress);
-                    string deviceModel = _serialSender.GetDeviceModel(_comPort, currentAddress);
-                    if (deviceModel.Length == 0)
-                    {
-                        return (int)resultCode.deviceNotRespond;
-                    }
+            if (TargetAddress + Range >= LAST_ADDRESS || 
+                TargetAddress <= 0 ||
+                TargetAddress >= StartAddress &&
+                TargetAddress <= StartAddress + Range)
+                return (int)resultCode.ok;
 
-                    byte newAddr = (byte)(_targetAddress + counter);
-                    if (!_serialSender.SetDeviceRS485Address(_comPort, currentAddress, newAddr))
-                    {
-                        return (int)resultCode.deviceNotRespond;
-                    }
+            var _comPort = ComPort;
+            var _startAddress = Convert.ToByte(StartAddress);
+            var _targetAddress = Convert.ToByte(TargetAddress);
+            var _range = Convert.ToByte(Range);
+            //byte oldEndAddress = (byte)(_startAddress + _range);
+            //для сдвига адресов вправо
+            for (var counter = _range; counter >= 0; counter--)
+            {
+                var currentAddress = (byte)(counter + _startAddress);
+                var deviceModel = _serialSender.GetDeviceModel(_comPort, currentAddress);
+                if (deviceModel.Length == 0)
+                {
+                    return (int)resultCode.deviceNotRespond;
                 }
-                //для сдвига адресов вправо
+
+                var newAddr = (byte)(_targetAddress + counter);
+                if (!_serialSender.SetDeviceRS485Address(_comPort, currentAddress, newAddr))
+                {
+                    return (int)resultCode.deviceNotRespond;
+                }
             }
+            //для сдвига адресов вправо
             return (int)resultCode.ok;
         }
 
@@ -135,7 +138,7 @@ namespace DeviceTunerNET.Services
 
             for (byte currAddr = FIRST_ADDRESS; currAddr <= LAST_ADDRESS; currAddr++)
             {
-                string devType = _serialSender.GetDeviceModel(_comPort, currAddr);
+                var devType = _serialSender.GetDeviceModel(_comPort, currAddr);
                 if (devType.Length > 0)
                 {
                     yield return new RS485device()

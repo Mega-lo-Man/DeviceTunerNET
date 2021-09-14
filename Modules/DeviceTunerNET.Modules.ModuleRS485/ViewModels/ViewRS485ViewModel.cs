@@ -221,17 +221,18 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             Title = "RS485";
         }
+        #endregion Constructor
 
         private bool CheckCommandCanExecute()
         {
-            return CurrentRS485Port != null && DevicesForProgramming.Count > 0;
+            return CurrentRS485Port != null; //&& DevicesForProgramming.Count > 0;
         }
 
         private Task CheckCommandExecuteAsync()
         {
-            throw new NotImplementedException();
+            return Task.Run(VerificationCabinetsLoop);
+
         }
-        #endregion Constructor
 
         private bool StartCommandCanExecute()
         {
@@ -245,16 +246,13 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 return Task.Run(DownloadLoop);
             }
-            else
-            {
-                SearchProgressBar = 1;
-                return Task.Run(VerificationCabinetsLoop);
-            }
+
+            SearchProgressBar = 1;
+            return Task.Run(VerificationCabinetsLoop);
         }
 
         private void VerificationCabinetsLoop()
         {
-            //SerialPort sp = SerialPortInit();
             var onlineDevices = _serialSender.SearchOnlineDevices(CurrentRS485Port);
 
             foreach (RS485device device in DevicesForProgramming)
@@ -395,7 +393,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     if (dev.GetType() == typeof(Cabinet)) //Юзер кликнул на шкаф в дереве
                     {
                         DevicesForProgramming.Clear();
-                        Cabinet cab = (Cabinet)message.AttachedObject;
+                        var cab = (Cabinet)message.AttachedObject;
                         foreach (RS485device item in cab.GetDevicesList<RS485device>())
                         {
                             DevicesForProgramming.Add(item);
