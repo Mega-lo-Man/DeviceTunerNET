@@ -203,6 +203,7 @@
 
         <Button
             Name="DownloadAddressButton"
+            IsEnabled="{Binding StartButtonEnable}"
             Visibility="{Binding StartButtonVisibilty, Converter={StaticResource VisibleIfTrueConverter}}"
             Command="{Binding StartCommand}"
             Content="Шей да пори!"
@@ -212,6 +213,7 @@
 
         <Button
             Name="CheckButton"
+            IsEnabled="{Binding StartButtonEnable}"
             Visibility="{Binding IsCheckedComplexVerification, Converter={StaticResource VisibleIfTrueConverter}}"
             Command="{Binding CheckCommand}"
             Content="Check it!"

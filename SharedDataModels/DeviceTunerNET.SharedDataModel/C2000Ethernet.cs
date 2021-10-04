@@ -5,8 +5,63 @@ namespace DeviceTunerNET.SharedDataModel
 {
     public class C2000Ethernet : RS232device
     {
-        private enum _duplex { half = 0, full = 1 }
-        private enum _mode { transparent = 0, master = 1, slave = 2 }
+        public enum Duplex
+        {
+            half = 0, 
+            full = 1
+        }
+
+        public enum Mode
+        {
+            transparent = 0, 
+            slave = 1, 
+            master = 2
+        }
+
+        public enum ProtocolType
+        {
+            RS485 = 0, 
+            RS232 = 1
+        }
+
+        public enum Speed
+        {
+            b1200 = 0, 
+            b2400 = 1, 
+            b4800 = 2, 
+            b9600 = 3, 
+            b19200 = 4, 
+            b38400 = 5, 
+            b57600 = 6, 
+            b115200 = 7
+        }
+
+        public enum DataParityStop
+        {
+            data8Stop1 = 0b0000_0000,
+            data8Stop1Parity1 = 0b0000_0001,
+            data8Stop1Parity0 = 0b0000_0010,
+            data9Stop1 = 0b0000_0011,
+            data8Stop2 = 0b0000_0100,
+            data8Stop2Parity1 = 0b0000_0101,
+            data8Stop2Parity0 = 0b0000_0110,
+            data9Stop2 = 0b0000_0111,
+            data7Stop1Parity1 = 0b0100_0000,
+            data7Stop1Parity0 = 0b1000_0000
+        }
+
+        public enum UdpType
+        {
+            dynamicUdp = 0x00,
+            staticUdp = 0x01
+        }
+
+        public enum TransparentProtocolType
+        {
+            other = 0x00,
+            S2000 = 0x01,
+            vCom = 0x02
+        }
 
         private string _remoteDefaultFirstIP = "192.168.2.1";
 
@@ -20,55 +75,140 @@ namespace DeviceTunerNET.SharedDataModel
 
         public string SecondDns { get; set; } = "0.0.0.0";
 
-        private _mode _networkMode;
-        public int NetworkMode
-        {
-            get => (int)_networkMode;
-            set => _networkMode = (_mode)value;
-        }
+        public Mode NetworkMode { get; set; }
 
-        public List<int> RemoteUDPList { get; set; } = new List<int>();
+        public ProtocolType InterfaceType { get; set; }
 
-        public List<C2000Ethernet> ListOfRemoteDevices { get; set; } = new List<C2000Ethernet>();
+        /// <summary>
+        /// Бодовая скорость работы «C2000-Ethernet» по интерфейсу RS-232/RS-485. 
+        /// </summary>
+        public Speed ConnectionSpeed { get; set; }
+
+        /// <summary>
+        /// Количество бит данных и стоповых бит.
+        /// </summary>
+        public DataParityStop FrameFormat { get; set; }
+
+        public bool TimeoutSign { get; set; }
+
+        public ushort Timeout { get; set; }
+
+        public bool PauseSign { get; set; }
+
+        /// <summary>
+        /// Пауза между пакетами (при передаче в RS данных).
+        /// </summary>
+        public ushort Pause { get; set; }
+
+        /// <summary>
+        /// Режим  с  оптимизацией  данных.
+        /// </summary>
+        public bool Optimization { get; set; }
+
+        /// <summary>
+        /// Признак формирования уведомлений по доступу.
+        /// </summary>
+        public bool AccessNotifySign { get; set; }
+
+        /// <summary>
+        /// Пауза перед ответом по RS. (1 шаг = 0,125 сек)
+        /// </summary>
+        public ushort PauseBeforeResponseRs { get; set; }
+
+        //public List<int> RemoteUDPList { get; set; } = new List<int>();
+
+        public List<C2000Ethernet> RemoteDevicesList { get; set; } = new List<C2000Ethernet>();
 
         public string RemoteIpTrasparentMode { get; set; }
 
-        public int DuplexMode { get; set; }
+        public Duplex DuplexMode { get; set; }
 
-        public int UDPSender { get; set; }
+        //public int UDPSender { get; set; }
 
-        public int UDPRemote { get; set; }
+        public ushort DestinationUdp { get; set; }
 
-        public int FreeUDPRemote { get; set; }
+        public ushort MasterSlaveUdp { get; set; }
+
+        public ushort FreeConnectionUdp { get; set; }
 
         public int WaitingTimeout { get; set; }
 
         public bool UseSingleReadWriteUDP { get; set; }
+
+        public bool Dhcp { get; set; } = false;
+
+        public UdpType UdpPortType { get; set; }
+
+        public string CryptoKey { get; set; }
+
+        public byte ConfirmationTimeout { get; set; }
+
+        public byte ConnectionTimeout { get; set; }
+
+        public bool AllowFreeConnection { get; set; }
+
+        public UdpType FreeConnectionUdpType { get; set; }
+
+        public ushort TransparentUdp { get; set; }
+
+        public bool TransparentCrypto { get; set; }
+
+        public TransparentProtocolType TransparentProtocol { get; set; }
 
         #endregion Properties
 
         public C2000Ethernet()
         {
             //------------------------------------------------
-            for (var i = 0; i < 9; i++)
+            /*for (var i = 0; i < 9; i++)
             {
                 RemoteUDPList.Add(40000);
-            }
+            }*/
             //------------------------------------------------
             AddressIP = "192.168.2.11";
             Netmask = "255.255.252.0";
             DefaultGateway = "0.0.0.0";
             Netmask = "255.255.252.0";
-            DuplexMode = (int)_duplex.half;
-            UDPSender = 40000;
-            UDPRemote = 40001;
-            FreeUDPRemote = 40001;
+            DuplexMode = (int)Duplex.half;
+            //UDPSender = 40000;
+            DestinationUdp = 40001;
+            FreeConnectionUdp = 40001;
             UseSingleReadWriteUDP = true;
             WaitingTimeout = 80;
             AddressRS232 = 127;
             AddressRS485 = 127;
+            NetworkMode = Mode.transparent;
+            InterfaceType = ProtocolType.RS485;
+            ConnectionSpeed = Speed.b9600;
+            FrameFormat = DataParityStop.data8Stop1;
+            TimeoutSign = false;
+            Timeout = 0;
+            PauseSign = true;
+            Pause = 6;
+            Optimization = true;
+            AccessNotifySign = true;
+            PauseBeforeResponseRs = 0x10;
+            /*RemoteDevicesList = new List<C2000Ethernet>()
+            {
+                new C2000Ethernet()
+                {
+                    AddressIP = "192.168.1.127"
+                }
+            };*/
+            DestinationUdp = 40000;
+            MasterSlaveUdp = 40001;
+            ConfirmationTimeout = 0x02;
+            ConnectionTimeout = 0x1E;
+            
+            AllowFreeConnection = true;
+            FreeConnectionUdpType = UdpType.staticUdp;
+
+            TransparentUdp = 40000;
+            TransparentProtocol = TransparentProtocolType.S2000;
+            TransparentCrypto = false;
             //------------------------------------------------
             _configLineList = new List<byte[]>();
+            UdpPortType = UdpType.staticUdp;
         }
 
 
@@ -82,7 +222,7 @@ namespace DeviceTunerNET.SharedDataModel
             SendPromoter2(addr);
             //SendOtherDevicesIP(addr, RemoteIpList, AddressIP);
             SendPromoter3(addr);
-            SendNetmaskAndDevicesUDP(addr, Netmask, RemoteUDPList, UDPSender, FreeUDPRemote);
+            //SendNetmaskAndDevicesUDP(addr, Netmask, RemoteUDPList, UDPSender, FreeRemoteUdp);
 
             return _configLineList;
         }

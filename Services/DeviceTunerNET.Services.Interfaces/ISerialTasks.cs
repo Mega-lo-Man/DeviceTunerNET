@@ -6,6 +6,15 @@ namespace DeviceTunerNET.Services.Interfaces
 {
     public interface ISerialTasks
     {
+        public enum ResultCode
+        {
+            undefinedError = 0,
+            deviceTypeMismatch = -1,
+            addressFieldNotValid = -2,
+            deviceNotRespond = -3,
+            ok = 1
+        }
+
         /// <summary>
         /// Send config into RS-devices
         /// </summary>
@@ -14,7 +23,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <param name="comPort">Com port name</param>
         /// <param name="rsAddress">Device address </param>
         /// <returns>Error code</returns>
-        public int SendConfig<T>(T device, string comPort, int rsAddress);
+        public ResultCode SendConfig<T>(T device, string comPort, int rsAddress);
 
         /// <summary>
         /// Shifting devices addresses

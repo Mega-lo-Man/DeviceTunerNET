@@ -184,6 +184,13 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _startButtonVisibility, value);
         }
 
+        private bool _startButtonEnable = true;
+        public bool StartButtonEnable
+        {
+            get => _startButtonEnable;
+            set => SetProperty(ref _startButtonEnable, value);
+        }
+
         #endregion
 
         private readonly IEventAggregator _ea;
@@ -236,12 +243,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private bool StartCommandCanExecute()
         {
-            return CurrentRS485Port != null && SerialTextBox.Length > 0 && DevicesForProgramming.Count > 0;
+            return CurrentRS485Port != null &&
+                   SerialTextBox.Length > 0 &&
+                   DevicesForProgramming.Count > 0;
         }
 
         private Task StartCommandExecuteAsync()
         {
-
+            
             if (IsCheckedByArea || IsCheckedByCabinets)
             {
                 return Task.Run(DownloadLoop);
@@ -253,6 +262,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private void VerificationCabinetsLoop()
         {
+            StartButtonEnable = false;// Lock start button
+            
             var onlineDevices = _serialSender.SearchOnlineDevices(CurrentRS485Port);
 
             foreach (RS485device device in DevicesForProgramming)
@@ -268,19 +279,29 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     Debug.WriteLine(intAddr);
                 }
             }
+
+            StartButtonEnable = true;// unlock start button
         }
 
         private void DownloadLoop()
         {
-            if (DeviceCounter >= DevicesForProgramming.Count) 
+            StartButtonEnable = false; // Lock start button
+
+            if (DeviceCounter >= DevicesForProgramming.Count)
+            {
+                StartButtonEnable = true; // unlock start button
                 return;
+            }
 
             var device = DevicesForProgramming[DeviceCounter];
 
             var devSerial = "";
 
             if (!(device is Device device1))
+            {
+                StartButtonEnable = true; // unlock start button
                 return;
+            }
 
             devSerial = device1.Serial;
 
@@ -292,60 +313,81 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 }));
                 if (DevicesForProgramming[DeviceCounter].GetType() == typeof(RS485device))
                 {
-                    if (_serialTasks.SendConfig(DevicesForProgramming[DeviceCounter],
+                    var sendResult = _serialTasks.SendConfig(DevicesForProgramming[DeviceCounter],
                         CurrentRS485Port,
-                        DefaultRS485Address) == 1)
-                    {
-                        device1.Serial = SerialTextBox;
-                        _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
-                        SerialTextBox = "";// Очищаем строку ввода серийника для ввода следующего
-                        DeviceCounter++;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Устройство с адресом 127 не отвечает!");
-                    }
+                        DefaultRS485Address);
+                    SendResponseProcessing(sendResult, device1);
                 }
                 else if (DevicesForProgramming[DeviceCounter].GetType() == typeof(C2000Ethernet))
                 {
-                    var c2000Ethernet = (C2000Ethernet)DevicesForProgramming[DeviceCounter];
+                    var c2000Ethernet = (C2000Ethernet) DevicesForProgramming[DeviceCounter];
                     c2000Ethernet.Netmask = IPMask;
-                    if (c2000Ethernet.NetworkMode == 2)
+                    if (c2000Ethernet.NetworkMode == C2000Ethernet.Mode.master)
                     {
                         c2000Ethernet.RemoteIpTrasparentMode = RemoteDefaultFirstIP;
                     }
-                    if (_serialTasks.SendConfig(c2000Ethernet,
+
+                    var sendResult = _serialTasks.SendConfig(c2000Ethernet,
                         CurrentRS485Port,
-                        DefaultRS485Address) == 1)
-                    {
-                        device1.Serial = SerialTextBox;
-                        _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
-                        SerialTextBox = "";// Очищаем строку ввода серийника для ввода следующего
-                        DeviceCounter++;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Устройство с адресом 127 не отвечает!");
-                    }
+                        DefaultRS485Address);
+                    SendResponseProcessing(sendResult, device1);
                 }
+                else
+                {
+                        MessageBox.Show("Устройство в очереди неизвестного типа!");
+                }
+
                 // Обновляем всю коллекцию в UI целиком
                 _dispatcher.BeginInvoke(new Action(() =>
                 {
                     CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
                 }));
 
-                if (DeviceCounter < DevicesForProgramming.Count) 
+                if (DeviceCounter < DevicesForProgramming.Count)
+                {
+                    StartButtonEnable = true; // unlock start button
                     return;
-
+                }
+                
                 DeviceCounter = 0;
                 MessageBox.Show("Alles!");
             }
-            else //Переходим к следующему прибру из списка
+            else //Переходим к следующему прибору из списка
             {
                 DeviceCounter++;
             }
+            
+            
+            StartButtonEnable = true; // unlock start button
         }
-        
+
+        private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1)
+        {
+            switch (sendResult)
+            {
+                case ISerialTasks.ResultCode.ok:
+                    device1.Serial = SerialTextBox;
+                    _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
+                    SerialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
+                    DeviceCounter++;
+                    break;
+                case ISerialTasks.ResultCode.deviceNotRespond:
+                    MessageBox.Show("Прибор с адресом 127 не отвечает!");
+                    break;
+                case ISerialTasks.ResultCode.deviceTypeMismatch:
+                    MessageBox.Show("Тип обнаруженного прибора не совпадает с ожидаемым типом!");
+                    break;
+                case ISerialTasks.ResultCode.addressFieldNotValid:
+                    MessageBox.Show("Неверный адрес!");
+                    break;
+                case ISerialTasks.ResultCode.undefinedError:
+                    MessageBox.Show("Неопознанная ошибка!");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sendResult), sendResult, null);
+            }
+        }
+
         private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)

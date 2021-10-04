@@ -26,7 +26,7 @@ namespace DeviceTunerNET.Services
         private int modelCol = 0;   // Index of column that containing device model
         private int parentCol = 0;   // Index of column that containing parent cabinet
         private int CaptionRow = 1; //Table caption row index
-        private int rangCol = 0; //Index of column that containing networkRelationship (master, slave, transparent)
+        private int rangCol = 0; //Index of column that containing networkRelationship (master, slave, Transparent)
 
         private string ColIPAddressCaption = "IP"; //Заголовок столбца с IP-адресами
         private string ColRS485AddressCaption = "RS485"; //Заголовок столбца с адресами RS485
@@ -118,7 +118,7 @@ namespace DeviceTunerNET.Services
                             Model = devModel,
                             Serial = devSerial,
                             AddressRS485 = devRS485Addr
-                        }); ;
+                        });
                         break;
                     case 1:
                         cabinet.AddItem(new EthernetSwitch
@@ -142,7 +142,7 @@ namespace DeviceTunerNET.Services
                             AddressRS485 = devRS485Addr,
                             AddressRS232 = devRS232Addr,
                             AddressIP = devIPAddr,
-
+                            NetName = devName
                         };
                         //Add to dict for master/slave/translate sort
                         dictC2000Ethernet.Add(c2000Ethernet, GetRangTuple(devRang));
@@ -179,17 +179,17 @@ namespace DeviceTunerNET.Services
         {
             foreach (var device in ethDevices)
             {
-                if (device.Value.Item1 == transparent)
+                switch (device.Value.Item1)
                 {
-                    device.Key.NetworkMode = 0; // transparent
-                }
-                if (device.Value.Item1 == master)
-                {
-                    device.Key.NetworkMode = 1; // master
-                }
-                if (device.Value.Item1 == slave)
-                {
-                    device.Key.NetworkMode = 2; // slave
+                    case transparent:
+                        device.Key.NetworkMode = 0; // Transparent
+                        break;
+                    case master:
+                        device.Key.NetworkMode = C2000Ethernet.Mode.master; // master
+                        break;
+                    case slave:
+                        device.Key.NetworkMode = C2000Ethernet.Mode.slave; // slave
+                        break;
                 }
 
                 if (device.Value.Item1 != dep1)
@@ -200,7 +200,7 @@ namespace DeviceTunerNET.Services
                     if (item.Value.Item1 != dep2 || device.Value.Item2 != item.Value.Item2)
                         continue;
 
-                    device.Key.ListOfRemoteDevices.Add(item.Key);
+                    device.Key.RemoteDevicesList.Add(item.Key);
                     Debug.WriteLine(item.Key.AddressIP + " добавлен в " + device.Key.AddressIP + " (" + item.Value.Item2 + ")");
                 }
             }
@@ -241,15 +241,22 @@ namespace DeviceTunerNET.Services
 
         public bool SaveSerialNumber(int id, string serialNumber)
         {
-            SaveSerialById(id, serialNumber);
-            return true;
+            return SaveSerialById(id, serialNumber);
         }
         
-        private void SaveSerialById(int id, string serialNumber)
+        private bool SaveSerialById(int id, string serialNumber)
         {
             // записываем серийник коммутатора в графу "Серийный номер" напротив номера строки указанного в id
             worksheet.Cells[id, serialCol].Value = serialNumber;
-            package.Save();
+            try
+            {
+                package.Save();
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
