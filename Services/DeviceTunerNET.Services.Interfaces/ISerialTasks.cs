@@ -29,18 +29,20 @@ namespace DeviceTunerNET.Services.Interfaces
         /// Shifting devices addresses
         /// </summary>
         /// <param name="comPort">Com port name</param>
-        /// <param name="StartAddress"></param>
-        /// <param name="TargetAddress"></param>
-        /// <param name="Range">Address range</param>
+        /// <param name="startAddress"></param>
+        /// <param name="targetAddress"></param>
+        /// <param name="range">Address range</param>
         /// <returns></returns>
-        public int ShiftDevicesAddresses(string ComPort, int StartAddress, int TargetAddress, int Range);
+        public ResultCode ShiftDevicesAddresses(string comPort, int startAddress, int targetAddress, int range);
 
         /// <summary>
         /// Get all online devices on the RS-485 Line
         /// </summary>
-        /// <param name="ComPort">Com port name</param>
+        /// <param name="comPort">Com port name</param>
         /// <returns>Collection of all found RS485-devices</returns>
-        public IEnumerable<RS485device> GetOnlineDevices(string ComPort);
+        public IEnumerable<RS485device> GetOnlineDevices(string comPort);
+
+        public ResultCode CheckOnlineDevice(string comPort, RS485device device);
 
         public ObservableCollection<string> GetAvailableCOMPorts();
     }

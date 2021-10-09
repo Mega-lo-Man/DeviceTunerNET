@@ -112,7 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataRepositoryService.cs" />
-    <Compile Include="DialogService.cs" />
+    <Compile Include="FileDialogService.cs" />
     <Compile Include="ExcelDataDecoder.cs" />
     <Compile Include="MessageService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -143,5 +143,6 @@
       <Name>DeviceTunerNET.Services.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -5,7 +5,7 @@ using System.Windows;
 
 namespace DeviceTunerNET.Services
 {
-    public class DialogService : IDialogService, IMessageService
+    public class FileDialogService : IFileDialogService, IMessageService
     {
 
         private string _fullFileNames;

@@ -14,6 +14,7 @@ using Prism.Ioc;
 using Prism.Modularity;
 using System.IO.Ports;
 using System.Windows;
+using DeviceTunerNET.ViewModels;
 
 namespace DeviceTunerNET
 {
@@ -48,7 +49,7 @@ namespace DeviceTunerNET
         {
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
             containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
-            containerRegistry.Register<IDialogService, DialogService>();
+            containerRegistry.Register<IFileDialogService, FileDialogService>();
             containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
             containerRegistry.Register<IPrintService, DymoModule>();
             containerRegistry.Register<INetworkTasks, NetworkTasks>();
@@ -59,7 +60,7 @@ namespace DeviceTunerNET
             containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: SrvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: SrvKey.sshKey);
 
-
+            containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

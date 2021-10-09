@@ -14,14 +14,14 @@ namespace DeviceTunerNET.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        private readonly IDialogService _dialogService;
+        private readonly IFileDialogService _dialogService;
         private readonly IDataRepositoryService _dataRepositoryService;
 
         public DelegateCommand OpenFileCommand { get; }
         public DelegateCommand SaveFileCommand { get; }
         public DelegateCommand CloseAppCommand { get; }
 
-        public MainWindowViewModel(IDialogService dialogService, IDataRepositoryService dataRepositoryService)
+        public MainWindowViewModel(IFileDialogService dialogService, IDataRepositoryService dataRepositoryService)
         {
             _dialogService = dialogService;
             _dataRepositoryService = dataRepositoryService;

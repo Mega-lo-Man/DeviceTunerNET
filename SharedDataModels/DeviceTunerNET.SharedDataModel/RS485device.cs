@@ -18,6 +18,7 @@ namespace DeviceTunerNET.SharedDataModel
         }
         
         private List<byte[]> _getConfigCommandLines;
+        
         /// <summary>
         /// Получить список команд которые содержат конфигурацию устройства в формате Болид
         /// </summary>

@@ -90,7 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IDataRepositoryService.cs" />
-    <Compile Include="IDialogService.cs" />
+    <Compile Include="IFileDialogService.cs" />
     <Compile Include="IExcelDataDecoder.cs" />
     <Compile Include="IMessageService.cs" />
     <Compile Include="IPrintService.cs" />
@@ -108,5 +108,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

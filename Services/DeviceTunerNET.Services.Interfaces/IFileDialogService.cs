@@ -1,6 +1,6 @@
 ﻿namespace DeviceTunerNET.Services.Interfaces
 {
-    public interface IDialogService
+    public interface IFileDialogService
     {
 
         /// <summary>
