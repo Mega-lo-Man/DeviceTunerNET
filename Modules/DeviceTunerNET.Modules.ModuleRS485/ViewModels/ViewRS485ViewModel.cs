@@ -326,8 +326,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 if (_serialTasks.CheckOnlineDevice(CurrentRS485Port, device) != ISerialTasks.ResultCode.ok) 
                     continue;
                 device.QualityControlPassed = true;
-
-
                 
                 // Обновляем всю коллекцию в UI целиком
                 _dispatcher.BeginInvoke(new Action(() =>
@@ -336,10 +334,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 }));
             }
 
-            // Если всё ещё как-либо прибор не настроен - ничего не вышло пусть проверяющий включает голову
-            if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) != 0)
+            // Если всё ещё как-либо прибор не настроен - ничего не вышло. Пусть проверяющий включает голову
+            if (GetNumberOfDeviceWithoutQcPassed(DevicesForProgramming) != 0)
             {
-                MessageBox.Show("Некоторые приборы не удалось исправить");
+                MessageBox.Show("Некоторые приборы не прошли проверку");
             }
             else
             {
@@ -418,7 +416,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private int GetNumberOfDeviceWithoutQcPassed(IEnumerable<object> devices)
         {
-            return devices.Cast<RS485device>().Count(device => device.QualityControlPassed);
+            return devices.Cast<RS485device>().Count(device => device.QualityControlPassed == false);
         }
 
         private object GetDeviceWithoutSerial(IEnumerable<object> devices)
