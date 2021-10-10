@@ -104,7 +104,8 @@
     </Compile>
     <Compile Include="ViewModels\CabinetViewModel.cs" />
     <Compile Include="ViewModels\DebugConverter.cs" />
-    <Compile Include="ViewModels\DesignRS485Converter.cs" />
+    <Compile Include="ViewModels\QaColorConverter.cs" />
+    <Compile Include="ViewModels\SerialRS485Converter.cs" />
     <Compile Include="ViewModels\C2000EthernetDeviceViewModel.cs" />
     <Compile Include="ViewModels\RS485DeviceViewModel.cs" />
     <Compile Include="ViewModels\ViewRS485ViewModel.cs" />

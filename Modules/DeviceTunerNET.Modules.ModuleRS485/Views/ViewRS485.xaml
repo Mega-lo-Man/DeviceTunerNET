@@ -16,9 +16,12 @@
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryStyles.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <VM:DesignRS485Converter x:Key="ItemColorConverter"
+            <VM:SerialRS485Converter x:Key="SerialColorConverter"
                                      ImagePathOk="{StaticResource ResourceKey=OkImage}"
                                      ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
+            <VM:QaColorConverter x:Key="QaColorConverter"
+                                 ImagePathOk="{StaticResource ResourceKey=OkImage}"
+                                 ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
             <VM:DebugConverter x:Key="DebugConverter"/>
             <BooleanToVisibilityConverter x:Key="VisibleIfTrueConverter" />
         </ResourceDictionary>
@@ -171,6 +174,8 @@
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="BorderBrush" Value="Beige" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
@@ -183,17 +188,21 @@
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Text="{Binding Model}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
                             <TextBlock Text="{Binding Designation}" Grid.Row="1" Grid.Column="0"/>
-                            <TextBlock Text="{Binding AddressRS485}" Grid.Row="1" Grid.Column="1"/>
+                            <TextBlock Text="{Binding AddressRS485}" Grid.Row="1" Grid.Column="1" />
                             <TextBlock Text="{Binding Serial}" Grid.Row="2" Grid.Column="0"/>
+                            <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" VerticalAlignment="Center">
+                                <Image Margin="3" VerticalAlignment="Center" Source="{Binding QualityControlPassed, Converter={StaticResource QaColorConverter}}"/>
+                                <Image Margin="3" VerticalAlignment="Center" Source="{Binding Serial, Converter={StaticResource SerialColorConverter}}"/>
 
-                            <Image Margin="3" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Center" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
-
+                            </StackPanel>
+                                
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

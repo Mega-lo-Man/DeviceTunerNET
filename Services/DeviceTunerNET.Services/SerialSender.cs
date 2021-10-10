@@ -27,12 +27,12 @@ namespace DeviceTunerNET.Services
         private byte currentAddress = 127;
         private byte commandCounter;
 
-        private enum  Timeouts
+        private enum Timeouts
         {
             addressChange = 400, // Сингал-20П V3.10 после смены адреса подтверждает через 400 мс (остальные быстрее)
             readModel = 60, // Чтение типа прибора занимает не более 50 мс
             ethernetConfig = 350,
-            RestartC2000Ethernet = 5000
+            restartC2000Ethernet = 6000
         }
 
         //private const int ADDRESS_CHANGE_TIMEOUT = 400; 
@@ -240,11 +240,20 @@ namespace DeviceTunerNET.Services
                 _ea.GetEvent<MessageSentEvent>().Publish(new Message
                 {
                     ActionCode = MessageSentEvent.UpdateRS485SearchProgressBar,
-                    AttachedObject = devAddr
+                    AttachedObject = (int)devAddr
                 });
             }
             _serialPort.Close();
             return result;
+        }
+
+        private void UpdateProgressBar(int progress)
+        {
+            _ea.GetEvent<MessageSentEvent>().Publish(new Message
+            {
+                ActionCode = MessageSentEvent.UpdateRS485SearchProgressBar,
+                AttachedObject = progress
+            });
         }
 
         private byte[] Transaction(byte[] sendArray, Timeouts timeout)
@@ -279,7 +288,7 @@ namespace DeviceTunerNET.Services
 
         private void SendPacket(byte[] sendArray)
         {
-            byte bytesCounter = 2; //сразу начнём считать с единицы, т.к. всё равно придётся добавить один байт(сам байт длины команды)
+            byte bytesCounter = 2; //сразу начнём считать с двойки, т.к. всё равно придётся добавить два байта(сам байт длины команды, и счётчик команд)
             var lst = new List<byte>();
             foreach (var bt in sendArray)
             {
@@ -340,9 +349,13 @@ namespace DeviceTunerNET.Services
 
         public bool SetC2000EthernetConfig(string ComPortName, byte deviceAddress, C2000Ethernet device)
         {
+
             currentAddress = deviceAddress;
             Debug.WriteLine("-----------------------");
-            
+
+            var progress = 0;
+            UpdateProgressBar(progress);
+
             if (_serialPort.IsOpen)
                 return false;
 
@@ -356,37 +369,52 @@ namespace DeviceTunerNET.Services
                 return false;
 
             //result = ReadConfigFormDevice();
+            UpdateProgressBar(progress += 4);
 
-            
             var result = SendPromoter();
             result = SendDeviceNetName(device.NetName);
-            
+            UpdateProgressBar(progress += 4);
             result = SendEthernetTune(device.AddressIP, device.Netmask, device.DefaultGateway, device.FirstDns, device.SecondDns);
+            UpdateProgressBar(progress += 4);
             result = SendDhcpStatus(device.Dhcp);
+            UpdateProgressBar(progress += 4);
             result = SendMasterSlaveTransparent(device.NetworkMode);
+            UpdateProgressBar(progress += 4);
             result = SendInterfaceType(device.InterfaceType);
+            UpdateProgressBar(progress += 4);
             result = SendConnectionSpeed(device.ConnectionSpeed);
+            UpdateProgressBar(progress += 4);
             result = SendParityStopTimeoutSign(device.FrameFormat, device.TimeoutSign, device.PauseSign, device.Optimization);
+            UpdateProgressBar(progress += 4);
             result = SendTimeout(device.Timeout);
+            UpdateProgressBar(progress += 4);
             result = SendPause(device.Pause);
+            UpdateProgressBar(progress += 4);
             result = SendAccessNotifySign(device.AccessNotifySign);
+            UpdateProgressBar(progress += 4);
             result = SendPauseBeforeResponseRs(device.PauseBeforeResponseRs);
-            
+            UpdateProgressBar(progress += 4);
             result = SendMasterSlaveUdp(device.MasterSlaveUdp);
+            UpdateProgressBar(progress += 4);
             result = SendConfirmationTimeout(device.ConfirmationTimeout);
+            UpdateProgressBar(progress += 4);
             result = SendConnectionTimeout(device.ConnectionTimeout);
+            UpdateProgressBar(progress += 4);
             result = SendFreeConnectionTune(device.FreeConnectionUdpType, device.AllowFreeConnection);
+            UpdateProgressBar(progress += 4);
             result = SendFreeConnectionUdp(device.FreeConnectionUdp);
+            UpdateProgressBar(progress += 4);
             result = SendTransparentTune(device.TransparentUdp, device.TransparentProtocol, device.TransparentCrypto);
-
+            UpdateProgressBar(progress += 4);
             result = SendRemoteDevices(device.RemoteDevicesList);
-            
+            UpdateProgressBar(progress += 4);
             result = SendSuffix();
-            
-            
+            UpdateProgressBar(progress += 4);
 
-            Thread.Sleep((int)Timeouts.RestartC2000Ethernet);
+
+            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
             _serialPort.Close();
+            UpdateProgressBar(100);
             return result;
         }
 

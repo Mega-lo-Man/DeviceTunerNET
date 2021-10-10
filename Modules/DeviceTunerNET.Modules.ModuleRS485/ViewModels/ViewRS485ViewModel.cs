@@ -22,7 +22,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
     {
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
-        private readonly ISerialSender _serialSender;
         private readonly ISerialTasks _serialTasks;
         private readonly IDialogService _dialogService;
         private readonly Dispatcher _dispatcher;
@@ -37,6 +36,13 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         #region Properties
 
         private VerificationStart VerificationCanStart { get; set; }
+
+        private int _deviceStatus;
+        public int DeviceStatus
+        {
+            get => _deviceStatus;
+            set => SetProperty(ref _deviceStatus, value);
+        }
 
         private string _message;
         public string Message
@@ -211,19 +217,13 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                                   ISerialTasks serialTasks,
                                   IDataRepositoryService dataRepositoryService,
                                   IEventAggregator ea,
-                                  ISerialSender serialSender,
                                   IDialogService dialogService) : base(regionManager)
         {
             _ea = ea;
-            _serialSender = serialSender;
             _dataRepositoryService = dataRepositoryService;
-            //_serialSender = serialSender;
             _serialTasks = serialTasks;
-
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
-
             _dialogService = dialogService;
-
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             AvailableComPorts = _serialTasks.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
@@ -287,8 +287,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var tcs = new TaskCompletionSource<string>();
                 var parameters = new DialogParameters
                 {
-                    { "title", "Connection Lost!" },
-                    { "message", "We seem to have lost network connectivity" }
+                    { "title", "Ввод сериного номера." },
+                    { "message", "Серийник: " }
                 };
                 _dialogService.ShowDialog("SerialDialog", parameters, dialogResult =>
                 {
@@ -459,6 +459,20 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return 100 * address / 127;
         }
 
+        private void SetDeviceStatus(Device device)
+        {
+            DeviceStatus = GetCurrentDeviceStatus(device.Serial, device.QualityControlPassed);
+        }
+
+        private int GetCurrentDeviceStatus(string deviceSerial, bool deviceChecked)
+        {
+            if (!string.IsNullOrEmpty(deviceSerial) && deviceChecked)
+                return 2;
+            if (!string.IsNullOrEmpty(deviceSerial) && !deviceChecked)
+                return 1;
+            return 0;
+        }
+
         private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
@@ -517,7 +531,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 _dispatcher.BeginInvoke(new Action(() =>
                 {
-                    SearchProgressBar = GetAddressSearchProgressBar(Convert.ToInt32((byte)message.AttachedObject));
+                    SearchProgressBar = (int)message.AttachedObject;
                 }));
 
             }
