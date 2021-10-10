@@ -25,6 +25,7 @@ namespace DeviceTunerNET.Services
         private readonly IEventAggregator _ea;
 
         private byte currentAddress = 127;
+        private byte commandCounter;
 
         private enum  Timeouts
         {
@@ -110,6 +111,8 @@ namespace DeviceTunerNET.Services
             { 67, "Рупор-300" }
         };
 
+        
+
         private SerialSender()
         {
         }
@@ -130,7 +133,7 @@ namespace DeviceTunerNET.Services
             _serialPort.Open();
 
             // формируем команду на отправку
-            var cmdString = new byte[] { 0xB0, 0x0F, newDeviceAddress, newDeviceAddress };
+            var cmdString = new byte[] { 0x0F, newDeviceAddress, newDeviceAddress };
 
             var result = AddressTransaction(deviceAddress, cmdString, Timeouts.addressChange);
 
@@ -145,7 +148,7 @@ namespace DeviceTunerNET.Services
         public string GetDeviceModel(string comPortName, byte deviceAddress)
         {
             // формируем команду на отправку
-            var cmdString = new byte[] { 0xBF, 0x0D, 0x00, 0x00 };
+            var cmdString = new byte[] { 0x0D, 0x00, 0x00 };
 
             if (!_serialPort.IsOpen)
             {
@@ -186,7 +189,7 @@ namespace DeviceTunerNET.Services
         public bool IsDeviceOnline(string comPortName, byte deviceAddress)
         {
             // формируем команду на отправку
-            var cmdString = new byte[] { 0x92, 0x01, 0x00, 0x00 };
+            var cmdString = new byte[] { 0x01, 0x00, 0x00 };
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = comPortName;
@@ -276,7 +279,7 @@ namespace DeviceTunerNET.Services
 
         private void SendPacket(byte[] sendArray)
         {
-            byte bytesCounter = 1; //сразу начнём считать с единицы, т.к. всё равно придётся добавить один байт(сам байт длины команды)
+            byte bytesCounter = 2; //сразу начнём считать с единицы, т.к. всё равно придётся добавить один байт(сам байт длины команды)
             var lst = new List<byte>();
             foreach (var bt in sendArray)
             {
@@ -285,9 +288,11 @@ namespace DeviceTunerNET.Services
             }
 
             lst.Insert(1, bytesCounter); //вставляем вторым байтом в пакет длину всего пакета + байт длины пакета
-
+            lst.Insert(2, commandCounter); //вставляем третьим байтом в пакет счётчик команд
             _serialPort.Write(lst.ToArray(), 0, bytesCounter);
             _serialPort.Write(CRC8(lst.ToArray()), 0, 1);
+
+            commandCounter += (byte)(bytesCounter + 0x01); // увеливаем счётчик комманд на кол-во отправленных байт
         }
 
         private byte[] CRC8(byte[] bytes)
@@ -378,53 +383,53 @@ namespace DeviceTunerNET.Services
             
             result = SendSuffix();
             
-            _serialPort.Close();
+            
 
             Thread.Sleep((int)Timeouts.RestartC2000Ethernet);
-
+            _serialPort.Close();
             return result;
         }
 
         private bool ReadConfigFormDevice()
         {
-            Transaction(new byte[] { 0xcd, 0x3f, 0x29, 0x00 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x1e, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x7f, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x50, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xe3, 0x43, 0x40, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x70, 0x43, 0x80, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x4d, 0x43, 0xc0, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x71, 0x43, 0x00, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x7b, 0x43, 0x32, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x12, 0x43, 0x40, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x8a, 0x43, 0x72, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xb3, 0x43, 0x80, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xf9, 0x43, 0xb2, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x69, 0x43, 0xc0, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x03, 0x43, 0xf2, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xd0, 0x43, 0x00, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xe1, 0x43, 0x32, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x42, 0x43, 0x40, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xbd, 0x43, 0x72, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x54, 0x43, 0x80, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x5f, 0x43, 0xb2, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xdb, 0x43, 0xc0, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xe8, 0x43, 0xf2, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xcd, 0x43, 0x00, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x1c, 0x43, 0x32, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xbc, 0x43, 0x40, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x16, 0x43, 0x72, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xcf, 0x43, 0x80, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x61, 0x43, 0xb2, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x63, 0x43, 0xc0, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xcf, 0x43, 0xf2, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xc7, 0x43, 0x00, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x92, 0x43, 0x32, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0xb9, 0x43, 0x40, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x69, 0x43, 0x72, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
-            Transaction(new byte[] { 0x96, 0x43, 0x80, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x3f, 0x29, 0x00 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x40, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x80, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xc0, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x00, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x32, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x40, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x72, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x80, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xb2, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xc0, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xf2, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x00, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x32, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x40, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x72, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x80, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xb2, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xc0, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xf2, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x00, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x32, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x40, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x72, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x80, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xb2, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xc0, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xf2, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x00, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x32, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x40, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x72, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0x80, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
 
-            Transaction(new byte[] { 0xec, 0x43, 0xb2, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x43, 0xb2, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
 
             return true;
         }
@@ -433,15 +438,15 @@ namespace DeviceTunerNET.Services
         {
             //CommandSend(new byte[] { 0x7F, 0x70, 0x0D, 0x00, 0x00 }); // 7f 06 70 0d 00 00
 
-            Transaction(new byte[] { 0x6E, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig); // 7f 08 6e 43 00 00 00 40
-            Transaction(new byte[] { 0x3D, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig); // 7f 08 3d 43 00 00 00 40
+            Transaction(new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig); // 7f 08 6e 43 00 00 00 40
+            Transaction(new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig); // 7f 08 3d 43 00 00 00 40
             return true;
         }
 
         private bool SendDeviceNetName(string name)
         {
             var deviceName = StringToByteArray(name);
-            var header = new byte[] { 0x7B, 0x41, 0x00, 0x00, 0x00 };
+            var header = new byte[] { 0x41, 0x00, 0x00, 0x00 };
             var resultCmd = CombineArrays(header, deviceName);
 
             Transaction(resultCmd, Timeouts.ethernetConfig);
@@ -455,7 +460,7 @@ namespace DeviceTunerNET.Services
             var _gateway = IpToByteArray(gateway);
             var _firstDNS = IpToByteArray(firstDNS);
             var _secondDNS = IpToByteArray(secondDNS);
-            var _header = new byte[] { 0xC9, 0x41, 0x20, 0x00, 0x00 };
+            var _header = new byte[] { 0x41, 0x20, 0x00, 0x00 };
             var cmd = CombineArrays(_header, _ip, _netmask, _gateway, _firstDNS, _secondDNS);
             Transaction(cmd, Timeouts.ethernetConfig);
             return true;
@@ -464,26 +469,26 @@ namespace DeviceTunerNET.Services
         private bool SendDhcpStatus(bool dhcpEnable)
         {
             var dhcp = Convert.ToByte(dhcpEnable);
-            var cmd = new byte[] { 0x0F, 0x41, 0x3A, 0x00, 0x00, dhcp }; //7f 08 0f 41 61 00 00 01
+            var cmd = new byte[] { 0x41, 0x3A, 0x00, 0x00, dhcp }; //7f 08 0f 41 61 00 00 01
             Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendMasterSlaveTransparent(C2000Ethernet.Mode mode)
         {
-            Transaction(new byte[] { 0x8B, 0x41, 0x61, 0x00, 0x00, (byte)mode }, Timeouts.ethernetConfig); // 7f 08 8b 41 61 00 00 00
+            Transaction(new byte[] { 0x41, 0x61, 0x00, 0x00, (byte)mode }, Timeouts.ethernetConfig); // 7f 08 8b 41 61 00 00 00
             return true;
         }
 
         private bool SendInterfaceType(C2000Ethernet.ProtocolType rsType)
         {
-            Transaction(new byte[] { 0x50, 0x41, 0x60, 0x00, 0x00, (byte)rsType }, Timeouts.ethernetConfig); // 7f 08 50 41 60 00 00 01
+            Transaction(new byte[] { 0x41, 0x60, 0x00, 0x00, (byte)rsType }, Timeouts.ethernetConfig); // 7f 08 50 41 60 00 00 01
             return true;
         }
 
         private bool SendConnectionSpeed(C2000Ethernet.Speed speed)
         {
-            Transaction(new byte[] { 0xD6, 0x41, 0xC0, 0x00, 0x00, (byte)speed }, Timeouts.ethernetConfig); // 7f 08 d6 41 c0 00 00 03
+            Transaction(new byte[] { 0x41, 0xC0, 0x00, 0x00, (byte)speed }, Timeouts.ethernetConfig); // 7f 08 d6 41 c0 00 00 03
             return true;
         }
 
@@ -509,28 +514,28 @@ namespace DeviceTunerNET.Services
             dpsts |= timeoutSignMask; // YYYX_YYYY (X - timeoutSign, Y - dps)
             dpsts |= pauseSignMask; // YYZY_YYYY (Z - pauseSign, Y - dps)
 
-            Transaction(new byte[] { 0xD6, 0x41, 0xC1, 0x00, 0x00, dpsts }, Timeouts.ethernetConfig); // 
+            Transaction(new byte[] { 0x41, 0xC1, 0x00, 0x00, dpsts }, Timeouts.ethernetConfig); // 
             return true;
         }
 
         private bool SendTimeout(ushort timeout)
         {
             var bytes = BitConverter.GetBytes(timeout);
-            Transaction(new byte[] { 0xD6, 0x41, 0xC2, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig); // 
+            Transaction(new byte[] { 0x41, 0xC2, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig); // 
             return true;
         }
 
         private bool SendPause(ushort pause)
         {
             var bytes = BitConverter.GetBytes(pause);
-            Transaction(new byte[] { 0xD6, 0x41, 0xC4, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x41, 0xC4, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendAccessNotifySign(bool accessNotifySign)
         {
             var ans = Convert.ToByte(accessNotifySign);
-            var cmd = new byte[] { 0x11, 0x41, 0x9F, 0x00, 0x00, ans }; // 7f 08 11 41 9f 00 00 01 d3
+            var cmd = new byte[] { 0x41, 0x9F, 0x00, 0x00, ans }; // 7f 08 11 41 9f 00 00 01 d3
             Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
@@ -538,7 +543,7 @@ namespace DeviceTunerNET.Services
         private bool SendPauseBeforeResponseRs(ushort pause)
         {
             var bytes = BitConverter.GetBytes(pause);
-            Transaction(new byte[] { 0xB5, 0x41, 0xB0, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);//7f 08 b5 41 b0 00 00 10 7a
+            Transaction(new byte[] { 0x41, 0xB0, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);//7f 08 b5 41 b0 00 00 10 7a
             return true;
         }
         
@@ -579,7 +584,7 @@ namespace DeviceTunerNET.Services
 
             var byteArray = Encoding.Default.GetBytes(sendStr);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
-            var header = new byte[] { 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00};
+            var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00};
             var stringEnd = new byte[] { 0x00 };
 
             var cmd = CombineArrays(header, byteArray, stringEnd);
@@ -594,7 +599,7 @@ namespace DeviceTunerNET.Services
 
             var bytes = BitConverter.GetBytes(udp);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
-            var header = new byte[] { 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
+            var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
             
             var cmd = CombineArrays(header, bytes);
             Transaction(cmd, Timeouts.ethernetConfig);
@@ -605,7 +610,7 @@ namespace DeviceTunerNET.Services
         {
             var bytes = BitConverter.GetBytes(udpType);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
-            var header = new byte[] { 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
+            var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
 
             var cmd = CombineArrays(header, bytes);
             Transaction(cmd, Timeouts.ethernetConfig);
@@ -621,7 +626,7 @@ namespace DeviceTunerNET.Services
 
             var bytes = Encoding.ASCII.GetBytes(cryptoKey);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
-            var header = new byte[] { 0x7F, 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
+            var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
 
             var cmd = CombineArrays(header, bytes);
             CommandSend(cmd);*/
@@ -639,20 +644,20 @@ namespace DeviceTunerNET.Services
         private bool SendMasterSlaveUdp(ushort udp)
         {
             var bytes = BitConverter.GetBytes(udp);
-            Transaction(new byte[] { 0xBA, 0x41, 0x40, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x41, 0x40, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendConfirmationTimeout(byte timeout)
         {
-            Transaction(new byte[] { 0x80, 0x41, 0x42, 0x00, 0x00, timeout }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x41, 0x42, 0x00, 0x00, timeout }, Timeouts.ethernetConfig);
             //7f 08 80 41 42 00 00 ff a2
             return true;
         }
 
         private bool SendConnectionTimeout(byte timeout)
         {
-            Transaction(new byte[] { 0x80, 0x41, 0x43, 0x00, 0x00, timeout }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x41, 0x43, 0x00, 0x00, timeout }, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -663,7 +668,7 @@ namespace DeviceTunerNET.Services
             var udpPortType = Convert.ToByte(udpType);
             freeConnection |= (byte)(udpPortType << 1); // 0000_0010 if udpType = static
 
-            Transaction(new byte[] { 0x0e, 0x41, 0x56, 0x00, 0x00, freeConnection }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x41, 0x56, 0x00, 0x00, freeConnection }, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -671,7 +676,7 @@ namespace DeviceTunerNET.Services
         {
             var bytes = BitConverter.GetBytes(udp);
             // 7f 09 26 41 44 00 00 39 30 9a
-            Transaction(new byte[] { 0x26, 0x41, 0x44, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x41, 0x44, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -683,14 +688,14 @@ namespace DeviceTunerNET.Services
 
             var bytes = BitConverter.GetBytes(udp);
             //7f 0a 62 41 d0 00 00 67 2b 02 57
-            Transaction(new byte[] { 0x62, 0x41, 0xd0, 0x00, 0x00, bytes[0], bytes[1], transparentMode}, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x41, 0xd0, 0x00, 0x00, bytes[0], bytes[1], transparentMode}, Timeouts.ethernetConfig);
             
             return true;
         }
 
         private bool SendSuffix()
         {
-            Transaction(new byte[] { 0xa6, 0x17, 0x00, 0x00 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x17, 0x00, 0x00 }, Timeouts.ethernetConfig);
             return true;
         }
         
