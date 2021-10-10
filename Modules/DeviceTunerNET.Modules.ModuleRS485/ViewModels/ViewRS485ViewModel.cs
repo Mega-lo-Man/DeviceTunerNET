@@ -446,6 +446,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 case ISerialTasks.ResultCode.undefinedError:
                     MessageBox.Show("Неопознанная ошибка!");
                     break;
+                case ISerialTasks.ResultCode.errorConfigDownload:
+                    MessageBox.Show("Ошибка заливки конфигурации в С2000-Ethernet!");
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(sendResult), sendResult, null);
             }

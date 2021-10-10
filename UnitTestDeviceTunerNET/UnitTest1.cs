@@ -11,6 +11,8 @@ namespace UnitTestDeviceTunerNET
     [TestClass]
     public class UnitTest1
     {
+        private byte newAddress = 0x02;
+
         [TestMethod]
         public void TestIsDeviceOnline()
         {
@@ -23,13 +25,27 @@ namespace UnitTestDeviceTunerNET
             Assert.IsTrue(result);
             //Assert.AreEqual(result, "С2000-Ethernet");
         }
-        
+
+        [TestMethod]
+        public void TestChangeDeviceAddress()
+        {
+            const string comPort = "COM6";
+            
+            var serialPort = new SerialPort { PortName = comPort };
+            var testService = new SerialSender(serialPort, new EventAggregator());
+
+            var result = testService.SetDeviceRS485Address(comPort, 127, newAddress);
+
+            Assert.IsTrue(result);
+        }
+
         [TestMethod]
         public void TestSendC2000EthernetConfig()
         {
             const string comPort = "COM6";
             var testDevice = new C2000Ethernet
             {
+                AddressRS485 = 2,
                 NetName = "DEADBEAF",
                 AddressIP = "1.2.3.4", 
                 Netmask = "5.6.7.8",
@@ -147,10 +163,10 @@ namespace UnitTestDeviceTunerNET
 
             var serialPort = new SerialPort {PortName = comPort};
             var testService = new SerialSender(serialPort, new EventAggregator());
-            var result = testService.SetC2000EthernetConfig(comPort, 127, testDevice);
+            var result = testService.SetC2000EthernetConfig(comPort, newAddress, testDevice);
 
             Assert.IsTrue(result);
         }
-        
+
     }
 }

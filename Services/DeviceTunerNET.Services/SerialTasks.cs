@@ -98,16 +98,19 @@ namespace DeviceTunerNET.Services
                 return ISerialTasks.ResultCode.deviceTypeMismatch;
             }
             */
+
+            if (!_serialSender.SetC2000EthernetConfig(_comPort, _rsAddress, device))
+            {
+                return ISerialTasks.ResultCode.errorConfigDownload;
+            }
+
             var sendAddressResult = SendConfigRS485(device);
             if (sendAddressResult != ISerialTasks.ResultCode.ok)
                 return sendAddressResult;
 
-            if (_serialSender.SetC2000EthernetConfig(_comPort, (byte)device.AddressRS485, device))
-            {
-                return ISerialTasks.ResultCode.ok;
-            }
+            
 
-            return ISerialTasks.ResultCode.undefinedError;
+            return ISerialTasks.ResultCode.ok;
         }
 
         public ObservableCollection<string> GetAvailableCOMPorts()

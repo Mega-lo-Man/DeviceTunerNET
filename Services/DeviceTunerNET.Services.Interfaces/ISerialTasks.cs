@@ -8,11 +8,12 @@ namespace DeviceTunerNET.Services.Interfaces
     {
         public enum ResultCode
         {
+            ok = 1,
             undefinedError = 0,
             deviceTypeMismatch = -1,
             addressFieldNotValid = -2,
             deviceNotRespond = -3,
-            ok = 1
+            errorConfigDownload = -4
         }
 
         /// <summary>

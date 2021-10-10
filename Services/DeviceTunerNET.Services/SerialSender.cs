@@ -26,8 +26,17 @@ namespace DeviceTunerNET.Services
 
         private byte currentAddress = 127;
 
-        private const int ADDRESS_CHANGE_TIMEOUT = 400; // Сингал-20П V3.10 после смены адреса подтверждает через 400 мс (остальные быстрее)
-        private const int READ_MODEL_TIMEOUT = 50; // Чтение типа прибора занимает не более 50 мс
+        private enum  Timeouts
+        {
+            addressChange = 400, // Сингал-20П V3.10 после смены адреса подтверждает через 400 мс (остальные быстрее)
+            readModel = 60, // Чтение типа прибора занимает не более 50 мс
+            ethernetConfig = 350,
+            RestartC2000Ethernet = 5000
+        }
+
+        //private const int ADDRESS_CHANGE_TIMEOUT = 400; 
+        //private const int READ_MODEL_TIMEOUT = 50;
+        
 
         /// <summary>
         /// Болидовская таблица CRC
@@ -98,7 +107,7 @@ namespace DeviceTunerNET.Services
             { 59, "Рупор исп.02" },
             { 61, "С2000-КДЛ-Modbus" },
             { 66, "Рупор исп.03" },
-            { 67, "Рупор-300" },
+            { 67, "Рупор-300" }
         };
 
         private SerialSender()
@@ -121,9 +130,9 @@ namespace DeviceTunerNET.Services
             _serialPort.Open();
 
             // формируем команду на отправку
-            var cmdString = new byte[] { deviceAddress, 0xB0, 0x0F, newDeviceAddress, newDeviceAddress };
+            var cmdString = new byte[] { 0xB0, 0x0F, newDeviceAddress, newDeviceAddress };
 
-            var result = Transaction(cmdString, ADDRESS_CHANGE_TIMEOUT);
+            var result = AddressTransaction(deviceAddress, cmdString, Timeouts.addressChange);
 
             _serialPort.Close();
 
@@ -136,7 +145,7 @@ namespace DeviceTunerNET.Services
         public string GetDeviceModel(string comPortName, byte deviceAddress)
         {
             // формируем команду на отправку
-            var cmdString = new byte[] { deviceAddress, 0xBF/*0x92*/, 0x0D, 0x00, 0x00 };
+            var cmdString = new byte[] { 0xBF, 0x0D, 0x00, 0x00 };
 
             if (!_serialPort.IsOpen)
             {
@@ -151,7 +160,7 @@ namespace DeviceTunerNET.Services
                     return "";
                 }
 
-                var deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
+                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
                 _serialPort.Close();
 
@@ -163,7 +172,7 @@ namespace DeviceTunerNET.Services
             }
             else
             {
-                var deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
+                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
                 if (!(deviceModel?.Length > 1)) 
                     return "";
@@ -177,7 +186,7 @@ namespace DeviceTunerNET.Services
         public bool IsDeviceOnline(string comPortName, byte deviceAddress)
         {
             // формируем команду на отправку
-            var cmdString = new byte[] { deviceAddress, 0x92, 0x01, 0x00, 0x00 };
+            var cmdString = new byte[] { 0x92, 0x01, 0x00, 0x00 };
             if (!_serialPort.IsOpen)
             {
                 _serialPort.PortName = comPortName;
@@ -191,7 +200,7 @@ namespace DeviceTunerNET.Services
                     return false;
                 }
 
-                var deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
+                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
                 _serialPort.Close();
 
@@ -202,7 +211,7 @@ namespace DeviceTunerNET.Services
             }
             else
             {
-                var deviceModel = Transaction(cmdString, READ_MODEL_TIMEOUT);
+                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
                 if (!(deviceModel?.Length > 1))
                     return false;
 
@@ -235,29 +244,34 @@ namespace DeviceTunerNET.Services
             return result;
         }
 
-        private byte[] Transaction(byte[] sendArray, int timeout)
+        private byte[] Transaction(byte[] sendArray, Timeouts timeout)
         {
+            return AddressTransaction(currentAddress, sendArray, timeout);
+        }
 
+        private byte[] AddressTransaction(byte address, byte[] sendArray, Timeouts timeout)
+        {
+            var addr = new[] {address};
+            var sendBytes = CombineArrays(addr, sendArray);
             // make DataReceived event handler
             _serialPort.DataReceived += sp_DataReceived;
 
             for (var i = 0; i < maxRepetitions; i++)
             {
-                SendPacket(sendArray);
+                SendPacket(sendBytes);
                 while (portReceive) { }
-                Thread.Sleep(timeout);
-                if (receiveBuffer == null) 
+                Thread.Sleep((int)timeout);
+                if (receiveBuffer == null)
                     continue;
                 break;
             }
 
             if (receiveBuffer == null)
-                return new byte[1] {0x00};
+                return new byte[1] { 0x00 };
 
             var result = receiveBuffer;
             receiveBuffer = null;
             return Encoding.ASCII.GetBytes(result);
-
         }
 
         private void SendPacket(byte[] sendArray)
@@ -323,9 +337,9 @@ namespace DeviceTunerNET.Services
         {
             currentAddress = deviceAddress;
             Debug.WriteLine("-----------------------");
-            var result = false;
+            
             if (_serialPort.IsOpen)
-                return result;
+                return false;
 
             _serialPort.PortName = ComPortName;
 
@@ -333,13 +347,15 @@ namespace DeviceTunerNET.Services
             // make DataReceived event handler
             _serialPort.DataReceived += sp_DataReceived;
 
-            if (!GetDeviceModel(ComPortName, deviceAddress).Equals("С2000-Ethernet"))
+            if (!GetDeviceModel(ComPortName, currentAddress).Equals("С2000-Ethernet"))
                 return false;
 
-            
+            //result = ReadConfigFormDevice();
 
-            result = SendPromoter();
+            
+            var result = SendPromoter();
             result = SendDeviceNetName(device.NetName);
+            
             result = SendEthernetTune(device.AddressIP, device.Netmask, device.DefaultGateway, device.FirstDns, device.SecondDns);
             result = SendDhcpStatus(device.Dhcp);
             result = SendMasterSlaveTransparent(device.NetworkMode);
@@ -359,27 +375,76 @@ namespace DeviceTunerNET.Services
             result = SendTransparentTune(device.TransparentUdp, device.TransparentProtocol, device.TransparentCrypto);
 
             result = SendRemoteDevices(device.RemoteDevicesList);
+            
             result = SendSuffix();
+            
             _serialPort.Close();
+
+            Thread.Sleep((int)Timeouts.RestartC2000Ethernet);
+
             return result;
+        }
+
+        private bool ReadConfigFormDevice()
+        {
+            Transaction(new byte[] { 0xcd, 0x3f, 0x29, 0x00 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x1e, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x7f, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x50, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xe3, 0x43, 0x40, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x70, 0x43, 0x80, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x4d, 0x43, 0xc0, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x71, 0x43, 0x00, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x7b, 0x43, 0x32, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x12, 0x43, 0x40, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x8a, 0x43, 0x72, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xb3, 0x43, 0x80, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xf9, 0x43, 0xb2, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x69, 0x43, 0xc0, 0x01, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x03, 0x43, 0xf2, 0x01, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xd0, 0x43, 0x00, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xe1, 0x43, 0x32, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x42, 0x43, 0x40, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xbd, 0x43, 0x72, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x54, 0x43, 0x80, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x5f, 0x43, 0xb2, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xdb, 0x43, 0xc0, 0x02, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xe8, 0x43, 0xf2, 0x02, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xcd, 0x43, 0x00, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x1c, 0x43, 0x32, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xbc, 0x43, 0x40, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x16, 0x43, 0x72, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xcf, 0x43, 0x80, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x61, 0x43, 0xb2, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x63, 0x43, 0xc0, 0x03, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xcf, 0x43, 0xf2, 0x03, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xc7, 0x43, 0x00, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x92, 0x43, 0x32, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0xb9, 0x43, 0x40, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x69, 0x43, 0x72, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
+            Transaction(new byte[] { 0x96, 0x43, 0x80, 0x04, 0x00, 0x22 }, Timeouts.ethernetConfig);
+
+            Transaction(new byte[] { 0xec, 0x43, 0xb2, 0x04, 0x00, 0x0e }, Timeouts.ethernetConfig);
+
+            return true;
         }
 
         private bool SendPromoter()
         {
             //CommandSend(new byte[] { 0x7F, 0x70, 0x0D, 0x00, 0x00 }); // 7f 06 70 0d 00 00
 
-            CommandSend(new byte[] { currentAddress, 0x6E, 0x43, 0x00, 0x00, 0x00, 0x40 }); // 7f 08 6e 43 00 00 00 40
-            CommandSend(new byte[] { currentAddress, 0x3D, 0x43, 0x00, 0x00, 0x00, 0x40 }); // 7f 08 3d 43 00 00 00 40
+            Transaction(new byte[] { 0x6E, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig); // 7f 08 6e 43 00 00 00 40
+            Transaction(new byte[] { 0x3D, 0x43, 0x00, 0x00, 0x00, 0x40 }, Timeouts.ethernetConfig); // 7f 08 3d 43 00 00 00 40
             return true;
         }
 
         private bool SendDeviceNetName(string name)
         {
             var deviceName = StringToByteArray(name);
-            var header = new byte[] { currentAddress, 0x7B, 0x41, 0x00, 0x00, 0x00 };
+            var header = new byte[] { 0x7B, 0x41, 0x00, 0x00, 0x00 };
             var resultCmd = CombineArrays(header, deviceName);
 
-            CommandSend(resultCmd);
+            Transaction(resultCmd, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -390,35 +455,35 @@ namespace DeviceTunerNET.Services
             var _gateway = IpToByteArray(gateway);
             var _firstDNS = IpToByteArray(firstDNS);
             var _secondDNS = IpToByteArray(secondDNS);
-            var _header = new byte[] { currentAddress, 0xC9, 0x41, 0x20, 0x00, 0x00 };
+            var _header = new byte[] { 0xC9, 0x41, 0x20, 0x00, 0x00 };
             var cmd = CombineArrays(_header, _ip, _netmask, _gateway, _firstDNS, _secondDNS);
-            CommandSend(cmd);
+            Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendDhcpStatus(bool dhcpEnable)
         {
             var dhcp = Convert.ToByte(dhcpEnable);
-            var cmd = new byte[] { currentAddress, 0x0F, 0x41, 0x3A, 0x00, 0x00, dhcp }; //7f 08 0f 41 61 00 00 01
-            CommandSend(cmd);
+            var cmd = new byte[] { 0x0F, 0x41, 0x3A, 0x00, 0x00, dhcp }; //7f 08 0f 41 61 00 00 01
+            Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendMasterSlaveTransparent(C2000Ethernet.Mode mode)
         {
-            CommandSend(new byte[] { currentAddress, 0x8B, 0x41, 0x61, 0x00, 0x00, (byte)mode }); // 7f 08 8b 41 61 00 00 00
+            Transaction(new byte[] { 0x8B, 0x41, 0x61, 0x00, 0x00, (byte)mode }, Timeouts.ethernetConfig); // 7f 08 8b 41 61 00 00 00
             return true;
         }
 
         private bool SendInterfaceType(C2000Ethernet.ProtocolType rsType)
         {
-            CommandSend(new byte[] { currentAddress, 0x50, 0x41, 0x60, 0x00, 0x00, (byte)rsType }); // 7f 08 50 41 60 00 00 01
+            Transaction(new byte[] { 0x50, 0x41, 0x60, 0x00, 0x00, (byte)rsType }, Timeouts.ethernetConfig); // 7f 08 50 41 60 00 00 01
             return true;
         }
 
         private bool SendConnectionSpeed(C2000Ethernet.Speed speed)
         {
-            CommandSend(new byte[] { currentAddress, 0xD6, 0x41, 0xC0, 0x00, 0x00, (byte)speed }); // 7f 08 d6 41 c0 00 00 03
+            Transaction(new byte[] { 0xD6, 0x41, 0xC0, 0x00, 0x00, (byte)speed }, Timeouts.ethernetConfig); // 7f 08 d6 41 c0 00 00 03
             return true;
         }
 
@@ -444,36 +509,36 @@ namespace DeviceTunerNET.Services
             dpsts |= timeoutSignMask; // YYYX_YYYY (X - timeoutSign, Y - dps)
             dpsts |= pauseSignMask; // YYZY_YYYY (Z - pauseSign, Y - dps)
 
-            CommandSend(new byte[] { currentAddress, 0xD6, 0x41, 0xC1, 0x00, 0x00, dpsts }); // 
+            Transaction(new byte[] { 0xD6, 0x41, 0xC1, 0x00, 0x00, dpsts }, Timeouts.ethernetConfig); // 
             return true;
         }
 
         private bool SendTimeout(ushort timeout)
         {
             var bytes = BitConverter.GetBytes(timeout);
-            CommandSend(new byte[] { currentAddress, 0xD6, 0x41, 0xC2, 0x00, 0x00, bytes[0], bytes[1] }); // 
+            Transaction(new byte[] { 0xD6, 0x41, 0xC2, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig); // 
             return true;
         }
 
         private bool SendPause(ushort pause)
         {
             var bytes = BitConverter.GetBytes(pause);
-            CommandSend(new byte[] { currentAddress, 0xD6, 0x41, 0xC4, 0x00, 0x00, bytes[0], bytes[1] });
+            Transaction(new byte[] { 0xD6, 0x41, 0xC4, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendAccessNotifySign(bool accessNotifySign)
         {
             var ans = Convert.ToByte(accessNotifySign);
-            var cmd = new byte[] { currentAddress, 0x11, 0x41, 0x9F, 0x00, 0x00, ans }; // 7f 08 11 41 9f 00 00 01 d3
-            CommandSend(cmd);
+            var cmd = new byte[] { 0x11, 0x41, 0x9F, 0x00, 0x00, ans }; // 7f 08 11 41 9f 00 00 01 d3
+            Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendPauseBeforeResponseRs(ushort pause)
         {
             var bytes = BitConverter.GetBytes(pause);
-            CommandSend(new byte[] { currentAddress, 0xB5, 0x41, 0xB0, 0x00, 0x00, bytes[0], bytes[1] });//7f 08 b5 41 b0 00 00 10 7a
+            Transaction(new byte[] { 0xB5, 0x41, 0xB0, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);//7f 08 b5 41 b0 00 00 10 7a
             return true;
         }
         
@@ -514,11 +579,11 @@ namespace DeviceTunerNET.Services
 
             var byteArray = Encoding.Default.GetBytes(sendStr);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
-            var header = new byte[] { currentAddress, 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00};
+            var header = new byte[] { 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00};
             var stringEnd = new byte[] { 0x00 };
 
             var cmd = CombineArrays(header, byteArray, stringEnd);
-            CommandSend(cmd);
+            Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -529,10 +594,10 @@ namespace DeviceTunerNET.Services
 
             var bytes = BitConverter.GetBytes(udp);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
-            var header = new byte[] { currentAddress, 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
+            var header = new byte[] { 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
             
             var cmd = CombineArrays(header, bytes);
-            CommandSend(cmd);
+            Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -540,10 +605,10 @@ namespace DeviceTunerNET.Services
         {
             var bytes = BitConverter.GetBytes(udpType);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
-            var header = new byte[] { currentAddress, 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
+            var header = new byte[] { 0x06, 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
 
             var cmd = CombineArrays(header, bytes);
-            CommandSend(cmd);
+            Transaction(cmd, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -574,20 +639,20 @@ namespace DeviceTunerNET.Services
         private bool SendMasterSlaveUdp(ushort udp)
         {
             var bytes = BitConverter.GetBytes(udp);
-            CommandSend(new byte[] { currentAddress, 0xBA, 0x41, 0x40, 0x00, 0x00, bytes[0], bytes[1] });
+            Transaction(new byte[] { 0xBA, 0x41, 0x40, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
             return true;
         }
 
         private bool SendConfirmationTimeout(byte timeout)
         {
-            CommandSend(new byte[] { currentAddress, 0x80, 0x41, 0x42, 0x00, 0x00, timeout });
+            Transaction(new byte[] { 0x80, 0x41, 0x42, 0x00, 0x00, timeout }, Timeouts.ethernetConfig);
             //7f 08 80 41 42 00 00 ff a2
             return true;
         }
 
         private bool SendConnectionTimeout(byte timeout)
         {
-            CommandSend(new byte[] { currentAddress, 0x80, 0x41, 0x43, 0x00, 0x00, timeout });
+            Transaction(new byte[] { 0x80, 0x41, 0x43, 0x00, 0x00, timeout }, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -598,7 +663,7 @@ namespace DeviceTunerNET.Services
             var udpPortType = Convert.ToByte(udpType);
             freeConnection |= (byte)(udpPortType << 1); // 0000_0010 if udpType = static
 
-            CommandSend(new byte[] { currentAddress, 0x0e, 0x41, 0x56, 0x00, 0x00, freeConnection });
+            Transaction(new byte[] { 0x0e, 0x41, 0x56, 0x00, 0x00, freeConnection }, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -606,7 +671,7 @@ namespace DeviceTunerNET.Services
         {
             var bytes = BitConverter.GetBytes(udp);
             // 7f 09 26 41 44 00 00 39 30 9a
-            CommandSend(new byte[] { currentAddress, 0x26, 0x41, 0x44, 0x00, 0x00, bytes[0], bytes[1] });
+            Transaction(new byte[] { 0x26, 0x41, 0x44, 0x00, 0x00, bytes[0], bytes[1] }, Timeouts.ethernetConfig);
             return true;
         }
 
@@ -618,48 +683,17 @@ namespace DeviceTunerNET.Services
 
             var bytes = BitConverter.GetBytes(udp);
             //7f 0a 62 41 d0 00 00 67 2b 02 57
-            CommandSend(new byte[] { currentAddress, 0x62, 0x41, 0xd0, 0x00, 0x00, bytes[0], bytes[1], transparentMode});
+            Transaction(new byte[] { 0x62, 0x41, 0xd0, 0x00, 0x00, bytes[0], bytes[1], transparentMode}, Timeouts.ethernetConfig);
             
             return true;
         }
 
         private bool SendSuffix()
         {
-            CommandSend(new byte[] { currentAddress, 0xa6, 0x17, 0x00, 0x00 });
+            Transaction(new byte[] { 0xa6, 0x17, 0x00, 0x00 }, Timeouts.ethernetConfig);
             return true;
         }
-
-        private string CommandSend(byte[] command)
-        {
-            for (var i = 0; i < maxRepetitions; i++)
-            {
-                SendPacket(command);
-                while (portReceive == true) { }
-                Thread.Sleep(300);
-                if (!(receiveBuffer?.Length > 0)) 
-                    continue;
-
-                break;
-            }
-
-            var str = "";
-            if (receiveBuffer != null)
-            {
-                str = BitConverter.ToString(Encoding.ASCII.GetBytes(receiveBuffer));
-            }
-            receiveBuffer = "";
-            return str;
-            
-        }
-
-        private static byte[] IntToByteArray(int intValue)
-        {
-            var intVal16 = (ushort)intValue;
-            var result = BitConverter.GetBytes(intVal16);
-            //Array.Reverse(result);
-            return result;
-        }
-
+        
         private static byte[] IpToByteArray(string ipAddress)
         {
             var ipWithoutDots = ipAddress.Split(new char[] { '.' });
