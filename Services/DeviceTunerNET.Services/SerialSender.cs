@@ -21,7 +21,7 @@ namespace DeviceTunerNET.Services
         private const int maxRepetitions = 15; // Максимальное количество повторов посылок пакетов
         private bool portReceive;
         private string receiveBuffer = null;
-        private readonly SerialPort _serialPort;
+        private SerialPort _serialPort;
         private readonly IEventAggregator _ea;
 
         private byte currentAddress = 127;
@@ -32,7 +32,7 @@ namespace DeviceTunerNET.Services
             addressChange = 400, // Сингал-20П V3.10 после смены адреса подтверждает через 400 мс (остальные быстрее)
             readModel = 60, // Чтение типа прибора занимает не более 50 мс
             ethernetConfig = 350,
-            restartC2000Ethernet = 6000
+            restartC2000Ethernet = 7000
         }
 
         //private const int ADDRESS_CHANGE_TIMEOUT = 400; 
@@ -117,27 +117,18 @@ namespace DeviceTunerNET.Services
         {
         }
 
-        public SerialSender(SerialPort serialPort, IEventAggregator ea)
+        public SerialSender(IEventAggregator ea)
         {
-            _serialPort = serialPort;
             _ea = ea;
         }
 
-        public bool SetDeviceRS485Address(string comPortName, byte deviceAddress, byte newDeviceAddress)
+        public bool SetDeviceRS485Address(SerialPort comPortName, byte deviceAddress, byte newDeviceAddress)
         {
-            if (_serialPort.IsOpen)
-                return false;
-
-            _serialPort.PortName = comPortName;
-
-            _serialPort.Open();
-
+            _serialPort = comPortName;
             // формируем команду на отправку
             var cmdString = new byte[] { 0x0F, newDeviceAddress, newDeviceAddress };
 
             var result = AddressTransaction(deviceAddress, cmdString, Timeouts.addressChange);
-
-            _serialPort.Close();
 
             if (result.Length <= 1)
                 return false;
@@ -145,90 +136,37 @@ namespace DeviceTunerNET.Services
             return result[4] == newDeviceAddress;
         }
 
-        public string GetDeviceModel(string comPortName, byte deviceAddress)
+        public string GetDeviceModel(SerialPort comPortName, byte deviceAddress)
         {
+            _serialPort = comPortName;
             // формируем команду на отправку
             var cmdString = new byte[] { 0x0D, 0x00, 0x00 };
+            var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
-            if (!_serialPort.IsOpen)
-            {
-                _serialPort.PortName = comPortName;
-                try
-                {
-                    _serialPort.Open();
-                }
-                catch
-                {
-                    MessageBox.Show("Не удалось открыть порт!");
-                    return "";
-                }
+            if (!(deviceModel?.Length > 1)) 
+                return "";
 
-                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
+            var devType = deviceModel[3];
 
-                _serialPort.Close();
-
-                if (!(deviceModel?.Length > 1))
-                    return "";
-
-                var devType = deviceModel[3];
-                return _bolidDict[devType];
-            }
-            else
-            {
-                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
-
-                if (!(deviceModel?.Length > 1)) 
-                    return "";
-
-                var devType = deviceModel[3];
-
-                return _bolidDict[devType];
-            }
+            return _bolidDict[devType];
         }
 
-        public bool IsDeviceOnline(string comPortName, byte deviceAddress)
+        public bool IsDeviceOnline(SerialPort comPortName, byte deviceAddress)
         {
+            _serialPort = comPortName;
+            
             // формируем команду на отправку
             var cmdString = new byte[] { 0x01, 0x00, 0x00 };
-            if (!_serialPort.IsOpen)
-            {
-                _serialPort.PortName = comPortName;
-                try
-                {
-                    _serialPort.Open();
-                }
-                catch
-                {
-                    MessageBox.Show("Не удалось открыть порт!");
-                    return false;
-                }
-
-                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
-
-                _serialPort.Close();
-
-                if (!(deviceModel?.Length > 1))
-                    return false;
-
-                return true;
-            }
-            else
-            {
-                var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
-                if (!(deviceModel?.Length > 1))
-                    return false;
-
-                return true;
-            }
+            
+            var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
+            
+            return deviceModel?.Length > 1;
         }
 
-        public Dictionary<byte, string> SearchOnlineDevices(string comPortName)
+        public Dictionary<byte, string> SearchOnlineDevices(SerialPort comPortName)
         {
-            if (!_serialPort.IsOpen)
-            {
-                _serialPort.PortName = comPortName;
-                _serialPort.Open();
-            }
+            _serialPort = comPortName;
+
             var result = new Dictionary<byte, string>();
             for (byte devAddr = 1; devAddr <= 127; devAddr++)
             {
@@ -243,7 +181,7 @@ namespace DeviceTunerNET.Services
                     AttachedObject = (int)devAddr
                 });
             }
-            _serialPort.Close();
+            
             return result;
         }
 
@@ -340,15 +278,15 @@ namespace DeviceTunerNET.Services
             foreach (var ch in data)
             {
                 var value = Convert.ToInt32(ch);
-                //Console.Write(value.ToString("X") + " ");
             }
             receiveBuffer += data;
             Debug.WriteLine("ReceiveBuffer: " + receiveBuffer + "  Length: " + receiveBuffer.Length);
             portReceive = false;
         }
 
-        public bool SetC2000EthernetConfig(string ComPortName, byte deviceAddress, C2000Ethernet device)
+        public bool SetC2000EthernetConfig(SerialPort ComPortName, byte deviceAddress, C2000Ethernet device)
         {
+            _serialPort = ComPortName;
 
             currentAddress = deviceAddress;
             Debug.WriteLine("-----------------------");
@@ -356,14 +294,8 @@ namespace DeviceTunerNET.Services
             var progress = 0;
             UpdateProgressBar(progress);
 
-            if (_serialPort.IsOpen)
-                return false;
-
-            _serialPort.PortName = ComPortName;
-
-            _serialPort.Open();
             // make DataReceived event handler
-            _serialPort.DataReceived += sp_DataReceived;
+            //_serialPort.DataReceived += sp_DataReceived;
 
             if (!GetDeviceModel(ComPortName, currentAddress).Equals("С2000-Ethernet"))
                 return false;
@@ -413,7 +345,7 @@ namespace DeviceTunerNET.Services
 
 
             Thread.Sleep((int)Timeouts.restartC2000Ethernet);
-            _serialPort.Close();
+            
             UpdateProgressBar(100);
             return result;
         }
@@ -726,7 +658,12 @@ namespace DeviceTunerNET.Services
             Transaction(new byte[] { 0x17, 0x00, 0x00 }, Timeouts.ethernetConfig);
             return true;
         }
-        
+
+        private int GetAddressSearchProgressBar(int address)
+        {
+            return 100 * address / 127;
+        }
+
         private static byte[] IpToByteArray(string ipAddress)
         {
             var ipWithoutDots = ipAddress.Split(new char[] { '.' });

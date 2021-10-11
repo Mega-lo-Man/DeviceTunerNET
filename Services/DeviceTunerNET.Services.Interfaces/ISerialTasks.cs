@@ -13,7 +13,8 @@ namespace DeviceTunerNET.Services.Interfaces
             deviceTypeMismatch = -1,
             addressFieldNotValid = -2,
             deviceNotRespond = -3,
-            errorConfigDownload = -4
+            errorConfigDownload = -4,
+            comPortBusy = -5
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <returns>Collection of all found RS485-devices</returns>
         public IEnumerable<RS485device> GetOnlineDevices(string comPort);
 
-        public ResultCode CheckOnlineDevice(string comPort, RS485device device);
+        public ResultCode CheckOnlineDevice(string comPort, byte address, string deviceModel);
 
         public ObservableCollection<string> GetAvailableCOMPorts();
     }

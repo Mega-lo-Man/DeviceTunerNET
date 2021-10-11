@@ -3,6 +3,7 @@ using DeviceTunerNET.SharedDataModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO.Ports;
 using System.Windows.Controls;
 
 namespace DeviceTunerNET.Services
@@ -14,7 +15,7 @@ namespace DeviceTunerNET.Services
         private ISerialSender _serialSender;
 
         private byte _rsAddress = 127;
-        private string _comPort = "";
+        private SerialPort _comPort;
         private const int LAST_ADDRESS = 127;
         private const int FIRST_ADDRESS = 1;
 
@@ -25,19 +26,42 @@ namespace DeviceTunerNET.Services
 
         public ISerialTasks.ResultCode SendConfig<T>(T device, string comPort, int rsAddress)
         {
-            _comPort = comPort;
+            _comPort = new SerialPort(comPort);
+            try
+            {
+                _comPort.Open();
+            }
+            catch
+            {
+                return ISerialTasks.ResultCode.comPortBusy;
+            }
+            
             _rsAddress = Convert.ToByte(rsAddress);
             object dev = device;
             if (device.GetType() == typeof(RS485device))
-                return SendConfigRS485((RS485device)dev);
+            {
+                var result = SendConfigRS485((RS485device)dev);
+                _comPort.Close();
+                return result;
+            }
+
             if (device.GetType() == typeof(C2000Ethernet))
-                return SendConfigC2000Ethernet((C2000Ethernet)dev);
+            {
+                var result = SendConfigC2000Ethernet((C2000Ethernet) dev);
+                _comPort.Close();
+                return result;
+            }
+            _comPort.Close();
             return ISerialTasks.ResultCode.undefinedError;
         }
 
         private ISerialTasks.ResultCode SendConfigRS485(RS485device device)
         {
-            var result = CheckOnlineDevice(_comPort, device);
+            //var result = CheckOnlineDevice(_comPort, _rsAddress, device.Model);
+            var deviceModel = _serialSender.GetDeviceModel(_comPort, Convert.ToByte(device.AddressRS485));
+
+            var result = CheckDevice(device.Model, deviceModel);
+
             if (result != ISerialTasks.ResultCode.ok)
             {
                 return result;
@@ -46,28 +70,38 @@ namespace DeviceTunerNET.Services
             var newAddress = Convert.ToByte(device.AddressRS485);
             if (_serialSender.SetDeviceRS485Address(_comPort, _rsAddress, newAddress))
             {
+             
                 return ISerialTasks.ResultCode.ok;
             }
-
+            
             return ISerialTasks.ResultCode.undefinedError;
         }
 
-        public ISerialTasks.ResultCode CheckOnlineDevice(string comPort, RS485device checkDevice)
+        public ISerialTasks.ResultCode CheckOnlineDevice(string comPort, byte address, string expectedModel)
         {
-            _comPort = comPort;
-
-            if (checkDevice.AddressRS485 == null)
+            _comPort = new SerialPort(comPort);
+            try
             {
-                return ISerialTasks.ResultCode.addressFieldNotValid;
+                _comPort.Open();
+            }
+            catch
+            {
+                return ISerialTasks.ResultCode.comPortBusy;
             }
 
-            var deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
+            var deviceModel = _serialSender.GetDeviceModel(_comPort, address);
+            _comPort.Close();
+            return CheckDevice(expectedModel, deviceModel);
+        }
+
+        private ISerialTasks.ResultCode CheckDevice(string expectedModel, string deviceModel)
+        {
             if (deviceModel.Length == 0)
             {
                 return ISerialTasks.ResultCode.deviceNotRespond;
             }
 
-            if (!IsModelRight(checkDevice.Model, deviceModel))
+            if (!IsModelRight(expectedModel, deviceModel))
             {
                 return ISerialTasks.ResultCode.deviceTypeMismatch;
             }
@@ -80,37 +114,25 @@ namespace DeviceTunerNET.Services
             return receivedModel.ToUpper().Contains(expectedModel.ToUpper());
         }
 
+
+
         private ISerialTasks.ResultCode SendConfigC2000Ethernet(C2000Ethernet device)
         {
             if (device.AddressRS485 == null)
             {
                 return ISerialTasks.ResultCode.addressFieldNotValid;
             }
-
-            /*var deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
-            if (deviceModel.Length == 0)
-            {
-                return ISerialTasks.ResultCode.deviceNotRespond;
-            }
             
-            if (!device.Model.Contains(deviceModel))
-            {
-                return ISerialTasks.ResultCode.deviceTypeMismatch;
-            }
-            */
-
             if (!_serialSender.SetC2000EthernetConfig(_comPort, _rsAddress, device))
             {
                 return ISerialTasks.ResultCode.errorConfigDownload;
             }
 
-            var sendAddressResult = SendConfigRS485(device);
-            if (sendAddressResult != ISerialTasks.ResultCode.ok)
-                return sendAddressResult;
+            var newAddress = Convert.ToByte(device.AddressRS485);
+            if (_serialSender.SetDeviceRS485Address(_comPort, _rsAddress, newAddress)) 
+                return ISerialTasks.ResultCode.ok;
 
-            
-
-            return ISerialTasks.ResultCode.ok;
+            return ISerialTasks.ResultCode.deviceNotRespond;
         }
 
         public ObservableCollection<string> GetAvailableCOMPorts()
@@ -120,13 +142,23 @@ namespace DeviceTunerNET.Services
 
         public ISerialTasks.ResultCode ShiftDevicesAddresses(string comPort, int startAddress, int targetAddress, int range)
         {
-            if (targetAddress + range >= LAST_ADDRESS || 
+            if (targetAddress + range >= LAST_ADDRESS ||
                 targetAddress <= 0 ||
                 targetAddress >= startAddress &&
                 targetAddress <= startAddress + range)
                 return ISerialTasks.ResultCode.ok;
 
-            var _comPort = comPort;
+            _comPort = new SerialPort(comPort) { PortName = comPort };
+            try
+            {
+                _comPort.Open();
+            }
+            catch
+            {
+                return ISerialTasks.ResultCode.comPortBusy;
+            }
+            
+            //var _comPort = comPort;
             var _startAddress = Convert.ToByte(startAddress);
             var _targetAddress = Convert.ToByte(targetAddress);
             var _range = Convert.ToByte(range);
@@ -138,22 +170,34 @@ namespace DeviceTunerNET.Services
                 var deviceModel = _serialSender.GetDeviceModel(_comPort, currentAddress);
                 if (deviceModel.Length == 0)
                 {
+                    _comPort.Close();
                     return ISerialTasks.ResultCode.deviceNotRespond;
                 }
 
                 var newAddr = (byte)(_targetAddress + counter);
                 if (!_serialSender.SetDeviceRS485Address(_comPort, currentAddress, newAddr))
                 {
+                    _comPort.Close();
                     return ISerialTasks.ResultCode.deviceNotRespond;
                 }
             }
             //для сдвига адресов вправо
+            _comPort.Close();
             return ISerialTasks.ResultCode.ok;
         }
 
-        public IEnumerable<RS485device> GetOnlineDevices(string ComPort)
+        public IEnumerable<RS485device> GetOnlineDevices(string comPort)
         {
-            var _comPort = ComPort;
+            _comPort = new SerialPort(comPort);
+            try
+            {
+                _comPort.Open();
+            }
+            catch
+            {
+                yield break;
+            }
+            //var _comPort = ComPort;
 
             for (byte currAddr = FIRST_ADDRESS; currAddr <= LAST_ADDRESS; currAddr++)
             {
