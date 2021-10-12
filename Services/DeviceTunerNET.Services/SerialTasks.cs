@@ -58,7 +58,7 @@ namespace DeviceTunerNET.Services
         private ISerialTasks.ResultCode SendConfigRS485(RS485device device)
         {
             //var result = CheckOnlineDevice(_comPort, _rsAddress, device.Model);
-            var deviceModel = _serialSender.GetDeviceModel(_comPort, Convert.ToByte(device.AddressRS485));
+            var deviceModel = _serialSender.GetDeviceModel(_comPort, _rsAddress);
 
             var result = CheckDevice(device.Model, deviceModel);
 
@@ -70,7 +70,6 @@ namespace DeviceTunerNET.Services
             var newAddress = Convert.ToByte(device.AddressRS485);
             if (_serialSender.SetDeviceRS485Address(_comPort, _rsAddress, newAddress))
             {
-             
                 return ISerialTasks.ResultCode.ok;
             }
             
