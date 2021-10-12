@@ -446,7 +446,11 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 case ISerialTasks.ResultCode.ok:
                     device1.Serial = SerialTextBox;
-                    _dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial);
+                    if (!_dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial))
+                    {
+                        Clipboard.SetText(device1.Serial ?? string.Empty);
+                        MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
+                    }
                     SerialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
                     break;
                 case ISerialTasks.ResultCode.deviceNotRespond:
@@ -463,6 +467,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     break;
                 case ISerialTasks.ResultCode.errorConfigDownload:
                     MessageBox.Show("Ошибка заливки конфигурации в С2000-Ethernet!");
+                    break;
+                case ISerialTasks.ResultCode.comPortBusy:
+                    MessageBox.Show("COM порт занят! Возможно запущен UProg.");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(sendResult), sendResult, null);

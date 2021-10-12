@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
 
@@ -265,11 +266,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                         }));
                         break;
                     }
-                    else
+
+                    if (!_dataRepositoryService.SaveSerialNumber(ethernetSwitch.Id, ethernetSwitch.Serial))
                     {
-                        _dataRepositoryService.SaveSerialNumber(ethernetSwitch.Id, ethernetSwitch.Serial);
-                        _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(ethernetSwitch));
+                        Clipboard.SetText(ethernetSwitch.Serial ?? string.Empty);
+                        MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
                     }
+                    _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(ethernetSwitch));
+                    
                     // Обновляем всю коллекцию d UI целиком
                     _dispatcher.BeginInvoke(new Action(() =>
                     {

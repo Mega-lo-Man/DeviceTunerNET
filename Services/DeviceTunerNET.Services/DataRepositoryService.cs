@@ -45,9 +45,7 @@ namespace DeviceTunerNET.Services
             if (_dataProviderType != 1)
                 return false;
 
-            _excelDataDecoder.SaveSerialNumber(id, serialNumber);
-            
-            return true;
+            return _excelDataDecoder.SaveSerialNumber(id, serialNumber);
         }
 
         public IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()
