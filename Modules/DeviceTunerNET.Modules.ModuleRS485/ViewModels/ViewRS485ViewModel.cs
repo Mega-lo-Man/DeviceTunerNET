@@ -344,7 +344,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             // Если всё ещё как-либо прибор не настроен - ничего не вышло. Пусть проверяющий включает голову
             if (GetNumberOfDeviceWithoutQcPassed(DevicesForProgramming) != 0)
             {
-                MessageBox.Show("Некоторые приборы не прошли проверку");
+                var devicesWithoutQC = GetDevicesWithoutQualityControl(DevicesForProgramming);
+                
+                var devicesStr = "";
+                foreach (var device in devicesWithoutQC)
+                {
+                    devicesStr += Environment.NewLine + device.AddressRS485 + " : " + device.Model;
+                }
+                MessageBox.Show("Некоторые приборы не прошли проверку:" + devicesStr);
             }
             else
             {
@@ -438,6 +445,11 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         {
             //исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
             return devices.Cast<RS485device>().FirstOrDefault(device => string.IsNullOrEmpty(device.Serial));
+        }
+
+        private IEnumerable<RS485device> GetDevicesWithoutQualityControl(IEnumerable<object> devices)
+        {
+            return devices.Cast<RS485device>().Where(device => device.QualityControlPassed == false).ToList();
         }
 
         private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1)

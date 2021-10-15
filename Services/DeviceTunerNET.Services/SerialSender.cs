@@ -38,7 +38,6 @@ namespace DeviceTunerNET.Services
         //private const int ADDRESS_CHANGE_TIMEOUT = 400; 
         //private const int READ_MODEL_TIMEOUT = 50;
         
-
         /// <summary>
         /// Болидовская таблица CRC
         /// </summary>
@@ -60,14 +59,12 @@ namespace DeviceTunerNET.Services
             0xE9,0xB7,0x55,0x0B,0x88,0xD6,0x34,0x6A,0x2B,0x75,0x97,0xC9,0x4A,0x14,0xF6,0xA8,
             0x74,0x2A,0xC8,0x96,0x15,0x4B,0xA9,0xF7,0xB6,0xFC,0x0A,0x54,0xD7,0x89,0x6B,0x35
         };
-
-
-
+        
         private readonly Dictionary<byte, string> _bolidDict = new Dictionary<byte, string>()
         {
             { 1, "Сигнал-20" },
-            { 2, "Сигнал-20П" },
-            { 3, "С2000-СП1" },
+            { 2, "Сигнал-20П, Сигнал-20П исп.01" },
+            { 3, "С2000-СП1, С2000-СП1 исп.01" },
             { 4, "С2000-4" },
             { 7, "С2000-К" },
             { 8, "С2000-ИТ" },
@@ -110,9 +107,7 @@ namespace DeviceTunerNET.Services
             { 66, "Рупор исп.03" },
             { 67, "Рупор-300" }
         };
-
         
-
         private SerialSender()
         {
         }

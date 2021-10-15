@@ -175,6 +175,7 @@ namespace DeviceTunerNET.Services
             return new Tuple<char, int>(_rang, lineNumb);
         }
 
+        // связываем все C2000-Ethernet в общую сеть, добавляя ссылки мастеров на слейв и прописывая мастеров в слейвы
         private void FillDevicesDependencies(Dictionary<C2000Ethernet, Tuple<char, int>> ethDevices, char dep1, char dep2)
         {
             foreach (var device in ethDevices)
@@ -182,7 +183,7 @@ namespace DeviceTunerNET.Services
                 switch (device.Value.Item1)
                 {
                     case transparent:
-                        device.Key.NetworkMode = 0; // Transparent
+                        device.Key.NetworkMode = C2000Ethernet.Mode.transparent; // Transparent
                         break;
                     case master:
                         device.Key.NetworkMode = C2000Ethernet.Mode.master; // master
