@@ -132,12 +132,30 @@
                 <Label Content="Label path:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <TextBox Text="{Binding PrintLabelPath, Mode=TwoWay}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
             </Grid>
+
+            <Label Content="Очередность:"/>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
+                </Grid.ColumnDefinitions>
+
+                <RadioButton Content="По шкафам" Grid.Column="0" GroupName="JobType" IsChecked="{Binding IsCheckedByCabinets}" />
+                <RadioButton Content="По площадкам" Grid.Column="1" GroupName="JobType" IsChecked="{Binding IsCheckedByArea}" />
+
+            </Grid>
         </StackPanel>
 
         <ListBox x:Name="listBox" ItemsSource="{Binding Path=SwitchList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="0" Grid.Column="1" Margin="5" Grid.RowSpan="2" >
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="Beige" />
                 </Style>
             </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
@@ -150,14 +168,34 @@
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="{Binding Designation}" Grid.Column="0" Grid.Row="0"/>
-                        <TextBlock Text="{Binding AddressIP}" Grid.Column="0" Grid.Row="1" />
-                        <TextBlock Text="{Binding Serial}" Grid.Column="0" Grid.Row="2" />
+                        <TextBlock Text="{Binding Designation}" 
+                                   Grid.Column="0" 
+                                   Grid.Row="0"
+                                   FontWeight="DemiBold"/>
+                        <TextBlock Text="{Binding AddressIP}" 
+                                   Grid.Column="0" 
+                                   Grid.Row="1" />
+                        <TextBlock Text="{Binding Serial}" 
+                                   Grid.Column="0" 
+                                   Grid.Row="2" />
 
-                        <Image Margin="3" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
+                        <TextBlock Text="{Binding Cabinet}"
+                                   Margin="0,0,10,0"
+                                   VerticalAlignment="Center"
+                                   Grid.Column="1" 
+                                   Grid.RowSpan="3"
+                                   FontWeight="DemiBold"/>
+
+                        <Image Margin="3" 
+                               HorizontalAlignment="Right" 
+                               VerticalAlignment="Center"
+                               Grid.Column="2" 
+                               Grid.RowSpan="3" 
+                               Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
 
                     </Grid>
                 </DataTemplate>
@@ -177,7 +215,7 @@
             </Grid.RowDefinitions>
             <Label Name="CurrentItemIP" Margin="3" Grid.Row="0" Foreground ="black" Content ="{Binding CurrentItemTextBox}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="24" FontWeight="Bold" />
             <Label Name="ChangeDevice" Visibility="{Binding ChangeDeviceFireUp}" Margin="3" Grid.Row="1" Background ="red" Foreground ="black" Content ="{Binding MessageForUser}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-            <ToggleButton Grid.Row="2" Content="ON LINE MODE" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=SliderIsChecked, Mode=TwoWay}">
+            <ToggleButton IsEnabled="{Binding IsCanDoStart}" Grid.Row="2" Content="ON LINE MODE" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=SliderIsChecked, Mode=TwoWay}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding Path=CheckedCommand}"/>
