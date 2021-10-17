@@ -88,7 +88,12 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         public string SelectedPrinter
         {
             get => _selectedPrinter;
-            set => SetProperty(ref _selectedPrinter, value);
+            set
+            {
+                if (value != null)
+                    IsCanDoPrint = true;
+                SetProperty(ref _selectedPrinter, value);
+            }
         }
 
         private string _printLabelPath = "Resources\\Files\\label25x25switch.dymo";
@@ -169,6 +174,17 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 SetProperty(ref _isCanDoStart, value);
             }
         }
+
+        private bool _isCanDoPrint;
+        public bool IsCanDoPrint
+        {
+            get => _isCanDoPrint;
+            set
+            {
+                PrintTestLabel.RaiseCanExecuteChanged();
+                SetProperty(ref _isCanDoPrint, value);
+            }
+        }
         #endregion
 
         private readonly IEventAggregator _ea;
@@ -209,8 +225,11 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 Printers.Add(item);
             }
 
+            SelectedPrinter = Printers?.FirstOrDefault();
+
             IsCheckedByArea = true;
-            //Message = messageService.GetMessage();
+            
+            
         }
 
         #region Commands
@@ -243,7 +262,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private bool CanPrintLabelCommandExecute()
         {
-            return true;
+            return IsCanDoPrint;
         }
 
         private Task PrintLabelCommandExecute()

@@ -225,7 +225,7 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </ToggleButton>
-            <Button Grid.Row="3" Margin="5" Content="Print Test Label" Command="{Binding PrintTestLabel}"/>
+            <Button IsEnabled="{Binding IsCanDoPrint}" Grid.Row="3" Margin="5" Content="Print Test Label" Command="{Binding PrintTestLabel}"/>
         </Grid>
     </Grid>
 </UserControl>
