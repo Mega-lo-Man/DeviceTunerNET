@@ -92,7 +92,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _serialTextBox, value);
         }
 
-        private bool _isCheckedByCabinets = true;
+        private bool _isCheckedByCabinets;
         public bool IsCheckedByCabinets
         {
             get => _isCheckedByCabinets;
@@ -108,7 +108,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
         }
 
-        private bool _isCheckedByArea = false;
+        private bool _isCheckedByArea;
         public bool IsCheckedByArea
         {
             get => _isCheckedByArea;
@@ -134,7 +134,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
         }
 
-        private bool _isCheckedComplexVerification = false;
+        private bool _isCheckedComplexVerification = true;
         public bool IsCheckedComplexVerification
         {
             get => _isCheckedComplexVerification;
