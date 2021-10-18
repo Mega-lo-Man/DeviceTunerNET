@@ -148,6 +148,9 @@
                 <RadioButton Content="По площадкам" Grid.Column="1" GroupName="JobType" IsChecked="{Binding IsCheckedByArea}" />
 
             </Grid>
+            <CheckBox Content="Печатать наклейку"
+                      Margin="0, 5, 0 , 5"
+                      IsChecked="{Binding AllowPrintLabel}"/>
         </StackPanel>
 
         <ListBox x:Name="listBox" ItemsSource="{Binding Path=SwitchList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="0" Grid.Column="1" Margin="5" Grid.RowSpan="2" >

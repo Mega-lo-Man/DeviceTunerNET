@@ -4,7 +4,7 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:core="clr-namespace:DeviceTunerNET.Core;assembly=DeviceTunerNET.Core"
-        Title="{Binding Title}" Height="550" Width="800" >
+        Title="{Binding Title}" Height="560" Width="800" >
     <Window.Resources>
         <Style TargetType="TabItem">
             <Setter Property="Header" Value="{Binding DataContext.Title}" />

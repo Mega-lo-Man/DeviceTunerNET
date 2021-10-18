@@ -185,6 +185,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 SetProperty(ref _isCanDoPrint, value);
             }
         }
+
+        private bool _allowPrintLabel;
+        public bool AllowPrintLabel
+        {
+            get => _allowPrintLabel;
+            set => SetProperty(ref _allowPrintLabel, value);
+        }
         #endregion
 
         private readonly IEventAggregator _ea;
@@ -227,10 +234,12 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
             SelectedPrinter = Printers?.FirstOrDefault();
 
-            IsCheckedByArea = true;
-            
-            
+            IsCheckedByCabinets = true;
+
+            AllowPrintLabel = true;
         }
+
+        
 
         #region Commands
         public DelegateCommand CheckedCommand { get; }
@@ -359,7 +368,10 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
             }
 
-            _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(ethernetSwitch));
+            if (AllowPrintLabel)
+            {
+                _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(ethernetSwitch));
+            }
 
             // Обновляем всю коллекцию в UI целиком
             _dispatcher.BeginInvoke(new Action(() => { CollectionViewSource.GetDefaultView(SwitchList).Refresh(); }));
