@@ -212,7 +212,7 @@
                                     <DataTemplate>
                                         <TextBlock Text="{Binding AddressRS485}"
                                                    VerticalAlignment="Center"
-                                                   Margin="10, 0, 10, 0"
+                                                   HorizontalAlignment="Center"
                                                    FontWeight="DemiBold"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>

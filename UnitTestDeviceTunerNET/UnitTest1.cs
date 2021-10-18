@@ -19,8 +19,8 @@ namespace UnitTestDeviceTunerNET
             const string comPort = "COM6";
             
             var serialPort = new SerialPort {PortName = comPort};
-            var testService = new SerialSender(serialPort, new EventAggregator());
-            var result = testService.IsDeviceOnline(comPort, 127);
+            var testService = new SerialSender(new EventAggregator());
+            var result = testService.IsDeviceOnline(serialPort, 127);
 
             Assert.IsTrue(result);
             //Assert.AreEqual(result, "С2000-Ethernet");
@@ -32,9 +32,9 @@ namespace UnitTestDeviceTunerNET
             const string comPort = "COM6";
             
             var serialPort = new SerialPort { PortName = comPort };
-            var testService = new SerialSender(serialPort, new EventAggregator());
+            var testService = new SerialSender(new EventAggregator());
 
-            var result = testService.SetDeviceRS485Address(comPort, 127, newAddress);
+            var result = testService.SetDeviceRS485Address(serialPort, 127, newAddress);
 
             Assert.IsTrue(result);
         }
@@ -162,8 +162,8 @@ namespace UnitTestDeviceTunerNET
             };
 
             var serialPort = new SerialPort {PortName = comPort};
-            var testService = new SerialSender(serialPort, new EventAggregator());
-            var result = testService.SetC2000EthernetConfig(comPort, newAddress, testDevice);
+            var testService = new SerialSender(new EventAggregator());
+            var result = testService.SetC2000EthernetConfig(serialPort, newAddress, testDevice);
 
             Assert.IsTrue(result);
         }
