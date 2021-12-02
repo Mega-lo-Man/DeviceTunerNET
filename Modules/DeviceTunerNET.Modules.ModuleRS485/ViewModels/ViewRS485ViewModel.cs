@@ -28,7 +28,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private enum VerificationStart
         {
-            waitFor = 2,
+            waitFor = 2, // Waiting for user input serial
             canExecute = 1,
             cantExecute = 0
         }
@@ -253,7 +253,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private bool StartCommandCanExecute()
         {
             return CurrentRS485Port != null &&
-                   SerialTextBox.Length > 0 &&
+                   SerialTextBox?.Length > 0 &&
                    DevicesForProgramming.Count > 0;
         }
 
@@ -281,6 +281,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             StartButtonEnable = false;// Lock start button
 
+            // Displaying a window asking user to enter the serial number.
+            string serial = "";
             VerificationCanStart = VerificationStart.waitFor;
             if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) == 1)
             {
@@ -296,7 +298,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     {
                         if (dialogResult.Result == ButtonResult.OK)
                         {
-                            SerialTextBox = dialogResult.Parameters.GetValue<string>("Serial");
+                            serial = dialogResult.Parameters.GetValue<string>("Serial");
                             VerificationCanStart = VerificationStart.canExecute;
                         }
 
@@ -325,7 +327,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) == 1)
             {
                 var device = (Device)GetDeviceWithoutSerial(DevicesForProgramming);
-                Download(device);
+                Download(device, serial);
             }
 
             foreach (RS485device device in DevicesForProgramming)
@@ -375,18 +377,19 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = false; // Lock start button
             //var devSerial = "";
 
-            Download(device);
+            Download(device, SerialTextBox);
 
             // Is Device Was Last?
             if (GetDeviceWithoutSerial(DevicesForProgramming) == null)
             {
                 MessageBox.Show("Alles!");
             }
-            
+
+            SerialTextBox = "";
             StartButtonEnable = true; // unlock start button
         }
 
-        private void Download(Device device)
+        private void Download(Device device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
 
@@ -395,7 +398,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var sendResult = _serialTasks.SendConfig(device,
                     CurrentRS485Port,
                     DefaultRS485Address);
-                SendResponseProcessing(sendResult, device);
+                SendResponseProcessing(sendResult, device, serialNumb);
             }
             else if (device.GetType() == typeof(C2000Ethernet))
             {
@@ -409,7 +412,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var sendResult = _serialTasks.SendConfig(c2000Ethernet,
                     CurrentRS485Port,
                     DefaultRS485Address);
-                SendResponseProcessing(sendResult, device);
+                SendResponseProcessing(sendResult, device, serialNumb);
             }
             else
             {
@@ -452,18 +455,18 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return devices.Cast<RS485device>().Where(device => device.QualityControlPassed == false).ToList();
         }
 
-        private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1)
+        private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1, string serialNumb)
         {
             switch (sendResult)
             {
                 case ISerialTasks.ResultCode.ok:
-                    device1.Serial = SerialTextBox;
+                    device1.Serial = serialNumb;
                     if (!_dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial))
                     {
                         Clipboard.SetText(device1.Serial ?? string.Empty);
                         MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
                     }
-                    SerialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
+                    //erialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
                     break;
                 case ISerialTasks.ResultCode.deviceNotRespond:
                     MessageBox.Show("Прибор с адресом 127 не отвечает!");
