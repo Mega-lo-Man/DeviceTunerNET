@@ -29,7 +29,7 @@ namespace DeviceTunerNET.Services
 
         private enum Timeouts
         {
-            addressChange = 400, // Сингал-20П V3.10 после смены адреса подтверждает через 400 мс (остальные быстрее)
+            addressChange = 500, // Сингал-20П V3.10 после смены адреса подтверждает через 400 мс (остальные быстрее)
             readModel = 60, // Чтение типа прибора занимает не более 50 мс
             ethernetConfig = 350,
             restartC2000Ethernet = 7000
