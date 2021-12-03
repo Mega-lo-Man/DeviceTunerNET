@@ -291,7 +291,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     var tcs = new TaskCompletionSource<string>();
                     var parameters = new DialogParameters
                     {
-                        {"title", "Ввод сериного номера."},
+                        {"title", "Ввод серийного номера."},
                         {"message", "Серийник: "}
                     };
                     _dialogService.ShowDialog("SerialDialog", parameters, dialogResult =>
