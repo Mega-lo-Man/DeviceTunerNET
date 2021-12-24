@@ -370,7 +370,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             if (device == null)
             {
-                MessageBox.Show("Nothing to programming!");
+                MessageBox.Show("Nothing to program!");
                 return;
             }
             

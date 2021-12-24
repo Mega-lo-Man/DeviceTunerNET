@@ -175,7 +175,8 @@
                       SelectedItem="{Binding Path=SelectedDevice}" 
                       Grid.Column="4" 
                       Margin="5" 
-                      Grid.ColumnSpan="2">
+                      Grid.ColumnSpan="2"
+                      >
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -187,8 +188,8 @@
                 <ListView.View>
                     <GridView>
                         <GridView.Columns>
-                            
-                            <GridViewColumn>
+
+                            <GridViewColumn Width="220">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel>
@@ -206,8 +207,8 @@
                                     <TextBlock Text="Прибор"/>
                                 </GridViewColumn.Header>
                             </GridViewColumn>
-                            
-                            <GridViewColumn>
+
+                            <GridViewColumn Width="60">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding AddressRS485}"
@@ -221,7 +222,7 @@
                                 </GridViewColumn.Header>
                             </GridViewColumn>
 
-                            <GridViewColumn>
+                            <GridViewColumn Width="Auto">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <Image Margin="3" 
@@ -234,7 +235,7 @@
                                 </GridViewColumn.Header>
                             </GridViewColumn>
 
-                            <GridViewColumn>
+                            <GridViewColumn Width="Auto">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <Image Margin="3" 
