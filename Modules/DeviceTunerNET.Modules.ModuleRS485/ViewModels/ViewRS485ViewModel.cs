@@ -335,7 +335,11 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var checkAddress = Convert.ToByte(device.AddressRS485);
                 if (_serialTasks.CheckOnlineDevice(CurrentRS485Port, checkAddress, device.Model) == ISerialTasks.ResultCode.ok)
                     device.QualityControlPassed = true;
-                
+                else
+                    device.QualityControlPassed = false;
+
+                _dataRepositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
+
                 // Обновляем всю коллекцию в UI целиком
                 _dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -461,6 +465,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 case ISerialTasks.ResultCode.ok:
                     device1.Serial = serialNumb;
+                    
                     if (!_dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial))
                     {
                         Clipboard.SetText(device1.Serial ?? string.Empty);

@@ -48,6 +48,14 @@ namespace DeviceTunerNET.Services
             return _excelDataDecoder.SaveSerialNumber(id, serialNumber);
         }
 
+        public bool SaveQualityControlPassed(int id, bool qualityControlPassed)
+        {
+            if (_dataProviderType != 1)
+                return false;
+
+            return _excelDataDecoder.SaveQualityControlPassed(id, qualityControlPassed);
+        }
+
         public IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()
             where T1 : SimplestСomponent
             where T2 : SimplestСomponent
@@ -176,5 +184,7 @@ namespace DeviceTunerNET.Services
             }
             return cabOut;
         }
+
+        
     }
 }
