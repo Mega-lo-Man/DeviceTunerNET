@@ -109,6 +109,7 @@
     <Compile Include="ViewModels\C2000EthernetDeviceViewModel.cs" />
     <Compile Include="ViewModels\RS485DeviceViewModel.cs" />
     <Compile Include="ViewModels\ViewRS485ViewModel.cs" />
+	<Compile Include="ViewModels\ViewRS485ViewModelProps.cs" />
     <Compile Include="Views\ViewRS485.xaml.cs">
       <DependentUpon>ViewRS485.xaml</DependentUpon>
     </Compile>

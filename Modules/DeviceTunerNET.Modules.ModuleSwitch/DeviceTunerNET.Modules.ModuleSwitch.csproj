@@ -106,6 +106,7 @@
     </Compile>
     <Compile Include="ViewModels\DesignSwitchConverter.cs" />
     <Compile Include="ViewModels\ViewSwitchViewModel.cs" />
+	<Compile Include="ViewModels\ViewSwitchViewModelProps.cs" />
     <Compile Include="Views\ViewSwitch.xaml.cs">
       <DependentUpon>ViewSwitch.xaml</DependentUpon>
     </Compile>
