@@ -117,10 +117,17 @@
     <Compile Include="FileDialogService.cs" />
     <Compile Include="ExcelDataDecoder.cs" />
     <Compile Include="MessageService.cs" />
+    <Compile Include="NetworkUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialSender.cs" />
     <Compile Include="SerialTasks.cs" />
     <Compile Include="SSH_Sender.cs" />
+    <Compile Include="StrategiesFactory.cs" />
+    <Compile Include="SwitchesStrategies\Eltex.cs" />
+    <Compile Include="SwitchesStrategies\EltexSsh.cs" />
+    <Compile Include="SwitchesStrategies\EltexTelnet.cs" />
+    <Compile Include="SwitchesStrategies\SshAbstract.cs" />
+    <Compile Include="SwitchesStrategies\TelnetAbstract.cs" />
     <Compile Include="Telnet_Sender.cs" />
   </ItemGroup>
   <ItemGroup>

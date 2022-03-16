@@ -61,7 +61,7 @@ namespace DeviceTunerNET.Services
 
             stream.WriteLine("sh system id");
 
-            GetIDoverSSH(GetDeviceResponse(stream), ethernetDevice);
+            GetIdOverSSH(GetDeviceResponse(stream), ethernetDevice);
 
             stream.WriteLine("en");
             stream.WriteLine(_sDict["NewAdminPassword"]);
@@ -78,7 +78,7 @@ namespace DeviceTunerNET.Services
             return ethernetDevice;
         }
 
-        private void GetIDoverSSH(string strForParse, EthernetSwitch ethernetDevice)
+        private void GetIdOverSSH(string strForParse, EthernetSwitch ethernetDevice)
         {
             var answer = strForParse;
 
@@ -141,6 +141,11 @@ namespace DeviceTunerNET.Services
                 result += line;
             }
             return result;
+        }
+
+        public string SendMessage(string command)
+        {
+            throw new NotImplementedException();
         }
     }
 }

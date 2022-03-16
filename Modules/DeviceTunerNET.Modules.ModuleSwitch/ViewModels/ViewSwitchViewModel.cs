@@ -2,6 +2,7 @@
 using DeviceTunerNET.Core.Mvvm;
 using DeviceTunerNET.Modules.ModuleSwitch.Models;
 using DeviceTunerNET.Services.Interfaces;
+using DeviceTunerNET.Services.SwitchesStrategies;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Commands;
 using Prism.Events;
@@ -23,7 +24,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
     {
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
-        private readonly INetworkTasks _networkTasks;
+        private readonly ISwitchConfigUploader _eltex;
         private readonly IPrintService _printerService;
 
         private CancellationTokenSource _tokenSource = null;
@@ -32,13 +33,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         public ViewSwitchViewModel(IRegionManager regionManager,
                                    IDataRepositoryService dataRepositoryService,
-                                   INetworkTasks networkTasks,
+                                   ISwitchConfigUploader eltex,
                                    IEventAggregator ea,
                                    IPrintService printService) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
-            _networkTasks = networkTasks;
+            _eltex = eltex;
             _printerService = printService;
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
@@ -182,22 +183,24 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             CurrentItemTextBox = ethernetSwitch.AddressIP; // Вывод адреса коммутатора в UI
             ethernetSwitch.CIDR = IPMask;
 
-            if (!_networkTasks.UploadConfigStateMachine(ethernetSwitch, GetSettingsDict(), token))
+            //var completeEthernetSwitch = _strategies.GetInstance<Eltex>().SendConfig(ethernetSwitch, GetSettingsDict(), token);
+            var completeEthernetSwitch = _eltex.SendConfig(ethernetSwitch, GetSettingsDict(), token);
+            if (completeEthernetSwitch == null)
             {
                 // Выводим сообщение о прерывании операции
                 _dispatcher.BeginInvoke(new Action(() => { MessageForUser = "Operation aborted!"; }));
                 return true;
             }
 
-            if (!_dataRepositoryService.SaveSerialNumber(ethernetSwitch.Id, ethernetSwitch.Serial))
+            if (!_dataRepositoryService.SaveSerialNumber(completeEthernetSwitch.Id, completeEthernetSwitch.Serial))
             {
-                Clipboard.SetText(ethernetSwitch.Serial ?? string.Empty);
+                Clipboard.SetText(completeEthernetSwitch.Serial ?? string.Empty);
                 MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
             }
 
             if (AllowPrintLabel)
             {
-                _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(ethernetSwitch));
+                _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(completeEthernetSwitch));
             }
 
             // Обновляем всю коллекцию в UI целиком

@@ -3,8 +3,8 @@ using DeviceTunerNET.DymoModules;
 using DeviceTunerNET.Modules.ModuleRS232;
 using DeviceTunerNET.Modules.ModuleRS485;
 using DeviceTunerNET.Modules.ModuleSwitch;
-using DeviceTunerNET.Modules.ModuleSwitch.Models;
 using DeviceTunerNET.Services;
+using DeviceTunerNET.Services.SwitchesStrategies;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.Views;
 using DryIoc;
@@ -15,6 +15,8 @@ using Prism.Modularity;
 using System.IO.Ports;
 using System.Windows;
 using DeviceTunerNET.ViewModels;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace DeviceTunerNET
 {
@@ -26,7 +28,16 @@ namespace DeviceTunerNET
         private IEventAggregator _ea;
         private SerialPort _sp;
 
-        enum SrvKey { telnetKey, sshKey };
+        public List<System.Type> MyProperty 
+        { 
+            get => new List<System.Type>() { typeof(Eltex) };
+            
+        }
+
+        private List<System.Type> _strategies = new List<System.Type>() { typeof(Eltex) };
+
+        //enum SrvKey { telnetKey, sshKey };
+        enum Strategies { eltex };
 
 
         protected override Window CreateShell()
@@ -52,14 +63,16 @@ namespace DeviceTunerNET
             containerRegistry.Register<IFileDialogService, FileDialogService>();
             containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
             containerRegistry.Register<IPrintService, DymoModule>();
-            containerRegistry.Register<INetworkTasks, NetworkTasks>();
+            //containerRegistry.Register<INetworkTasks, NetworkTasks>();
+                        
+            containerRegistry.GetContainer().Register<ISwitchConfigUploader, Eltex>();
             containerRegistry.Register<ISerialSender, SerialSender>();
             containerRegistry.Register<ISerialTasks, SerialTasks>();
-
-
+            
+            /*
             containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: SrvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: SrvKey.sshKey);
-
+            */
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
         }
 

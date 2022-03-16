@@ -3,6 +3,7 @@ using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using MinimalisticTelnet;
 using Prism.Events;
+using System;
 using System.Collections.Generic;
 
 namespace DeviceTunerNET.Services
@@ -23,7 +24,14 @@ namespace DeviceTunerNET.Services
 
         public bool CloseConnection()
         {
-            _tc.ConnectionClose();
+            try
+            {
+                _tc.ConnectionClose();
+            }
+            catch
+            {
+                return false;
+            }
             return true;
         }
 
@@ -45,10 +53,17 @@ namespace DeviceTunerNET.Services
             }
 
             return false;
+        }
 
+        /*
+        public void Send(Action action)
+        {
+            action();
+            _tc.ConnectionClose();
 
         }
 
+        */
         public EthernetSwitch Send(EthernetSwitch ethernetDevice, Dictionary<string, string> SettingsDict)
         {
             _sDict = SettingsDict;
@@ -59,8 +74,9 @@ namespace DeviceTunerNET.Services
 
             return ethernetDevice; // Возвращаем объект с заполненными свойствами полученными из коммутатора
         }
+        
 
-        private string SendMessage(string command)
+        public string SendMessage(string command)
         {
             var commandResult = _tc.WriteRead(command); //Комманда в коммутатор
 

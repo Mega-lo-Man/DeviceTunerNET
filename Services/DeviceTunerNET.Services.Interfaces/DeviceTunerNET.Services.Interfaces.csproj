@@ -99,10 +99,13 @@
     <Compile Include="IFileDialogService.cs" />
     <Compile Include="IExcelDataDecoder.cs" />
     <Compile Include="IMessageService.cs" />
+    <Compile Include="INetworkUtils.cs" />
     <Compile Include="IPrintService.cs" />
     <Compile Include="ISender.cs" />
     <Compile Include="ISerialSender.cs" />
     <Compile Include="ISerialTasks.cs" />
+    <Compile Include="IStrategiesFactory.cs" />
+    <Compile Include="ISwitchConfigUploader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
