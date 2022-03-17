@@ -15,8 +15,8 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
     {
         private readonly IEventAggregator _ea;
         private readonly NetworkUtils _networkUtils;
-        private readonly Telnet_Sender _telnetSender;
-        private readonly SSH_Sender _sshSender;
+        private readonly EltexTelnet _telnetSender;
+        private readonly EltexSsh _sshSender;
 
         private EthernetSwitch _ethernetSwitch;
         private int repeatNumer = 5;
@@ -29,7 +29,7 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
         public string DefaultPassword { get; set; } = "admin";
         public string RsaKeyFile { get; set; } = "Resources\\Files\\id_rsa.key";
 
-        public Eltex(NetworkUtils networkUtils, Telnet_Sender telnetSender, SSH_Sender sshSender, IEventAggregator eventAggregator)
+        public Eltex(NetworkUtils networkUtils, EltexTelnet telnetSender, EltexSsh sshSender, IEventAggregator eventAggregator)
         {
             _networkUtils = networkUtils;
             _telnetSender = telnetSender;
@@ -132,6 +132,7 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             });
         }
 
+        /*
         private void TelnetCommandPacket()
         {
             _telnetSender.SendMessage("conf t");
@@ -157,5 +158,6 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             _telnetSender.SendMessage("interface vlan 1");
             _telnetSender.SendMessage("ip address " + _ethernetSwitch.AddressIP + " /" + _sDict["IPmask"]);
         }
+        */
     }
 }

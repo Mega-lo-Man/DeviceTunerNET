@@ -25,7 +25,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly ISwitchConfigUploader _eltex;
-        private readonly IPrintService _printerService;
+        private readonly IPrintService _printService;
 
         private CancellationTokenSource _tokenSource = null;
         private readonly Dispatcher _dispatcher;
@@ -40,7 +40,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
             _eltex = eltex;
-            _printerService = printService;
+            _printService = printService;
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
@@ -55,7 +55,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             // Fill ComboBox with available printers
-            foreach (var item in _printerService.CommonGetAvailablePrinters())
+            foreach (var item in _printService.CommonGetAvailablePrinters())
             {
                 Printers.Add(item);
             }
@@ -65,6 +65,10 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             IsCheckedByCabinets = true;
 
             AllowPrintLabel = true;
+
+            AvailableStrategies = new ObservableCollection<string>() { "Switch1", "Switch2", "Switch3" };
+
+            SelectedStrategy = AvailableStrategies?.FirstOrDefault();
         }
 
         
@@ -112,7 +116,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     ObserveConsole += "Starting print..." + "\r\n";
                 }));
 
-                if (_printerService.CommonPrintLabel(SelectedPrinter, @PrintLabelPath, GetPrintingDict(
+                if (_printService.CommonPrintLabel(SelectedPrinter, @PrintLabelPath, GetPrintingDict(
                     new EthernetSwitch()
                     {
                         AddressIP = "192.168.1.239",
@@ -200,7 +204,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
             if (AllowPrintLabel)
             {
-                _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(completeEthernetSwitch));
+                _printService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(completeEthernetSwitch));
             }
 
             // Обновляем всю коллекцию в UI целиком

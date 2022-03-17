@@ -27,7 +27,7 @@ namespace DeviceTunerNET
     {
         private IEventAggregator _ea;
         private SerialPort _sp;
-
+        /*
         public List<System.Type> MyProperty 
         { 
             get => new List<System.Type>() { typeof(Eltex) };
@@ -38,7 +38,7 @@ namespace DeviceTunerNET
 
         //enum SrvKey { telnetKey, sshKey };
         enum Strategies { eltex };
-
+        */
 
         protected override Window CreateShell()
         {
@@ -63,9 +63,7 @@ namespace DeviceTunerNET
             containerRegistry.Register<IFileDialogService, FileDialogService>();
             containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
             containerRegistry.Register<IPrintService, DymoModule>();
-            //containerRegistry.Register<INetworkTasks, NetworkTasks>();
-                        
-            containerRegistry.GetContainer().Register<ISwitchConfigUploader, Eltex>();
+            containerRegistry.Register<ISwitchConfigUploader, Eltex>();
             containerRegistry.Register<ISerialSender, SerialSender>();
             containerRegistry.Register<ISerialTasks, SerialTasks>();
             

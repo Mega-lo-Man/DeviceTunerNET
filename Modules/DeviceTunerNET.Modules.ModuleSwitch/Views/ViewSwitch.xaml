@@ -24,7 +24,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="1*"/>
-            <RowDefinition Height="1.5*"/>
+            <RowDefinition Height="1.2*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -33,6 +33,18 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Orientation="Vertical" Grid.RowSpan="2" >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Производитель:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <ComboBox Name="SwitchName" ItemsSource="{Binding AvailableStrategies}" SelectedItem="{Binding SelectedStrategy}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
@@ -119,18 +131,19 @@
                 <Label Content="Printer" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <ComboBox Name="PrinterName" ItemsSource="{Binding Printers}" SelectedItem="{Binding SelectedPrinter}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
             </Grid>
-            
+
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1.4*"/>
+                    <ColumnDefinition Width="76*"/>
+                    <ColumnDefinition Width="77*"/>
+                    <ColumnDefinition Width="30*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="Label path:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding PrintLabelPath, Mode=TwoWay}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding PrintLabelPath, Mode=TwoWay}" VerticalAlignment="Center" Grid.ColumnSpan="3" Margin="76,0,0,0"/>
             </Grid>
 
             <Label Content="Очередность:"/>
