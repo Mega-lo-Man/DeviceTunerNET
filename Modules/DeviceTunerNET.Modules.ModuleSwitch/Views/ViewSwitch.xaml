@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              xmlns:d="clr-namespace:DeviceTunerNET.Modules.ModuleSwitch.ViewModels"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              prism:ViewModelLocator.AutoWireViewModel="True" >
     <UserControl.Resources>
         <ResourceDictionary>
