@@ -76,6 +76,25 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             Stream.WriteLine("en");
             Stream.WriteLine(SettingsDict["NewAdminPassword"]);
             Stream.WriteLine("conf t");
+
+
+
+            Stream.WriteLine("loopback-detection enable");
+            Stream.WriteLine("spanning-tree");
+            Stream.WriteLine("spanning-tree mode rstp");
+            Stream.WriteLine("spanning-tree priority 16384");
+            Stream.WriteLine("spanning-tree forward-time 20");
+            Stream.WriteLine("spanning-tree hello-time 5");
+            Stream.WriteLine("spanning-tree max-age 38");
+
+            Stream.WriteLine("clock source sntp");
+            Stream.WriteLine("no clock timezone");
+            //Stream.WriteLine("clock dhcp timezone");
+            Stream.WriteLine("sntp client poll timer 60");
+            Stream.WriteLine("sntp unicast client enable");
+            Stream.WriteLine("sntp unicast client poll");
+            Stream.WriteLine("sntp server 192.168.0.1 poll");
+
             Stream.WriteLine("no ip telnet server");
             Stream.WriteLine("exit");
             Stream.WriteLine("wr mem");
