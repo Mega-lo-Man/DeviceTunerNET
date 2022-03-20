@@ -18,7 +18,7 @@ using Prism.Services.Dialogs;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
-    public class ViewRS485ViewModel : RegionViewModelBase
+    public partial class ViewRS485ViewModel : RegionViewModelBase
     {
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
@@ -28,184 +28,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private enum VerificationStart
         {
-            waitFor = 2,
+            waitFor = 2, // Waiting for user input serial
             canExecute = 1,
             cantExecute = 0
         }
-
-        #region Properties
-
-        private VerificationStart VerificationCanStart { get; set; }
-
-        private int _deviceStatus;
-        public int DeviceStatus
-        {
-            get => _deviceStatus;
-            set => SetProperty(ref _deviceStatus, value);
-        }
-
-        private string _message;
-        public string Message
-        {
-            get => _message;
-            set => SetProperty(ref _message, value);
-        }
-
-        private string _remoteDefaultFirstIP;
-        public string RemoteDefaultFirstIP
-        {
-            get => _remoteDefaultFirstIP;
-            set => SetProperty(ref _remoteDefaultFirstIP, value);
-        }
-
-        private string _ipMask = "255.255.252.0";
-        public string IPMask
-        {
-            get => _ipMask;
-            set => SetProperty(ref _ipMask, value);
-        }
-
-        private int _defaultRS485Address = 127;
-        public int DefaultRS485Address
-        {
-            get => _defaultRS485Address;
-            set
-            {
-                if (value <= 127)
-                {
-                    SetProperty(ref _defaultRS485Address, value);
-                }
-            }
-        }
-
-        private string _currentDeviceModel = "";
-        public string CurrentDeviceModel
-        {
-            get => _currentDeviceModel;
-            set => SetProperty(ref _currentDeviceModel, value);
-        }
-
-        private string _serialTextBox = "";
-        public string SerialTextBox
-        {
-            get => _serialTextBox;
-            set => SetProperty(ref _serialTextBox, value);
-        }
-
-        private bool _isCheckedByCabinets = true;
-        public bool IsCheckedByCabinets
-        {
-            get => _isCheckedByCabinets;
-            set
-            {
-                if (value)
-                {
-                    DevicesForProgramming.Clear(); // При переключении режима работы надо очистить список приборов для программирования
-                    StartButtonVisibilty = true; // и показать кнопку DownloadAddressButton, если погашена.
-                }
-
-                SetProperty(ref _isCheckedByCabinets, value);
-            }
-        }
-
-        private bool _isCheckedByArea = false;
-        public bool IsCheckedByArea
-        {
-            get => _isCheckedByArea;
-            set
-            {
-                if (value)
-                {
-                    DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
-
-                    foreach (var item in _dataRepositoryService.GetAllDevices<RS485device>())
-                    {
-                        DevicesForProgramming.Add(item);
-                    }
-                    foreach (var item in _dataRepositoryService.GetAllDevices<C2000Ethernet>())
-                    {
-                        DevicesForProgramming.Add(item);
-                    }
-                    //CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
-                    StartButtonVisibilty = true; // показать кнопку DownloadAddressButton, если погашена.
-                }
-
-                SetProperty(ref _isCheckedByArea, value);
-            }
-        }
-
-        private bool _isCheckedComplexVerification = false;
-        public bool IsCheckedComplexVerification
-        {
-            get => _isCheckedComplexVerification;
-            set
-            {
-                if (value)
-                {
-                    DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
-                    StartButtonVisibilty = false; // и скрыть кнопку DownloadAddressButton и показать кнопку CheckButton (она покажется с помощью св-ва IsCheckedComplexVerification.
-                }
-                SetProperty(ref _isCheckedComplexVerification, value);
-            }
-        }
-
-        private string _currentRS485Port;
-        public string CurrentRS485Port
-        {
-            get => _currentRS485Port;
-            set => SetProperty(ref _currentRS485Port, value);
-        }
-
-        private ObservableCollection<Cabinet> _cabinetList = new ObservableCollection<Cabinet>();
-        public ObservableCollection<Cabinet> CabinetList
-        {
-            get => _cabinetList;
-            set => SetProperty(ref _cabinetList, value);
-        }
-
-        private ObservableCollection<CabinetViewModel> _cabsVM = new ObservableCollection<CabinetViewModel>();
-        public ObservableCollection<CabinetViewModel> CabsVM
-        {
-            get => _cabsVM;
-            set => SetProperty(ref _cabsVM, value);
-        }
-
-        private ObservableCollection<object> _devicesForProgramming = new ObservableCollection<object>();
-        public ObservableCollection<object> DevicesForProgramming
-        {
-            get => _devicesForProgramming;
-            set => SetProperty(ref _devicesForProgramming, value);
-        }
-
-        private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
-        public ObservableCollection<string> AvailableComPorts
-        {
-            get => _availableComPorts;
-            set => SetProperty(ref _availableComPorts, value);
-        }
-
-        private int _searchProgressBar;
-        public int SearchProgressBar
-        {
-            get => _searchProgressBar;
-            set => SetProperty(ref _searchProgressBar, value);
-        }
-
-        private bool _startButtonVisibility = true;
-        public bool StartButtonVisibilty
-        {
-            get => _startButtonVisibility;
-            set => SetProperty(ref _startButtonVisibility, value);
-        }
-
-        private bool _startButtonEnable = true;
-        public bool StartButtonEnable
-        {
-            get => _startButtonEnable;
-            set => SetProperty(ref _startButtonEnable, value);
-        }
-
-        #endregion
 
         #region Commands
         public DelegateCommand StartCommand { get; private set; }
@@ -253,7 +79,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private bool StartCommandCanExecute()
         {
             return CurrentRS485Port != null &&
-                   SerialTextBox.Length > 0 &&
+                   SerialTextBox?.Length > 0 &&
                    DevicesForProgramming.Count > 0;
         }
 
@@ -281,6 +107,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             StartButtonEnable = false;// Lock start button
 
+            // Displaying a window asking user to enter the serial number.
+            string serial = "";
             VerificationCanStart = VerificationStart.waitFor;
             if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) == 1)
             {
@@ -289,14 +117,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     var tcs = new TaskCompletionSource<string>();
                     var parameters = new DialogParameters
                     {
-                        {"title", "Ввод сериного номера."},
+                        {"title", "Ввод серийного номера."},
                         {"message", "Серийник: "}
                     };
                     _dialogService.ShowDialog("SerialDialog", parameters, dialogResult =>
                     {
                         if (dialogResult.Result == ButtonResult.OK)
                         {
-                            SerialTextBox = dialogResult.Parameters.GetValue<string>("Serial");
+                            serial = dialogResult.Parameters.GetValue<string>("Serial");
                             VerificationCanStart = VerificationStart.canExecute;
                         }
 
@@ -325,7 +153,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) == 1)
             {
                 var device = (Device)GetDeviceWithoutSerial(DevicesForProgramming);
-                Download(device);
+                Download(device, serial);
             }
 
             foreach (RS485device device in DevicesForProgramming)
@@ -333,7 +161,11 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var checkAddress = Convert.ToByte(device.AddressRS485);
                 if (_serialTasks.CheckOnlineDevice(CurrentRS485Port, checkAddress, device.Model) == ISerialTasks.ResultCode.ok)
                     device.QualityControlPassed = true;
-                
+                else
+                    device.QualityControlPassed = false;
+
+                _dataRepositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
+
                 // Обновляем всю коллекцию в UI целиком
                 _dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -368,25 +200,26 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             if (device == null)
             {
-                MessageBox.Show("Nothing to programming!");
+                MessageBox.Show("Nothing to program!");
                 return;
             }
             
             StartButtonEnable = false; // Lock start button
             //var devSerial = "";
 
-            Download(device);
+            Download(device, SerialTextBox);
 
             // Is Device Was Last?
             if (GetDeviceWithoutSerial(DevicesForProgramming) == null)
             {
                 MessageBox.Show("Alles!");
             }
-            
+
+            SerialTextBox = "";
             StartButtonEnable = true; // unlock start button
         }
 
-        private void Download(Device device)
+        private void Download(Device device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
 
@@ -395,7 +228,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var sendResult = _serialTasks.SendConfig(device,
                     CurrentRS485Port,
                     DefaultRS485Address);
-                SendResponseProcessing(sendResult, device);
+                SendResponseProcessing(sendResult, device, serialNumb);
             }
             else if (device.GetType() == typeof(C2000Ethernet))
             {
@@ -409,7 +242,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var sendResult = _serialTasks.SendConfig(c2000Ethernet,
                     CurrentRS485Port,
                     DefaultRS485Address);
-                SendResponseProcessing(sendResult, device);
+                SendResponseProcessing(sendResult, device, serialNumb);
             }
             else
             {
@@ -452,18 +285,19 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return devices.Cast<RS485device>().Where(device => device.QualityControlPassed == false).ToList();
         }
 
-        private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1)
+        private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1, string serialNumb)
         {
             switch (sendResult)
             {
                 case ISerialTasks.ResultCode.ok:
-                    device1.Serial = SerialTextBox;
+                    device1.Serial = serialNumb;
+                    
                     if (!_dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial))
                     {
                         Clipboard.SetText(device1.Serial ?? string.Empty);
                         MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
                     }
-                    SerialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
+                    //erialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
                     break;
                 case ISerialTasks.ResultCode.deviceNotRespond:
                     MessageBox.Show("Прибор с адресом 127 не отвечает!");

@@ -50,6 +50,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <returns></returns>
         IList<T> GetAllDevices<T>() where T : SimplestСomponent;
 
+
         /// <summary>
         /// Записать свойства прибора в таблицу Excel или базу данных
         /// </summary>
@@ -57,6 +58,22 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <param name="device">экземпляр прибора</param>
         /// <returns>true - есди запись удалась, false - в противном случае</returns>
         //bool SaveDevice<T>(T device) where T : SimplestСomponent;
+
+
+        /// <summary>
+        /// Записать серийник прибора в таблицу Excel или базу данных
+        /// </summary>
+        /// <param name="id">Id прибора</param>
+        /// <param name="serialNumber">Серийный номер прибора</param>
+        /// <returns>true - есди запись удалась, false - в противном случае</returns>
         bool SaveSerialNumber(int id, string serialNumber);
+
+        /// <summary>
+        /// Записать метку о прохождении контроля качества смонтированным в шкафу прибором в таблицу Excel или базу данных
+        /// </summary>
+        /// <param name="id">Id прибора</param>
+        /// <param name="qualityControlPassed">Метка о прохождении контроля качества</param>
+        /// <returns></returns>
+        bool SaveQualityControlPassed(int id, bool qualityControlPassed);
     }
 }

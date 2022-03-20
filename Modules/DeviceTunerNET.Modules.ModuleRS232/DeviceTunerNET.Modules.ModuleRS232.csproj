@@ -66,6 +66,7 @@
     </Compile>
     <Compile Include="Validators\AddressValidator.cs" />
     <Compile Include="ViewModels\ViewRS232ViewModel.cs" />
+	<Compile Include="ViewModels\ViewRS232ViewModelProps.cs" />
     <Compile Include="Views\ViewRS232.xaml.cs">
       <DependentUpon>ViewRS232.xaml</DependentUpon>
     </Compile>
@@ -101,9 +102,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Prism.Core">
-      <Version>8.0.0.1909</Version>
+      <Version>8.1.97</Version>
     </PackageReference>
-    <PackageReference Include="Prism.Wpf" Version="8.0.0.1909" />
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="WindowsAPICodePack-Shell">
+      <Version>1.1.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

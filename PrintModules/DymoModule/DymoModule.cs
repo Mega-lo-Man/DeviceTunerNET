@@ -8,7 +8,7 @@ namespace DeviceTunerNET.DymoModules
     public class DymoModule : IPrintService
     {
         private const string _availablePrintersRegPath = "SOFTWARE\\DymoModule\\AvaliablePrinters";
-        private const string _DymoModuleExecutorPath = @"C:\Users\texvi\source\repos\DymoModule\DymoModule\bin\Debug\DymoModule.exe";
+        private const string _DymoModuleExecutorPath = @"C:\Programs\DymoModule\DymoModule.exe";
         private const int APP_GENERATE_SUCCESS = 100;
 
         #region Commands

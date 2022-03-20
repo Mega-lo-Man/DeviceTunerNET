@@ -170,15 +170,89 @@
 
             <GridSplitter Grid.Column="3" ShowsPreview="False" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch" />
 
-            <ListBox x:Name="DeviceListBox" ItemsSource="{Binding Path=DevicesForProgramming}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Column="4" Margin="5" Grid.ColumnSpan="2">
-                <ListBox.ItemContainerStyle>
+            <ListView x:Name="DeviceListBox" 
+                      ItemsSource="{Binding Path=DevicesForProgramming}" 
+                      SelectedItem="{Binding Path=SelectedDevice}" 
+                      Grid.Column="4" 
+                      Margin="5" 
+                      Grid.ColumnSpan="2"
+                      >
+                <ListView.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         <Setter Property="BorderThickness" Value="1" />
                         <Setter Property="BorderBrush" Value="Beige" />
                     </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
+                </ListView.ItemContainerStyle>
+
+                <ListView.View>
+                    <GridView>
+                        <GridView.Columns>
+
+                            <GridViewColumn Width="220">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Model}" 
+                                                       FontWeight="DemiBold"/>
+                                            <TextBlock Text="{Binding Designation}" 
+                                                       />
+                                            <TextBlock Text="{Binding Serial}" 
+                                                       />
+                                        </StackPanel>
+                                        
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                                <GridViewColumn.Header>
+                                    <TextBlock Text="Прибор"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+
+                            <GridViewColumn Width="60">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AddressRS485}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   FontWeight="DemiBold"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                                <GridViewColumn.Header>
+                                    <TextBlock Text="Адрес"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+
+                            <GridViewColumn Width="Auto">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Image Margin="3" 
+                                               VerticalAlignment="Center" 
+                                               Source="{Binding QualityControlPassed, Converter={StaticResource QaColorConverter}}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                                <GridViewColumn.Header>
+                                    <TextBlock Text="QC"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+
+                            <GridViewColumn Width="Auto">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Image Margin="3" 
+                                               VerticalAlignment="Center" 
+                                               Source="{Binding Serial, Converter={StaticResource SerialColorConverter}}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                                <GridViewColumn.Header>
+                                    <TextBlock Text="Tune"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+<!--
+                <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid>
                             <Grid.RowDefinitions>
@@ -193,20 +267,37 @@
                                 
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="{Binding Model}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
-                            <TextBlock Text="{Binding Designation}" Grid.Row="1" Grid.Column="0"/>
-                            <TextBlock Text="{Binding AddressRS485}" Grid.Row="1" Grid.Column="1" />
-                            <TextBlock Text="{Binding Serial}" Grid.Row="2" Grid.Column="0"/>
+                            <TextBlock Text="{Binding Model}" 
+                                       Grid.Row="0" 
+                                       Grid.Column="0"
+                                       FontWeight="DemiBold"/>
+                            <TextBlock Text="{Binding Designation}" 
+                                       Grid.Row="1" 
+                                       Grid.Column="0" />
+                            <TextBlock Text="{Binding AddressRS485}"
+                                       VerticalAlignment="Center"
+                                       Margin="0, 0, 10, 0"
+                                       Grid.RowSpan="3" 
+                                       Grid.Column="1"
+                                       FontWeight="DemiBold"/>
+                            <TextBlock Text="{Binding Serial}" 
+                                       Grid.Row="2" 
+                                       Grid.Column="0" />
                             <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" VerticalAlignment="Center">
-                                <Image Margin="3" VerticalAlignment="Center" Source="{Binding QualityControlPassed, Converter={StaticResource QaColorConverter}}"/>
-                                <Image Margin="3" VerticalAlignment="Center" Source="{Binding Serial, Converter={StaticResource SerialColorConverter}}"/>
+                                <Image Margin="3" 
+                                       VerticalAlignment="Center" 
+                                       Source="{Binding QualityControlPassed, Converter={StaticResource QaColorConverter}}"/>
+                                <Image Margin="3" 
+                                       VerticalAlignment="Center" 
+                                       Source="{Binding Serial, Converter={StaticResource SerialColorConverter}}"/>
 
                             </StackPanel>
                                 
                         </Grid>
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                </ListView.ItemTemplate>
+                -->
+            </ListView>
         </Grid>
 
 

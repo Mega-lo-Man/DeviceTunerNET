@@ -8,21 +8,21 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <summary>
         /// Заливка конфига в коммутатор по протоколу Telnet или SSH
         /// </summary>
-        /// <param name="ethernetDevice">Коммутатор</param>
-        /// <param name="SettingsDict">Словарь с настройками коммутатора</param>
+        /// <param name="ethernetSwitch">Коммутатор</param>
+        /// <param name="settingsDict">Словарь с настройками коммутатора</param>
         /// <returns>Объект типа EthernetDevices с заполненными полями (которые удалось выцепить из коммутатора)</returns>
-        public EthernetSwitch Send(EthernetSwitch ethernetDevice, Dictionary<string, string> SettingsDict);
+        public EthernetSwitch Send(EthernetSwitch ethernetSwitch, Dictionary<string, string> settingsDict);
 
         /// <summary>
         /// Создание нового сетевого соединения
         /// </summary>
-        /// <param name="IPaddress">IP адрес коммутатора</param>
-        /// <param name="Port">Сетевой порт (22 для SSH-соединения , 23 для Telnet-соединения)</param>
-        /// <param name="UserName">Имя учетной записи на коммутаторе (например, по умолчанию admin)</param>
-        /// <param name="Password">Пароль от учетной записи на коммутаторе (например, по умолчанию admin)</param>
-        /// <param name="KeyFile">Путь к файлу ключа шифрования</param>
+        /// <param name="ipAddress">IP адрес коммутатора</param>
+        /// <param name="port">Сетевой порт (22 для SSH-соединения , 23 для Telnet-соединения)</param>
+        /// <param name="username">Имя учетной записи на коммутаторе (например, по умолчанию admin)</param>
+        /// <param name="password">Пароль от учетной записи на коммутаторе (например, по умолчанию admin)</param>
+        /// <param name="rsaKeyFile">Путь к файлу ключа шифрования</param>
         /// <returns>True - соединение успешно создано, False - в противном случае</returns>
-        public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password, string KeyFile);
+        public bool CreateConnection(string ipAddress, ushort port, string username, string password, string rsaKeyFile);
 
         /// <summary>
         /// Завершение сетевого подключения
