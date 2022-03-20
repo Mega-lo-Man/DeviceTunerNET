@@ -2,10 +2,12 @@
 using DeviceTunerNET.SharedDataModel;
 using OfficeOpenXml;
 using System;
+using System.Drawing;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using OfficeOpenXml.Style;
 using static System.Int32;
 
 namespace DeviceTunerNET.Services
@@ -18,24 +20,30 @@ namespace DeviceTunerNET.Services
         private const char slave = 'S';
         #endregion Constants
 
-        private int IPaddressCol = 0; // Index of column that containing device addresses
-        private int RS485addressCol = 0; // Index of column that containing device addresses
-        private int RS232addressCol = 0; // Index of column that containing device addresses
-        private int nameCol = 0;    // Index of column that containing device names
-        private int serialCol = 0;  // Index of column that containing device serial number
-        private int modelCol = 0;   // Index of column that containing device model
-        private int parentCol = 0;   // Index of column that containing parent cabinet
-        private int CaptionRow = 1; //Table caption row index
-        private int rangCol = 0; //Index of column that containing networkRelationship (master, slave, Transparent)
+        private int IPaddressCol = 0; // Index of the column containing device addresses
+        private int RS485addressCol = 0; // Index of the column containing device addresses
+        private int RS232addressCol = 0; // Index of the column containing device addresses
+        private int nameCol = 0;    // Index of the column containing device names
+        private int serialCol = 0;  // Index of the column containing device serial number
+        private int modelCol = 0;   // Index of the column containing device model
+        private int parentCol = 0;   // Index of the column containing parent cabinet
+        private int CaptionRow = 1; // Table caption row index
+        private int rangCol = 0; // Index of the column containing networkRelationship (master, slave, Transparent)
+        private int qcCol = 0; // Index of the column contaning quality control passed mark
 
-        private string ColIPAddressCaption = "IP"; //Заголовок столбца с IP-адресами
-        private string ColRS485AddressCaption = "RS485"; //Заголовок столбца с адресами RS485
-        private string ColRS232AddressCaption = "RS232"; //Заголовок столбца с адресами RS232
-        private string ColNamesCaption = "Обозначение"; //Заголовок столбца с обозначениями приборов
-        private string ColSerialCaption = "Серийный номер"; //Заголовок столбца с обозначениями приборов
-        private string ColModelCaption = "Модель"; //Заголовок столбца с наименованием модели прибора
-        private string ColParentCaption = "Шкаф"; //Заголовок столбца с наименованием шкафа в котором находится дивайс
-        private string ColNetRelationship = "Rang"; //Заголовок столбца с мастерами и слевами C2000-Ethernet
+        private const string ColIPAddressCaption = "IP"; //Заголовок столбца с IP-адресами
+        private const string ColRS485AddressCaption = "RS485"; //Заголовок столбца с адресами RS485
+        private const string ColRS232AddressCaption = "RS232"; //Заголовок столбца с адресами RS232
+        private const string ColNamesCaption = "Обозначение"; //Заголовок столбца с обозначениями приборов
+        private const string ColSerialCaption = "Серийный номер"; //Заголовок столбца с обозначениями приборов
+        private const string ColModelCaption = "Модель"; //Заголовок столбца с наименованием модели прибора
+        private const string ColParentCaption = "Шкаф"; //Заголовок столбца с наименованием шкафа в котором находится дивайс
+        private const string ColNetRelationship = "Rang"; //Заголовок столбца с мастерами и слевами C2000-Ethernet
+        private const string ColQualityControl = "QC"; //Заголовок столбца о прохождении шкафом ОТК
+
+        private const string qcPassed = "Passed";
+        private const string qcDidntPass = "Failed!";
+
 
         private ExcelPackage package;
         private FileInfo sourceFile;
@@ -45,6 +53,7 @@ namespace DeviceTunerNET.Services
 
         //Dictionary with all found C2000-Ethernet
         private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = new Dictionary<C2000Ethernet, Tuple<char, int>>();
+        
 
         public ExcelDataDecoder()
         {
@@ -93,9 +102,11 @@ namespace DeviceTunerNET.Services
                 var devIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString();
                 var devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
                 var devRang = worksheet.Cells[rowIndex, rangCol].Value?.ToString();
+                
 
-                TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out int devRS232Addr);
-                TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out int devRS485Addr);
+                TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out var devRS232Addr);
+                TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out var devRS485Addr);
+                bool.TryParse(worksheet.Cells[rowIndex, qcCol].Value?.ToString(), out var devQcPassed);
 
                 if (!string.Equals(devParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
                 {
@@ -117,9 +128,11 @@ namespace DeviceTunerNET.Services
                             Designation = devName,
                             Model = devModel,
                             Serial = devSerial,
-                            AddressRS485 = devRS485Addr
+                            AddressRS485 = devRS485Addr,
+                            QualityControlPassed = devQcPassed
                         });
                         break;
+
                     case 1:
                         cabinet.AddItem(new EthernetSwitch
                         {
@@ -128,11 +141,12 @@ namespace DeviceTunerNET.Services
                             Model = devModel,
                             Serial = devSerial,
                             AddressIP = devIPAddr,
-                            Cabinet = cabinet.Designation
+                            Cabinet = cabinet.Designation,
+                            QualityControlPassed = devQcPassed
                         });
                         break;
-                    case 2:
 
+                    case 2:
                         var c2000Ethernet = new C2000Ethernet
                         {
                             Id = rowIndex,
@@ -142,7 +156,8 @@ namespace DeviceTunerNET.Services
                             AddressRS485 = devRS485Addr,
                             AddressRS232 = devRS232Addr,
                             AddressIP = devIPAddr,
-                            NetName = devName
+                            NetName = devName,
+                            QualityControlPassed = devQcPassed
                         };
                         //Add to dict for master/slave/translate sort
                         dictC2000Ethernet.Add(c2000Ethernet, GetRangTuple(devRang));
@@ -229,6 +244,7 @@ namespace DeviceTunerNET.Services
             for (var colIndex = 1; colIndex <= columns; colIndex++)
             {
                 var content = worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
+
                 if (content == ColNamesCaption) { nameCol = colIndex; }
                 if (content == ColIPAddressCaption) { IPaddressCol = colIndex; }
                 if (content == ColRS485AddressCaption) { RS485addressCol = colIndex; }
@@ -237,18 +253,34 @@ namespace DeviceTunerNET.Services
                 if (content == ColModelCaption) { modelCol = colIndex; }
                 if (content == ColParentCaption) { parentCol = colIndex; }
                 if (content == ColNetRelationship) { rangCol = colIndex; }
+                if (content == ColQualityControl) { qcCol = colIndex; }
             }
         }
 
         public bool SaveSerialNumber(int id, string serialNumber)
         {
-            return SaveSerialById(id, serialNumber);
-        }
-        
-        private bool SaveSerialById(int id, string serialNumber)
-        {
             // записываем серийник коммутатора в графу "Серийный номер" напротив номера строки указанного в id
             worksheet.Cells[id, serialCol].Value = serialNumber;
+
+            return saveCurrentPackage();
+        }
+
+        public bool SaveQualityControlPassed(int id, bool qualityControlPassed)
+        {
+            // записываем метку прохождения прохождения контроля качества в графу "QC" напротив номера строки указанного в id
+            if (qualityControlPassed)
+                worksheet.Cells[id, qcCol].Value = qcPassed;
+            else
+            {
+                worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Red);
+                worksheet.Cells[id, qcCol].Value = qcDidntPass;
+            }
+
+            return saveCurrentPackage();
+        }
+
+        private bool saveCurrentPackage()
+        {
             try
             {
                 package.Save();

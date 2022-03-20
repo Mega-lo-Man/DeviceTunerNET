@@ -109,6 +109,7 @@
     <Compile Include="ViewModels\C2000EthernetDeviceViewModel.cs" />
     <Compile Include="ViewModels\RS485DeviceViewModel.cs" />
     <Compile Include="ViewModels\ViewRS485ViewModel.cs" />
+	<Compile Include="ViewModels\ViewRS485ViewModelProps.cs" />
     <Compile Include="Views\ViewRS485.xaml.cs">
       <DependentUpon>ViewRS485.xaml</DependentUpon>
     </Compile>
@@ -144,9 +145,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Prism.Core">
-      <Version>8.0.0.1909</Version>
+      <Version>8.1.97</Version>
     </PackageReference>
-    <PackageReference Include="Prism.Wpf" Version="8.0.0.1909" />
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="WindowsAPICodePack-Shell">
+      <Version>1.1.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

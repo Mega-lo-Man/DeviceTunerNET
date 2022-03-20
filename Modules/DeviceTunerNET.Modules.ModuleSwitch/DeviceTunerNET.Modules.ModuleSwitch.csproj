@@ -88,8 +88,8 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\INetworkTasks.cs" />
-    <Compile Include="Models\NetworkTasks.cs" />
+    <Compile Include="Models\_INetworkTasks.cs" />
+    <Compile Include="Models\_NetworkTasks.cs" />
     <Compile Include="ModuleSwitchModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -106,6 +106,7 @@
     </Compile>
     <Compile Include="ViewModels\DesignSwitchConverter.cs" />
     <Compile Include="ViewModels\ViewSwitchViewModel.cs" />
+    <Compile Include="ViewModels\ViewSwitchViewModelProps.cs" />
     <Compile Include="Views\ViewSwitch.xaml.cs">
       <DependentUpon>ViewSwitch.xaml</DependentUpon>
     </Compile>
@@ -128,6 +129,10 @@
       <Project>{CF97FA8A-EE79-4CB1-9FF2-F6C5C3F3C0C0}</Project>
       <Name>DeviceTunerNET.Services.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Services\DeviceTunerNET.Services\DeviceTunerNET.Services.csproj">
+      <Project>{2615071C-14B0-46DB-A7DC-1637F3CAFBF1}</Project>
+      <Name>DeviceTunerNET.Services</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\SharedDataModels\DeviceTunerNET.SharedDataModel\DeviceTunerNET.SharedDataModel.csproj">
       <Project>{3A424B22-FF53-4C43-B4E9-5BF93E32E376}</Project>
       <Name>DeviceTunerNET.SharedDataModel</Name>
@@ -140,12 +145,15 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Prism.Core">
-      <Version>8.0.0.1909</Version>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf">
+      <Version>1.1.39</Version>
     </PackageReference>
-    <PackageReference Include="Prism.Wpf" Version="8.0.0.1909" />
-    <PackageReference Include="System.Windows.Interactivity.WPF">
-      <Version>2.0.20525</Version>
+    <PackageReference Include="Prism.Core">
+      <Version>8.1.97</Version>
+    </PackageReference>
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="WindowsAPICodePack-Shell">
+      <Version>1.1.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

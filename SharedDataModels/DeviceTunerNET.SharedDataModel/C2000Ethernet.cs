@@ -63,7 +63,7 @@ namespace DeviceTunerNET.SharedDataModel
             vCom = 0x02
         }
 
-        private string _remoteDefaultFirstIP = "192.168.2.1";
+        private string _remoteDefaultFirstIP = "192.168.0.1";
 
         private List<byte[]> _configLineList;
 

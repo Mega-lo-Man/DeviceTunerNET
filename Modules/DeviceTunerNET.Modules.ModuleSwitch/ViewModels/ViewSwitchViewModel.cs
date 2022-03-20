@@ -2,6 +2,7 @@
 using DeviceTunerNET.Core.Mvvm;
 using DeviceTunerNET.Modules.ModuleSwitch.Models;
 using DeviceTunerNET.Services.Interfaces;
+using DeviceTunerNET.Services.SwitchesStrategies;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Commands;
 using Prism.Events;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,143 +20,27 @@ using System.Windows.Threading;
 
 namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 {
-    public class ViewSwitchViewModel : RegionViewModelBase
+    public partial class ViewSwitchViewModel : RegionViewModelBase
     {
-        #region Properties
-        private string _message;
-        public string Message
-        {
-            get => _message;
-            set => SetProperty(ref _message, value);
-        }
-
-        private string _defaultLogin = "admin";
-        public string DefaultLogin
-        {
-            get => _defaultLogin;
-            set => SetProperty(ref _defaultLogin, value);
-        }
-
-        private string _newLogin = "admin";
-        public string NewLogin
-        {
-            get => _newLogin;
-            set => SetProperty(ref _newLogin, value);
-        }
-
-        private string _defaultPassword = "admin";
-        public string DefaultPassword
-        {
-            get => _defaultPassword;
-            set => SetProperty(ref _defaultPassword, value);
-        }
-
-        private string _newPassword = "admin123";
-        public string NewPassword
-        {
-            get => _newPassword;
-            set => SetProperty(ref _newPassword, value);
-        }
-
-        private string _defaultIP = "192.168.1.239";
-        public string DefaultIP
-        {
-            get => _defaultIP;
-            set => SetProperty(ref _defaultIP, value);
-        }
-
-        private int _ipMask = 22;
-        public int IPMask
-        {
-            get => _ipMask;
-            set => SetProperty(ref _ipMask, value);
-        }
-
-        private string _selectedDevice;
-        public string SelectedDevice
-        {
-            get => _selectedDevice;
-            set => SetProperty(ref _selectedDevice, value);
-        }
-
-        private string _selectedPrinter;
-        public string SelectedPrinter
-        {
-            get => _selectedPrinter;
-            set => SetProperty(ref _selectedPrinter, value);
-        }
-
-        private string _printLabelPath = "Resources\\Files\\label25x25switch.dymo";
-        public string PrintLabelPath
-        {
-            get => _printLabelPath;
-            set => SetProperty(ref _printLabelPath, value);
-        }
-
-        private string _currentItemTextBox = "0";
-        public string CurrentItemTextBox
-        {
-            get => _currentItemTextBox;
-            set => SetProperty(ref _currentItemTextBox, value);
-        }
-
-        private string _messageForUser = "Подключи \r\n коммутатор";
-        public string MessageForUser
-        {
-            get => _messageForUser;
-            set => SetProperty(ref _messageForUser, value);
-        }
-
-        private bool _sliderIsChecked = false;
-        public bool SliderIsChecked
-        {
-            get => _sliderIsChecked;
-            set => SetProperty(ref _sliderIsChecked, value);
-        }
-
-        private string _observeConsole;
-        public string ObserveConsole
-        {
-            get => _observeConsole;
-            set => SetProperty(ref _observeConsole, value);
-        }
-
-        private ObservableCollection<EthernetSwitch> _switchList;
-        public ObservableCollection<EthernetSwitch> SwitchList //Список коммутаторов
-        {
-            get => _switchList;
-            set => SetProperty(ref _switchList, value);
-        }
-
-        private ObservableCollection<string> _printers = new ObservableCollection<string>();
-        public ObservableCollection<string> Printers
-        {
-            get => _printers;
-            set => SetProperty(ref _printers, value);
-        }
-
-        #endregion
-
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
-        private readonly INetworkTasks _networkTasks;
-        private readonly IPrintService _printerService;
+        private readonly ISwitchConfigUploader _eltex;
+        private readonly IPrintService _printService;
 
         private CancellationTokenSource _tokenSource = null;
         private readonly Dispatcher _dispatcher;
         //private IMessageService _messageService;
 
         public ViewSwitchViewModel(IRegionManager regionManager,
-                                    //IMessageService messageService,
-                                    IDataRepositoryService dataRepositoryService,
-                                    INetworkTasks networkTasks,
-                                    IEventAggregator ea,
-                                    IPrintService printService) : base(regionManager)
+                                   IDataRepositoryService dataRepositoryService,
+                                   ISwitchConfigUploader eltex,
+                                   IEventAggregator ea,
+                                   IPrintService printService) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
-            _networkTasks = networkTasks;
-            _printerService = printService;
+            _eltex = eltex;
+            _printService = printService;
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
@@ -169,18 +55,28 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             // Fill ComboBox with available printers
-            foreach (var item in _printerService.CommonGetAvailablePrinters())
+            foreach (var item in _printService.CommonGetAvailablePrinters())
             {
                 Printers.Add(item);
             }
 
-            //Message = messageService.GetMessage();
+            SelectedPrinter = Printers?.FirstOrDefault();
+
+            IsCheckedByCabinets = true;
+
+            AllowPrintLabel = true;
+
+            AvailableStrategies = new ObservableCollection<string>() { "Switch1", "Switch2", "Switch3" };
+
+            SelectedStrategy = AvailableStrategies?.FirstOrDefault();
         }
 
+        
+
         #region Commands
-        public DelegateCommand CheckedCommand { get; private set; }
-        public DelegateCommand UncheckedCommand { get; private set; }
-        public DelegateCommand PrintTestLabel { get; private set; }
+        public DelegateCommand CheckedCommand { get; }
+        public DelegateCommand UncheckedCommand { get; }
+        public DelegateCommand PrintTestLabel { get; }
 
         private bool StopCommandCanExecute()
         {
@@ -189,12 +85,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private void StopCommandExecute()
         {
-            _tokenSource.Cancel();
+            ObserveConsole += "User canceled operation." + "\r\n";
+            _tokenSource?.Cancel();
         }
 
         private bool StartCommandCanExecute()
         {
-            return SwitchList.Count > 0;
+            return IsCanDoStart;
         }
 
         private Task StartCommandExecuteAsync()
@@ -206,7 +103,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
         private bool CanPrintLabelCommandExecute()
         {
-            return true;
+            return IsCanDoPrint;
         }
 
         private Task PrintLabelCommandExecute()
@@ -219,7 +116,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     ObserveConsole += "Starting print..." + "\r\n";
                 }));
 
-                if (_printerService.CommonPrintLabel(SelectedPrinter, @PrintLabelPath, GetPrintingDict(
+                if (_printService.CommonPrintLabel(SelectedPrinter, @PrintLabelPath, GetPrintingDict(
                     new EthernetSwitch()
                     {
                         AddressIP = "192.168.1.239",
@@ -248,46 +145,71 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         // Основной цикл - заливка в каждый коммутатор настроек из списка SwitchList
         private void DownloadLoop(CancellationToken token)
         {
-
-            foreach (EthernetSwitch ethernetSwitch in SwitchList)
+            if (IsCheckedByCabinets)
             {
+                if (SelectedDevice == null)
+                    return;
+
+                var ethernetSwitch = SelectedDevice;
                 //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
-                if (ethernetSwitch.Serial == null)
+                if (ethernetSwitch?.Serial == null)
                 {
-                    CurrentItemTextBox = ethernetSwitch.AddressIP;// Вывод адреса коммутатора в UI
-                    ethernetSwitch.CIDR = IPMask;
-
-                    if (!_networkTasks.UploadConfigStateMachine(ethernetSwitch, GetSettingsDict(), token))
+                    if (Download(token, ethernetSwitch))
                     {
-                        // Выводим сообщение о прерывании операции
-                        _dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            MessageForUser = "Operation aborted!";
-                        }));
-                        break;
                     }
-
-                    if (!_dataRepositoryService.SaveSerialNumber(ethernetSwitch.Id, ethernetSwitch.Serial))
-                    {
-                        Clipboard.SetText(ethernetSwitch.Serial ?? string.Empty);
-                        MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
-                    }
-                    _printerService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(ethernetSwitch));
-                    
-                    // Обновляем всю коллекцию d UI целиком
-                    _dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        CollectionViewSource.GetDefaultView(SwitchList).Refresh();
-                    }));
-
-
                 }
                 if (token.IsCancellationRequested)
                 {
                     return;
                 }
             }
+            if (IsCheckedByArea)
+            {
+                foreach (var ethernetSwitch in SwitchList)
+                {
+                    //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
+                    if (ethernetSwitch.Serial == null)
+                    {
+                        if (Download(token, ethernetSwitch)) break;
+                    }
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+            }
+            
             SliderIsChecked = false; // Всё! Залили настройки во все коммутаторы. Вырубаем слайдер (пололжение Off)
+        }
+
+        private bool Download(CancellationToken token, EthernetSwitch ethernetSwitch)
+        {
+            CurrentItemTextBox = ethernetSwitch.AddressIP; // Вывод адреса коммутатора в UI
+            ethernetSwitch.CIDR = IPMask;
+
+            //var completeEthernetSwitch = _strategies.GetInstance<Eltex>().SendConfig(ethernetSwitch, GetSettingsDict(), token);
+            var completeEthernetSwitch = _eltex.SendConfig(ethernetSwitch, GetSettingsDict(), token);
+            if (completeEthernetSwitch == null)
+            {
+                // Выводим сообщение о прерывании операции
+                _dispatcher.BeginInvoke(new Action(() => { MessageForUser = "Operation aborted!"; }));
+                return true;
+            }
+
+            if (!_dataRepositoryService.SaveSerialNumber(completeEthernetSwitch.Id, completeEthernetSwitch.Serial))
+            {
+                Clipboard.SetText(completeEthernetSwitch.Serial ?? string.Empty);
+                MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
+            }
+
+            if (AllowPrintLabel)
+            {
+                _printService.CommonPrintLabel(SelectedPrinter, PrintLabelPath, GetPrintingDict(completeEthernetSwitch));
+            }
+
+            // Обновляем всю коллекцию в UI целиком
+            _dispatcher.BeginInvoke(new Action(() => { CollectionViewSource.GetDefaultView(SwitchList).Refresh(); }));
+            return false;
         }
 
         private Dictionary<string, string> GetPrintingDict(EthernetSwitch ethSwitch)
@@ -324,13 +246,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             {
                 SwitchList.Clear();
                 var cabinets = (List<Cabinet>)_dataRepositoryService.GetCabinetsWithDevices<EthernetSwitch>();
-                foreach (var cabinet in cabinets)
+                foreach (var item in cabinets.SelectMany(cabinet => cabinet.GetDevicesList<EthernetSwitch>()))
                 {
-                    foreach (var item in cabinet.GetDevicesList<EthernetSwitch>()) // масло масляное, в шкафах cabinets не может быть приборов отличных от EthernetSwitch
-                    {
-                        SwitchList.Add(item);
-                    }
+                    SwitchList.Add(item);
                 }
+
+                if (SwitchList.Count > 0)
+                    IsCanDoStart = true;
             }
             if (message.ActionCode == MessageSentEvent.NeedOfUserAction)
             {
