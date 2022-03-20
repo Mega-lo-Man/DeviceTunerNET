@@ -88,8 +88,6 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\ISerialTasks.cs" />
-    <Compile Include="Models\SerialTasks.cs" />
     <Compile Include="ModuleRS485Module.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -106,7 +104,8 @@
     </Compile>
     <Compile Include="ViewModels\CabinetViewModel.cs" />
     <Compile Include="ViewModels\DebugConverter.cs" />
-    <Compile Include="ViewModels\DesignRS485Converter.cs" />
+    <Compile Include="ViewModels\QaColorConverter.cs" />
+    <Compile Include="ViewModels\SerialRS485Converter.cs" />
     <Compile Include="ViewModels\C2000EthernetDeviceViewModel.cs" />
     <Compile Include="ViewModels\RS485DeviceViewModel.cs" />
     <Compile Include="ViewModels\ViewRS485ViewModel.cs" />
@@ -145,9 +144,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Prism.Core">
-      <Version>7.2.0.1422</Version>
+      <Version>8.0.0.1909</Version>
     </PackageReference>
-    <PackageReference Include="Prism.Wpf" Version="7.2.0.1422" />
+    <PackageReference Include="Prism.Wpf" Version="8.0.0.1909" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

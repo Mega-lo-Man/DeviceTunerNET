@@ -64,6 +64,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Validators\AddressValidator.cs" />
     <Compile Include="ViewModels\ViewRS232ViewModel.cs" />
     <Compile Include="Views\ViewRS232.xaml.cs">
       <DependentUpon>ViewRS232.xaml</DependentUpon>
@@ -87,6 +88,10 @@
       <Project>{cf97fa8a-ee79-4cb1-9ff2-f6c5c3f3c0c0}</Project>
       <Name>DeviceTunerNET.Services.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\SharedDataModels\DeviceTunerNET.SharedDataModel\DeviceTunerNET.SharedDataModel.csproj">
+      <Project>{3A424B22-FF53-4C43-B4E9-5BF93E32E376}</Project>
+      <Name>DeviceTunerNET.SharedDataModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Views\ViewRS232.xaml">
@@ -96,9 +101,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Prism.Core">
-      <Version>7.2.0.1422</Version>
+      <Version>8.0.0.1909</Version>
     </PackageReference>
-    <PackageReference Include="Prism.Wpf" Version="7.2.0.1422" />
+    <PackageReference Include="Prism.Wpf" Version="8.0.0.1909" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

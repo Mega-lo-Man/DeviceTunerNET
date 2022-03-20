@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace DeviceTunerNET.SharedDataModel
 {
@@ -10,19 +6,9 @@ namespace DeviceTunerNET.SharedDataModel
     {
         private List<Cabinet> _cabinets = new List<Cabinet>();
 
-        private string _name;
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
+        public string Name { get; set; }
 
-        private string _directoryPath;
-        public string DirectoryPath
-        {
-            get { return _directoryPath; }
-            set { _directoryPath = value; }
-        }
+        public string DirectoryPath { get; set; }
 
         public List<Cabinet> GetAll()
         {

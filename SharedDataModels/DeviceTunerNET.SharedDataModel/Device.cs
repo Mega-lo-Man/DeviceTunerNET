@@ -1,58 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DeviceTunerNET.SharedDataModel
+﻿namespace DeviceTunerNET.SharedDataModel
 {
     public class Device : SimplestСomponent
-    {        
+    {
         /// <summary>
         /// Серийный номер прибора ("456426")
         /// </summary>
-        private string _serial;
-        public string Serial
-        {
-            get { return _serial; }
-            set { _serial = value; }
-        }
+        public string Serial { get; set; }
+
         /// <summary>
         /// Версия железяки
         /// </summary>
-        private string _hardwareVersion;
-        public string HardwareVersion
-        {
-            get { return _hardwareVersion; }
-            set { _hardwareVersion = value; }
-        }
+        public string HardwareVersion { get; set; }
+
         /// <summary>
         /// Версия прошивки
         /// </summary>
-        private string _firmwareVersion;
-        public string FirmwareVersion
-        {
-            get { return _firmwareVersion; }
-            set { _firmwareVersion = value; }
-        }
+        public string FirmwareVersion { get; set; }
+
+        /// <summary>
+        /// Прибор прошёл проверку в собранном шкафу
+        /// </summary>
+        public bool QualityControlPassed { get; set; }
+
         /// <summary>
         /// Название площадки на которой находится шкаф с этим прибором ("КС "Невинномысская"")
         /// </summary>
-        private string _area;
-        public string Area
-        {
-            get { return _area; }
-            set { _area = value; }
-        }
+        public string Area { get; set; }
+
         /// <summary>
         /// Наименование шкафа в котором находится этот прибор ("ШКО1")
         /// </summary>
-        private string _cabinet;
-        public string Cabinet
-        {
-            get { return _cabinet; }
-            set { _cabinet = value; }
-        }
+        public string Cabinet { get; set; }
     }
 }

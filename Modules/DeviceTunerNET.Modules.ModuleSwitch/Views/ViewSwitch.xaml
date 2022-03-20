@@ -29,7 +29,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
             <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="0.7*"/>
         </Grid.ColumnDefinitions>
 
         <StackPanel Orientation="Vertical" Grid.RowSpan="2" >
@@ -39,7 +39,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="Default login:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
@@ -51,7 +51,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="Default password:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
@@ -63,7 +63,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="Default address:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
@@ -77,7 +77,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="IP Mask:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
@@ -89,7 +89,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="New login:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
@@ -101,7 +101,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="New password:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
@@ -113,11 +113,24 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="Printer" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <ComboBox Name="PrinterName" ItemsSource="{Binding Printers}" SelectedItem="{Binding SelectedPrinter}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1.4*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Label path:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding PrintLabelPath, Mode=TwoWay}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
             </Grid>
         </StackPanel>
 
@@ -160,6 +173,7 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
+                <RowDefinition Height="0.5*"/>
             </Grid.RowDefinitions>
             <Label Name="CurrentItemIP" Margin="3" Grid.Row="0" Foreground ="black" Content ="{Binding CurrentItemTextBox}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="24" FontWeight="Bold" />
             <Label Name="ChangeDevice" Visibility="{Binding ChangeDeviceFireUp}" Margin="3" Grid.Row="1" Background ="red" Foreground ="black" Content ="{Binding MessageForUser}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalContentAlignment="Center"/>
@@ -173,6 +187,7 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </ToggleButton>
+            <Button Grid.Row="3" Margin="5" Content="Print Test Label" Command="{Binding PrintTestLabel}"/>
         </Grid>
     </Grid>
 </UserControl>

@@ -16,13 +16,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
     {
         private ushort _telnetPort = 23;
         private ushort _sshPort = 22;
-        private int repitNumer = 5;
+        private int repeatNumer = 5;
 
-        private IEventAggregator _ea;
-        private ISender _telnetSender = null;
-        private ISender _sshSender = null;
+        private readonly IEventAggregator _ea;
+        private readonly ISender _telnetSender = null;
+        private readonly ISender _sshSender = null;
 
-        private string RSAfile = "id_rsa.key";
+        private readonly string RSAfile = "Resources\\Files\\id_rsa.key";
 
         public NetworkTasks(IEventAggregator ea, IEnumerable<ISender> senders)
         {
@@ -53,12 +53,12 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
 
         public bool SendMultiplePing(string NewIPAddr, int NumberOfRepetitions)
         {
-            string _newIPAddr = NewIPAddr;
-            int _numberOfRepetitions = NumberOfRepetitions;
+            var _newIPAddr = NewIPAddr;
+            var _numberOfRepetitions = NumberOfRepetitions;
 
-            int counterGoodPing = 0;
+            var counterGoodPing = 0;
 
-            for (int i = 0; i < _numberOfRepetitions; i++)
+            for (var i = 0; i < _numberOfRepetitions; i++)
             {
                 if (SendPing(_newIPAddr))
                 {
@@ -66,14 +66,13 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
                 }
                 Thread.Sleep(50);
             }
-            if (counterGoodPing >= _numberOfRepetitions / 2) return true;
-            else return false;
+            return counterGoodPing >= _numberOfRepetitions / 2;
         }
 
         public bool SendPing(string NewIPAddress)
         {
-            Ping pingSender = new Ping();
-            PingOptions options = new PingOptions
+            var pingSender = new Ping();
+            var options = new PingOptions
             {
                 // Use the default Ttl value which is 128,
                 // but change the fragmentation behavior.
@@ -81,15 +80,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
             };
 
             // Create a buffer of 32 bytes of data to be transmitted.
-            string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            int timeout = 120;
+            var data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+            var buffer = Encoding.ASCII.GetBytes(data);
+            var timeout = 120;
             PingReply reply;
             try
             {
                 reply = pingSender.Send(NewIPAddress, timeout, buffer, options);
-                if (reply.Status == IPStatus.Success) return true;
-                else return false;
+                return reply.Status == IPStatus.Success;
             }
             catch (Exception ex)
             {
@@ -103,17 +101,19 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
                                              CancellationToken token)
         {
             MessageToConsole("Waiting device...");
-            Dictionary<string, string> _sDict = settings;
-            int State = 0;
-            bool IsSendComplete = false;
-            while (State < 6 && !token.IsCancellationRequested)
+            var _sDict = settings;
+            var State = 0;
+            var IsSendComplete = false;
+
+            while (State < 7 && !token.IsCancellationRequested)
             {
                 switch (State)
                 {
                     case 0:
                         // Пингуем в цикле коммутатор по дефолтному адресу пока коммутатор не ответит на пинг
                         MessageForUser("Ожидание" + "\r\n" + "коммутатора");
-                        if (SendMultiplePing(_sDict["DefaultIPAddress"], repitNumer)) State = 1;
+                        if (SendMultiplePing(_sDict["DefaultIPAddress"], repeatNumer))
+                            State = 1;
                         break;
                     case 1:
                         // Пытаемся в цикле подключиться по Telnet (сервер Telnet загружается через некоторое время после успешного пинга)
@@ -152,12 +152,11 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.Models
                     case 5:
                         // Пингуем в цикле коммутатор по новому IP-адресу (как только пинг пропал - коммутатор отключили)
                         MessageForUser("Замени" + "\r\n" + "коммутатор!");
-                        if (!SendMultiplePing(switchDevice.AddressIP, repitNumer)) State = 6;
+                        if (!SendMultiplePing(switchDevice.AddressIP, repeatNumer)) State = 6;
                         break;
                     case 6:
                         IsSendComplete = true;
-                        break;
-                    default:
+                        State = 7;
                         break;
                 }
                 Thread.Sleep(100); // Слишком часто коммутатор лучше не долбить (может воспринять как атаку)

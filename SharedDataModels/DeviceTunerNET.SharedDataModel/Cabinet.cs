@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 
@@ -8,16 +6,18 @@ namespace DeviceTunerNET.SharedDataModel
 {
     public class Cabinet : SimplestСomponent
     {
-        private List<object> objLst = new List<object>(); // крнтейнер для хранения всех дивайсов внутри шкафа
+        private List<object> objLst = new List<object>(); // контейнер для хранения всех дивайсов внутри шкафа
 
         public IList<object> GetAllDevicesList
         {
             get
             {
-                ObservableCollection<object> childNodes = new ObservableCollection<object>();
+                var childNodes = new ObservableCollection<object>();
 
                 foreach (var item in objLst)
+                {
                     childNodes.Add(item);
+                }
 
                 return childNodes;
             }
@@ -30,8 +30,8 @@ namespace DeviceTunerNET.SharedDataModel
             foreach (var item in objLst)
             {
                 if (item.GetType() == typeof(T))
-                { 
-                    lst.Add((T)item); 
+                {
+                    lst.Add((T)item);
                 }
             }
             return lst;
@@ -54,7 +54,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// </summary>
         public bool IsExpanded
         {
-            get { return _isExpanded; }
+            get => _isExpanded;
             set
             {
                 if (value != _isExpanded)
@@ -65,7 +65,7 @@ namespace DeviceTunerNET.SharedDataModel
         }
 
 
-        
+
         private bool _isSelected = false;
         /// <summary>
         /// Gets/sets whether the TreeViewItem 
@@ -73,7 +73,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// </summary>
         public bool IsSelected
         {
-            get { return _isSelected; }
+            get => _isSelected;
             set
             {
                 if (value != _isSelected)

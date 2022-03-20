@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DymoModule", "PrintModules\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Modules.ModuleRS232", "Modules\DeviceTunerNET.Modules.ModuleRS232\DeviceTunerNET.Modules.ModuleRS232.csproj", "{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestDeviceTunerNET", "UnitTestDeviceTunerNET\UnitTestDeviceTunerNET.csproj", "{2571F9CA-8C51-4097-B78D-0F62F66BCB07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -163,6 +165,18 @@ Global
 		{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B}.Release|x64.Build.0 = Release|Any CPU
 		{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B}.Release|x86.ActiveCfg = Release|Any CPU
 		{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B}.Release|x86.Build.0 = Release|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Debug|x64.Build.0 = Debug|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Debug|x86.Build.0 = Debug|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|x64.ActiveCfg = Release|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|x64.Build.0 = Release|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|x86.ActiveCfg = Release|Any CPU
+		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

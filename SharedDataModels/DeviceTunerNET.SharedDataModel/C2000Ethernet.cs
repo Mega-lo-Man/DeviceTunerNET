@@ -1,120 +1,228 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.SharedDataModel
 {
     public class C2000Ethernet : RS232device
     {
-        private enum _duplex { half = 0, full = 1 }
+        public enum Duplex
+        {
+            half = 0, 
+            full = 1
+        }
+
+        public enum Mode
+        {
+            transparent = 0, 
+            slave = 1, 
+            master = 2
+        }
+
+        public enum ProtocolType
+        {
+            RS485 = 0, 
+            RS232 = 1
+        }
+
+        public enum Speed
+        {
+            b1200 = 0, 
+            b2400 = 1, 
+            b4800 = 2, 
+            b9600 = 3, 
+            b19200 = 4, 
+            b38400 = 5, 
+            b57600 = 6, 
+            b115200 = 7
+        }
+
+        public enum DataParityStop
+        {
+            data8Stop1 = 0b0000_0000,
+            data8Stop1Parity1 = 0b0000_0001,
+            data8Stop1Parity0 = 0b0000_0010,
+            data9Stop1 = 0b0000_0011,
+            data8Stop2 = 0b0000_0100,
+            data8Stop2Parity1 = 0b0000_0101,
+            data8Stop2Parity0 = 0b0000_0110,
+            data9Stop2 = 0b0000_0111,
+            data7Stop1Parity1 = 0b0100_0000,
+            data7Stop1Parity0 = 0b1000_0000
+        }
+
+        public enum UdpType
+        {
+            dynamicUdp = 0x00,
+            staticUdp = 0x01
+        }
+
+        public enum TransparentProtocolType
+        {
+            other = 0x00,
+            S2000 = 0x01,
+            vCom = 0x02
+        }
 
         private string _remoteDefaultFirstIP = "192.168.2.1";
-        private List<string> _remoteIpList = new List<string>();
-        private List<int> _remoteUDPList = new List<int>();
 
         private List<byte[]> _configLineList;
 
         #region Properties
-        public List<int> RemoteUDPList
-        {
-            get { return _remoteUDPList; }
-            set { _remoteUDPList = value; }
-        }
 
-        public List<string> RemoteIpList
-        {
-            get { return _remoteIpList; }
-            set { _remoteIpList = value; }
-        }
+        public string NetName { get; set; } = "ABCDEFG";
 
-        private int _duplexMode;
-        public int DuplexMode
-        {
-            get { return _duplexMode; }
-            set { _duplexMode = value; }
-        }
+        public string FirstDns { get; set; } = "0.0.0.0";
 
-        private int _udpSender;
-        public int UDPSender
-        {
-            get { return _udpSender; }
-            set { _udpSender = value; }
-        }
+        public string SecondDns { get; set; } = "0.0.0.0";
 
-        private int _udpRemote;
-        public int UDPRemote
-        {
-            get { return _udpRemote; }
-            set { _udpRemote = value; }
-        }
+        public Mode NetworkMode { get; set; }
 
-        private int _freeUDPRemote;
-        public int FreeUDPRemote
-        {
-            get { return _freeUDPRemote; }
-            set { _freeUDPRemote = value; }
-        }
+        public ProtocolType InterfaceType { get; set; }
 
-        private int _waitingTimeout;
-        public int WaitingTimeout
-        {
-            get { return _waitingTimeout; }
-            set { _waitingTimeout = value; }
-        }
+        /// <summary>
+        /// Бодовая скорость работы «C2000-Ethernet» по интерфейсу RS-232/RS-485. 
+        /// </summary>
+        public Speed ConnectionSpeed { get; set; }
 
-        private bool _useSingleReadWriteUDP;
-        public bool UseSingleReadWriteUDP
-        {
-            get { return _useSingleReadWriteUDP; }
-            set { _useSingleReadWriteUDP = value; }
-        }
+        /// <summary>
+        /// Количество бит данных и стоповых бит.
+        /// </summary>
+        public DataParityStop FrameFormat { get; set; }
+
+        public bool TimeoutSign { get; set; }
+
+        public ushort Timeout { get; set; }
+
+        public bool PauseSign { get; set; }
+
+        /// <summary>
+        /// Пауза между пакетами (при передаче в RS данных).
+        /// </summary>
+        public ushort Pause { get; set; }
+
+        /// <summary>
+        /// Режим  с  оптимизацией  данных.
+        /// </summary>
+        public bool Optimization { get; set; }
+
+        /// <summary>
+        /// Признак формирования уведомлений по доступу.
+        /// </summary>
+        public bool AccessNotifySign { get; set; }
+
+        /// <summary>
+        /// Пауза перед ответом по RS. (1 шаг = 0,125 сек)
+        /// </summary>
+        public ushort PauseBeforeResponseRs { get; set; }
+
+        //public List<int> RemoteUDPList { get; set; } = new List<int>();
+
+        public List<C2000Ethernet> RemoteDevicesList { get; set; } = new List<C2000Ethernet>();
+
+        public string RemoteIpTrasparentMode { get; set; }
+
+        public Duplex DuplexMode { get; set; }
+
+        //public int UDPSender { get; set; }
+
+        public ushort DestinationUdp { get; set; }
+
+        public ushort MasterSlaveUdp { get; set; }
+
+        public ushort FreeConnectionUdp { get; set; }
+
+        public int WaitingTimeout { get; set; }
+
+        public bool UseSingleReadWriteUDP { get; set; }
+
+        public bool Dhcp { get; set; } = false;
+
+        public UdpType UdpPortType { get; set; }
+
+        public string CryptoKey { get; set; }
+
+        public byte ConfirmationTimeout { get; set; }
+
+        public byte ConnectionTimeout { get; set; }
+
+        public bool AllowFreeConnection { get; set; }
+
+        public UdpType FreeConnectionUdpType { get; set; }
+
+        public ushort TransparentUdp { get; set; }
+
+        public bool TransparentCrypto { get; set; }
+
+        public TransparentProtocolType TransparentProtocol { get; set; }
+
         #endregion Properties
-        
+
         public C2000Ethernet()
         {
             //------------------------------------------------
-            RemoteIpList.Add(_remoteDefaultFirstIP);
-            for (int i = 0; i < 8; i++)
-            {
-                RemoteIpList.Add("0.0.0.0");
-            }
-            //------------------------------------------------
-            for (int i = 0; i < 9; i++)
+            /*for (var i = 0; i < 9; i++)
             {
                 RemoteUDPList.Add(40000);
-            }
+            }*/
             //------------------------------------------------
             AddressIP = "192.168.2.11";
             Netmask = "255.255.252.0";
             DefaultGateway = "0.0.0.0";
             Netmask = "255.255.252.0";
-            DuplexMode = (int)_duplex.half;
-            UDPSender = 40000;
-            UDPRemote = 40001;
-            FreeUDPRemote = 40001;
+            DuplexMode = (int)Duplex.half;
+            //UDPSender = 40000;
+            DestinationUdp = 40001;
+            FreeConnectionUdp = 40001;
             UseSingleReadWriteUDP = true;
             WaitingTimeout = 80;
             AddressRS232 = 127;
             AddressRS485 = 127;
+            NetworkMode = Mode.transparent;
+            InterfaceType = ProtocolType.RS485;
+            ConnectionSpeed = Speed.b9600;
+            FrameFormat = DataParityStop.data8Stop1;
+            TimeoutSign = false;
+            Timeout = 0;
+            PauseSign = true;
+            Pause = 6;
+            Optimization = true;
+            AccessNotifySign = true;
+            PauseBeforeResponseRs = 0x10;
+            /*RemoteDevicesList = new List<C2000Ethernet>()
+            {
+                new C2000Ethernet()
+                {
+                    AddressIP = "192.168.1.127"
+                }
+            };*/
+            DestinationUdp = 40000;
+            MasterSlaveUdp = 40001;
+            ConfirmationTimeout = 0x02;
+            ConnectionTimeout = 0x1E;
+            
+            AllowFreeConnection = true;
+            FreeConnectionUdpType = UdpType.staticUdp;
+
+            TransparentUdp = 40000;
+            TransparentProtocol = TransparentProtocolType.S2000;
+            TransparentCrypto = false;
             //------------------------------------------------
             _configLineList = new List<byte[]>();
+            UdpPortType = UdpType.staticUdp;
         }
 
-        
+
         public IList<byte[]> GetConfigCommandLine(byte RS232address)
         {
-            byte addr = RS232address;
+            var addr = RS232address;
             _configLineList.Clear();
 
             SendPromoter(addr);
             SendGatewayAndUDP(addr, DefaultGateway);
             SendPromoter2(addr);
-            SendOtherDevicesIP(addr, RemoteIpList, AddressIP);
+            //SendOtherDevicesIP(addr, RemoteIpList, AddressIP);
             SendPromoter3(addr);
-            SendNetmaskAndDevicesUDP(addr, Netmask, RemoteUDPList, UDPSender, FreeUDPRemote);
+            //SendNetmaskAndDevicesUDP(addr, Netmask, RemoteUDPList, UDPSender, FreeRemoteUdp);
 
             return _configLineList;
         }
@@ -130,7 +238,7 @@ namespace DeviceTunerNET.SharedDataModel
 
         private bool SendGatewayAndUDP(byte address, string ip)
         {
-            byte[] ipAddr = IpToByteArray(ip);
+            var ipAddr = IpToByteArray(ip);
             _configLineList.Add(new byte[] { address, 0xA1, 0x41, 0x00, 0x1C, 0x00, ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3], 0x01, 0x02, 0x41, 0x9C, 0x01, 0x01 });
             return true;
         }
@@ -151,19 +259,19 @@ namespace DeviceTunerNET.SharedDataModel
 
         private bool SendNetmaskAndDevicesUDP(byte address, string netmask, List<int> UDPlist, int UdpSender, int FreeRemoteDeviceUdp)
         {
-            byte[] udp1 = IntToByteArray(UDPlist[0]);
-            byte[] udp2 = IntToByteArray(UDPlist[1]);
-            byte[] udp3 = IntToByteArray(UDPlist[2]);
-            byte[] udp4 = IntToByteArray(UDPlist[3]);
-            byte[] udp5 = IntToByteArray(UDPlist[4]);
-            byte[] udp6 = IntToByteArray(UDPlist[5]);
-            byte[] udp7 = IntToByteArray(UDPlist[6]);
-            byte[] udp8 = IntToByteArray(UDPlist[7]);
-            byte[] udp9 = IntToByteArray(UDPlist[8]);
+            var udp1 = IntToByteArray(UDPlist[0]);
+            var udp2 = IntToByteArray(UDPlist[1]);
+            var udp3 = IntToByteArray(UDPlist[2]);
+            var udp4 = IntToByteArray(UDPlist[3]);
+            var udp5 = IntToByteArray(UDPlist[4]);
+            var udp6 = IntToByteArray(UDPlist[5]);
+            var udp7 = IntToByteArray(UDPlist[6]);
+            var udp8 = IntToByteArray(UDPlist[7]);
+            var udp9 = IntToByteArray(UDPlist[8]);
 
-            byte[] mask = IpToByteArray(netmask);
-            byte[] udpSender = IntToByteArray(UdpSender);
-            byte[] freeRemoteUDP = IntToByteArray(FreeRemoteDeviceUdp);
+            var mask = IpToByteArray(netmask);
+            var udpSender = IntToByteArray(UdpSender);
+            var freeRemoteUDP = IntToByteArray(FreeRemoteDeviceUdp);
 
             _configLineList.Add(new byte[] { address, 0x1C, 0x41, 0x80, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, mask[0], mask[1], mask[2], mask[3], udpSender[0], udpSender[1], udp1[0], udp1[1], udp2[0], udp2[1] }); // 7f 17 1c 41 80 1d 00 00 00 00 00 00 00 ff ff ff 00 40 9c 40 9c 40 9c
             _configLineList.Add(new byte[] { address, 0x2D, 0x41, 0x90, 0x1D, 0x00, udp3[0], udp3[1], udp4[0], udp4[1], udp5[0], udp5[1], udp6[0], udp6[1], udp7[0], udp7[1], udp8[0], udp8[1], udp9[0], udp9[1], freeRemoteUDP[0], freeRemoteUDP[1] }); // 7f 17 2d 41 90 1d 00 40 9c 40 9c 40 9c 40 9c 40 9c 40 9c 40 9c 41 9c
@@ -173,17 +281,17 @@ namespace DeviceTunerNET.SharedDataModel
         private bool SendOtherDevicesIP(byte address, List<string> otherDevicesIpList, string deviceIp)
         {
 
-            byte[] ipAddr1 = IpToByteArray(otherDevicesIpList[0]);
-            byte[] ipAddr2 = IpToByteArray(otherDevicesIpList[1]);
-            byte[] ipAddr3 = IpToByteArray(otherDevicesIpList[2]);
-            byte[] ipAddr4 = IpToByteArray(otherDevicesIpList[3]);
-            byte[] ipAddr5 = IpToByteArray(otherDevicesIpList[4]);
-            byte[] ipAddr6 = IpToByteArray(otherDevicesIpList[5]);
-            byte[] ipAddr7 = IpToByteArray(otherDevicesIpList[6]);
-            byte[] ipAddr8 = IpToByteArray(otherDevicesIpList[7]);
-            byte[] ipAddr9 = IpToByteArray(otherDevicesIpList[8]);
+            var ipAddr1 = IpToByteArray(otherDevicesIpList[0]);
+            var ipAddr2 = IpToByteArray(otherDevicesIpList[1]);
+            var ipAddr3 = IpToByteArray(otherDevicesIpList[2]);
+            var ipAddr4 = IpToByteArray(otherDevicesIpList[3]);
+            var ipAddr5 = IpToByteArray(otherDevicesIpList[4]);
+            var ipAddr6 = IpToByteArray(otherDevicesIpList[5]);
+            var ipAddr7 = IpToByteArray(otherDevicesIpList[6]);
+            var ipAddr8 = IpToByteArray(otherDevicesIpList[7]);
+            var ipAddr9 = IpToByteArray(otherDevicesIpList[8]);
 
-            byte[] ipSelf = IpToByteArray(deviceIp);
+            var ipSelf = IpToByteArray(deviceIp);
 
             _configLineList.Add(new byte[] { address, 0x9A, 0x41, 0x26, 0x1D, 0x00, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x50, 0x00, ipAddr1[0], ipAddr1[1], ipAddr1[2], ipAddr1[3] });
             _configLineList.Add(new byte[] { address, 0x7B, 0x41, 0x36, 0x1D, 0x00, ipAddr2[0], ipAddr2[1], ipAddr2[2], ipAddr2[3], ipAddr3[0], ipAddr3[1], ipAddr3[2], ipAddr3[3], ipAddr4[0], ipAddr4[1] });
@@ -194,21 +302,21 @@ namespace DeviceTunerNET.SharedDataModel
 
         private byte[] IntToByteArray(int intValue)
         {
-            UInt16 intVal16 = (UInt16)intValue;
-            byte[] result = BitConverter.GetBytes(intVal16);
+            var intVal16 = (ushort)intValue;
+            var result = BitConverter.GetBytes(intVal16);
             //Array.Reverse(result);
             return result;
         }
 
         private byte[] IpToByteArray(string ipAddress)
         {
-            string[] ipWithoutDots = ipAddress.Split(new char[] { '.' });
-            byte[] ipBytes = new byte[] { 0, 0, 0, 0 };
+            var ipWithoutDots = ipAddress.Split(new char[] { '.' });
+            var ipBytes = new byte[] { 0, 0, 0, 0 };
 
-            for (int counter = 0; counter < 4; counter++)
+            for (var counter = 0; counter < 4; counter++)
             {
-                int numbInt32 = Int32.Parse(ipWithoutDots[counter]);
-                byte numbByte = Convert.ToByte(numbInt32);
+                var numbInt32 = int.Parse(ipWithoutDots[counter]);
+                var numbByte = Convert.ToByte(numbInt32);
                 ipBytes[counter] = numbByte;
             }
             return ipBytes;

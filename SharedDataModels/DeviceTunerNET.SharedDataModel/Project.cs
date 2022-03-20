@@ -1,41 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace DeviceTunerNET.SharedDataModel
 {
     public class Project
     {
-        private List<ConstructionSite> _constructionSites = new List<ConstructionSite>();
-        
+        public List<ConstructionSite> SetProject { get; set; } = new List<ConstructionSite>();
 
-        public List<ConstructionSite> SetProject
-        {
-            get { return _constructionSites; }
-            set { _constructionSites = value; }
-        }
-
-        private string _name;
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
+        public string Name { get; set; }
 
         public List<ConstructionSite> GetAll()
         {
-            return _constructionSites;
+            return SetProject;
         }
 
         public void Add(ConstructionSite constructionSite)
         {
-            _constructionSites.Add(constructionSite);
+            SetProject.Add(constructionSite);
         }
-
-        /*public bool Remove(ConstructionSite constructionSite)
-        {
-
-        }
-        */
     }
 }

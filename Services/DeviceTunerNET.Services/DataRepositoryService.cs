@@ -2,21 +2,16 @@
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Events;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Services
 {
     public class DataRepositoryService : IDataRepositoryService
     {
-        private List<Cabinet> cabinetsLst = new List<Cabinet>();
+        private List<Cabinet> _cabinetsLst = new List<Cabinet>();
 
-        private IEventAggregator _ea;
-        private IExcelDataDecoder _excelDataDecoder;
+        private readonly IEventAggregator _ea;
+        private readonly IExcelDataDecoder _excelDataDecoder;
 
         private int _dataProviderType = 1;
 
@@ -25,39 +20,17 @@ namespace DeviceTunerNET.Services
             _ea = ea;
             _excelDataDecoder = excelDataDecoder;
         }
-        /*
-        private bool SaveSwitchDevice(EthernetSwitch ethernetSwitch)
-        {
-            //throw new NotImplementedException();
-            if (_dataProviderType == 1) // Если источник данных - таблица Excel
-            {
-                _excelDataDecoder.SaveDevice(ethernetSwitch);
-                return true;
-            }
-            return false;
-        }
-
-        private bool SaveRS485Device(RS485device rs485Device)
-        {
-            if (_dataProviderType == 1) // Если источник данных - таблица Excel
-            {
-                _excelDataDecoder.SaveDevice(rs485Device);
-                return true;
-            }
-            return false;
-        }
-        */
 
         public void SetDevices(int DataProviderType, string FullPathToData)
         {
             _dataProviderType = DataProviderType;
-            string _fullPathToData = FullPathToData;
+            var _fullPathToData = FullPathToData;
 
-            cabinetsLst.Clear();
+            _cabinetsLst.Clear();
             switch (_dataProviderType)
             {
                 case 1:
-                    cabinetsLst = _excelDataDecoder.GetCabinetsFromExcel(_fullPathToData);
+                    _cabinetsLst = _excelDataDecoder.GetCabinetsFromExcel(_fullPathToData);
                     break;
             }
             //Сообщаем всем об обновлении данных в репозитории
@@ -69,95 +42,83 @@ namespace DeviceTunerNET.Services
 
         public bool SaveSerialNumber(int id, string serialNumber)
         {
-            int _id = id;
-            string _serial = serialNumber;
-            if (_dataProviderType == 1) // Если источник данных - таблица Excel
-            {
-                _excelDataDecoder.SaveSerialNumber(_id, _serial);
-                return true;
-            }
-            return false;
-        }
+            if (_dataProviderType != 1)
+                return false;
 
-        /*public bool SaveDevice<T>(T arg) where T : SimplestСomponent
-        {
-            object someDevice = arg;
-            if (typeof(T) == typeof(EthernetSwitch)) return SaveSwitchDevice((EthernetSwitch)someDevice);
-            if (typeof(T) == typeof(RS485device)) return SaveRS485Device((RS485device)someDevice);
-            return false;
-        }*/
+            return _excelDataDecoder.SaveSerialNumber(id, serialNumber);
+        }
 
         public IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()
             where T1 : SimplestСomponent
             where T2 : SimplestСomponent
         {
-            List<Cabinet> CabinetsWithdevs = new List<Cabinet>();
-            foreach (Cabinet cabinet in cabinetsLst)
+            var cabinetsWithdevs = new List<Cabinet>();
+            foreach (var cabinet in _cabinetsLst)
             {
-                List<T1> devicesListT1 = (List<T1>)cabinet.GetDevicesList<T1>();
-                List<T2> devicesListT2 = (List<T2>)cabinet.GetDevicesList<T2>();
-                 
+                var devicesListT1 = (List<T1>)cabinet.GetDevicesList<T1>();
+                var devicesListT2 = (List<T2>)cabinet.GetDevicesList<T2>();
+
                 // Будем работать только с теми шкафами в которых есть приборы типа T1 или T2
-                if (devicesListT1.Count > 0 || devicesListT2.Count > 0)
+                if (devicesListT1.Count <= 0 && devicesListT2.Count <= 0) 
+                    continue;
+
+                // В возвращаемом из метода списке будем создавать новые шкафы
+                var newCabinet = new Cabinet
                 {
-                    // В возвращаемом из метода списке будем создавать новые шкафы
-                    Cabinet newCabinet = new Cabinet
-                    {
-                        Designation = cabinet.Designation,
-                        DeviceType = cabinet.DeviceType
-                    };
+                    Designation = cabinet.Designation,
+                    DeviceType = cabinet.DeviceType
+                };
 
-                    foreach (T1 item in devicesListT1)
-                    {
-                        newCabinet.AddItem(item);
-                    }
-
-                    foreach (T2 item in devicesListT2)
-                    {
-                        newCabinet.AddItem(item);
-                    }
-                    CabinetsWithdevs.Add(newCabinet);
+                foreach (var item in devicesListT1)
+                {
+                    newCabinet.AddItem(item);
                 }
+
+                foreach (var item in devicesListT2)
+                {
+                    newCabinet.AddItem(item);
+                }
+                cabinetsWithdevs.Add(newCabinet);
             }
-            return CabinetsWithdevs;
+            return cabinetsWithdevs;
         }
 
         public IList<Cabinet> GetCabinetsWithDevices<T>() where T : SimplestСomponent
         {
-            List<Cabinet> CabinetsWithdevs = new List<Cabinet>();
-            foreach (Cabinet cabinet in cabinetsLst)
+            var cabinetsWithdevs = new List<Cabinet>();
+            foreach (var cabinet in _cabinetsLst)
             {
-                List<T> devicesList = (List<T>)cabinet.GetDevicesList<T>();
-                if (devicesList.Count > 0)
-                {
-                    Cabinet newCabinet = new Cabinet
-                    {
-                        Designation = cabinet.Designation,
-                        DeviceType = cabinet.DeviceType
-                    };
+                var devicesList = (List<T>)cabinet.GetDevicesList<T>();
+                if (devicesList.Count <= 0)
+                    continue;
 
-                    foreach (T item in devicesList)
-                    {
-                        newCabinet.AddItem(item);
-                    }
-                    CabinetsWithdevs.Add(newCabinet);
+                var newCabinet = new Cabinet
+                {
+                    Designation = cabinet.Designation,
+                    DeviceType = cabinet.DeviceType
+                };
+
+                foreach (var item in devicesList)
+                {
+                    newCabinet.AddItem(item);
                 }
+                cabinetsWithdevs.Add(newCabinet);
             }
-            return CabinetsWithdevs;
+            return cabinetsWithdevs;
         }
 
         public IList<Cabinet> GetFullCabinets()
         {
-            return cabinetsLst;
+            return _cabinetsLst;
         }
 
         public IList<T> GetAllDevices<T>() where T : SimplestСomponent
         {
-            IList<Cabinet> cabinets = GetCabinetsWithDevices<T>();
-            List<T> resultDevices = new List<T>();
-            foreach (Cabinet cabinet in cabinets)
+            var cabinets = GetCabinetsWithDevices<T>();
+            var resultDevices = new List<T>();
+            foreach (var cabinet in cabinets)
             {
-                foreach (T device in cabinet.GetDevicesList<T>())
+                foreach (var device in cabinet.GetDevicesList<T>())
                 {
                     resultDevices.Add(device);
                 }
@@ -167,12 +128,15 @@ namespace DeviceTunerNET.Services
 
         public IList<Cabinet> AddTwoListsOfCabinets(IList<Cabinet> list1, IList<Cabinet> list2)
         {
-            IList<Cabinet> cabOut = new List<Cabinet>();
+            var cabOut = new List<Cabinet>();
 
-            foreach (Cabinet cab485 in list1)
+            foreach (var cab485 in list1)
             {
-                Cabinet newCab = new Cabinet();
-                newCab.Designation = cab485.Designation;
+                var newCab = new Cabinet
+                {
+                    Designation = cab485.Designation
+                };
+
                 foreach (RS485device device485 in cab485.GetAllDevicesList)
                 {
 
@@ -181,30 +145,30 @@ namespace DeviceTunerNET.Services
                 cabOut.Add(newCab);
             }
 
-            foreach (Cabinet cab232 in list2)
+            foreach (var cab232 in list2)
             {
-                foreach (Cabinet cab485 in cabOut)
+                foreach (var cab485 in cabOut)
                 {
-                    if (cab232.Designation.Equals(cab485.Designation))
+                    if (!cab232.Designation.Equals(cab485.Designation))
+                        continue;
+
+                    foreach (RS232device device232 in cab232.GetAllDevicesList)
                     {
-                        foreach (RS232device device232 in cab232.GetAllDevicesList)
-                        {
-                            cab485.AddItem(device232);
-                        }
+                        cab485.AddItem(device232);
                     }
                 }
             }
 
-            foreach (Cabinet cab232 in list2)
+            foreach (var cab232 in list2)
             {
-                bool compare = false;
-                foreach (Cabinet cab485 in list1)
+                var compare = false;
+                foreach (var cab485 in list1)
                 {
-                    if (cab232.Designation.Equals(cab485.Designation))
-                    {
-                        compare = true;
-                        break;
-                    }
+                    if (!cab232.Designation.Equals(cab485.Designation))
+                        continue;
+
+                    compare = true;
+                    break;
 
                 }
                 if (!compare)

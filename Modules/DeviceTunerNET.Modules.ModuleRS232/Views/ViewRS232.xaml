@@ -4,13 +4,166 @@
              xmlns:local="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Views"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:validators="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Validators"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True" >
+
     <Grid>
-        <TextBlock Text="{Binding Message}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical" >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Label 
+                    Content="Start address:" 
+                    Grid.Column="0" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"
+                />
+                <TextBox 
+                    Name="StartAddressTextBox" 
+                    Text="{Binding StartAddress}" 
+                    Grid.Column="1" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Center"
+                />
+            </Grid>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Label 
+                    Content="Target address:" 
+                    Grid.Column="0" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"
+                />
+                <TextBox 
+                    Name="TargetAddressTextBox" 
+                    Text="{Binding TargetAddress}" 
+                    Grid.Column="1" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Center"
+                />
+            </Grid>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Label 
+                    Content="Address Range:" 
+                    Grid.Column="0" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"
+                />
+                <TextBox 
+                    Name="AddressRangeTextBox" 
+                    Text="{Binding AddressRange}" 
+                    Grid.Column="1" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Center"
+                />
+            </Grid>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Label 
+                    Content="Address Range:" 
+                    Grid.Column="0" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"
+                />
+                <ComboBox 
+                    ItemsSource="{Binding AvailableComPorts}" 
+                    SelectedItem="{Binding CurrentRS485Port}" 
+                    Grid.Column="1" HorizontalAlignment="Left" 
+                    VerticalAlignment="Center" 
+                    Width="65" 
+                    Grid.ColumnSpan="2" 
+                    Margin="0,2,-15,2"
+                />
+
+            </Grid>
+        </StackPanel>
+
+        <ListBox x:Name="DeviceListBox"
+                 ItemsSource="{Binding Path=OnlineDevicesList}"
+                 SelectedItem="{Binding Path=SelectedDevice}"
+                 Grid.Column="1"
+                 Grid.Row="0"
+                 Margin="0,0,10,10" >
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{Binding DeviceType}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
+                        <TextBlock Text="{Binding AddressRS485}" Grid.Row="0" Grid.Column="1"/>
+
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <TextBox Grid.Row="2" Grid.Column="0">
+            <TextBox.Text>
+                <Binding Path="StartAddressTextBox"
+                         NotifyOnValidationError="True"
+                         UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+        <StackPanel Grid.Row="0" Grid.Column="2">
+            <Button Content="Сканировать сеть" Grid.Row="1" Grid.Column="2" Margin="5" Command="{Binding ScanNetworkCommand}" />
+            <Button Content="Сдвинуть адреса" Grid.Row="0" Grid.Column="2" Margin="5" Command="{Binding ShiftAddressesCommand}" />
+        </StackPanel>
+
     </Grid>
 </UserControl>

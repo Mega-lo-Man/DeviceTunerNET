@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DeviceTunerNET.Services.Interfaces
+﻿namespace DeviceTunerNET.Services.Interfaces
 {
-    public interface IDialogService
+    public interface IFileDialogService
     {
 
         /// <summary>

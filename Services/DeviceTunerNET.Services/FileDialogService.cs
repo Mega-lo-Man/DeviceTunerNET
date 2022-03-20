@@ -1,28 +1,21 @@
-﻿using Microsoft.Win32;
+﻿using DeviceTunerNET.Services.Interfaces;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Windows;
-using DeviceTunerNET.Services.Interfaces;
-
-using Prism.Events;
-using DeviceTunerNET.Core;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace DeviceTunerNET.Services
 {
-    public class DialogService : IDialogService, IMessageService
+    public class FileDialogService : IFileDialogService, IMessageService
     {
 
         private string _fullFileNames;
-        public string FullFileNames
-        {
-            get{ return _fullFileNames; }
-        }
+        public string FullFileNames => _fullFileNames;
 
         public event Action<string> DataArrived;
 
         public void AddData(string newData)
         {
-            
+
         }
 
         public string GetMessage()
@@ -32,14 +25,14 @@ namespace DeviceTunerNET.Services
 
         public bool OpenFileDialog()
         {
-            CommonOpenFileDialog openfileDlg = new CommonOpenFileDialog();
+            var openfileDlg = new CommonOpenFileDialog();
             openfileDlg.Title = "MyTitle";
-            if(openfileDlg.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                _fullFileNames = openfileDlg.FileName;
-                return true;
-            }
-            return false;
+            if (openfileDlg.ShowDialog() != CommonFileDialogResult.Ok) 
+                return false;
+
+            _fullFileNames = openfileDlg.FileName;
+
+            return true;
         }
 
         public bool SaveFileDialog()

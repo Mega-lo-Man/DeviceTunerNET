@@ -2,18 +2,13 @@
 using DeviceTunerNET.Core.Mvvm;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
     public class C2000EthernetDeviceViewModel : TreeViewItemViewModel
     {
-        private C2000Ethernet _device;
-        private IEventAggregator _ea;
+        private readonly C2000Ethernet _device;
+        private readonly IEventAggregator _ea;
 
         public C2000EthernetDeviceViewModel(C2000Ethernet device, CabinetViewModel cabinetParent, IEventAggregator ea)
             : base(cabinetParent, false)
@@ -22,10 +17,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             _ea = ea;
         }
 
-        public string GetDeviceDesignation
-        {
-            get { return _device.Designation; }
-        }
+        public string GetDeviceDesignation => _device.Designation;
 
         protected override void OnSelectedItemChanged()
         {
