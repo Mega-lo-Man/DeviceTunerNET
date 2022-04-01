@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30428.66
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET", "DeviceTunerNET\DeviceTunerNET.csproj", "{9463B0A1-5B8D-4C18-9893-D62F83D1414B}"
 EndProject
@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{AA122C2F-45F2-45DE-A22F-C3292DDCCD40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Services", "Services\DeviceTunerNET.Services\DeviceTunerNET.Services.csproj", "{2615071C-14B0-46DB-A7DC-1637F3CAFBF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6} = {7272379A-E4CB-4120-A2FD-9AC2C597BCC6}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Services.Interfaces", "Services\DeviceTunerNET.Services.Interfaces\DeviceTunerNET.Services.Interfaces.csproj", "{CF97FA8A-EE79-4CB1-9FF2-F6C5C3F3C0C0}"
 EndProject
@@ -34,6 +37,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Modules.ModuleRS232", "Modules\DeviceTunerNET.Modules.ModuleRS232\DeviceTunerNET.Modules.ModuleRS232.csproj", "{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestDeviceTunerNET", "UnitTestDeviceTunerNET\UnitTestDeviceTunerNET.csproj", "{2571F9CA-8C51-4097-B78D-0F62F66BCB07}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tftp.Net", "..\..\tftp.net\Tftp.Net\Tftp.Net.csproj", "{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -177,6 +182,18 @@ Global
 		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|x64.Build.0 = Release|Any CPU
 		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|x86.ActiveCfg = Release|Any CPU
 		{2571F9CA-8C51-4097-B78D-0F62F66BCB07}.Release|x86.Build.0 = Release|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Debug|x64.Build.0 = Debug|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Debug|x86.Build.0 = Debug|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Release|x64.ActiveCfg = Release|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Release|x64.Build.0 = Release|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Release|x86.ActiveCfg = Release|Any CPU
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -190,6 +207,7 @@ Global
 		{D2DA0E59-7BB0-4F71-8BC5-D2B2384F04AE} = {D4375B68-4CAA-4288-B89D-8A2AE3033258}
 		{0E1EFC35-96D6-4FF4-8B4D-005426E8AC21} = {A9E926B6-99CD-48D0-8A44-05AFBB41DDF6}
 		{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B} = {C4D757DA-7A50-4F48-976E-7CE0EEF8EA54}
+		{7272379A-E4CB-4120-A2FD-9AC2C597BCC6} = {D4375B68-4CAA-4288-B89D-8A2AE3033258}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87534DFC-1C0A-442E-8380-60B17880D0D9}

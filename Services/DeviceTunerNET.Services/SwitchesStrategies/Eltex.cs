@@ -14,9 +14,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
     public class Eltex : ISwitchConfigUploader
     {
         private readonly IEventAggregator _ea;
-        private readonly NetworkUtils _networkUtils;
-        private readonly EltexTelnet _telnetSender;
-        private readonly EltexSsh _sshSender;
+        private readonly INetworkUtils _networkUtils;
+        private readonly ISender _telnetSender;
+        private readonly ISender _sshSender;
 
         private EthernetSwitch _ethernetSwitch;
         private int repeatNumer = 5;
@@ -29,11 +29,13 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
         public string DefaultPassword { get; set; } = "admin";
         public string RsaKeyFile { get; set; } = "Resources\\Files\\id_rsa.key";
 
-        public Eltex(NetworkUtils networkUtils, EltexTelnet telnetSender, EltexSsh sshSender, IEventAggregator eventAggregator)
+        public Eltex(INetworkUtils networkUtils,
+                     IEnumerable<ISender> senders,
+                     IEventAggregator eventAggregator)
         {
             _networkUtils = networkUtils;
-            _telnetSender = telnetSender;
-            _sshSender = sshSender;
+            _telnetSender = senders.ElementAt(0);//telnetSender;
+            _sshSender = senders.ElementAt(1);//sshSender;
             _ea = eventAggregator;
         }
 
@@ -132,32 +134,6 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             });
         }
 
-        /*
-        private void TelnetCommandPacket()
-        {
-            _telnetSender.SendMessage("conf t");
-            _telnetSender.SendMessage("hostname " + _ethernetSwitch.Designation);
-            _telnetSender.SendMessage("aaa authentication login default line");
-            _telnetSender.SendMessage("aaa authentication enable default line");
-
-            _telnetSender.SendMessage("line console");
-            _telnetSender.SendMessage("login authentication default");
-            _telnetSender.SendMessage("enable authentication default");
-            _telnetSender.SendMessage("password " + _sDict["NewAdminPassword"]);
-            _telnetSender.SendMessage("exit");
-
-            _telnetSender.SendMessage("ip ssh server");
-            _telnetSender.SendMessage("line ssh");
-            _telnetSender.SendMessage("login authentication default");
-            _telnetSender.SendMessage("enable authentication default");
-            _telnetSender.SendMessage("password " + _sDict["NewAdminPassword"]);
-            _telnetSender.SendMessage("exit");
-
-            _telnetSender.SendMessage("username " + _sDict["NewAdminLogin"] + " privilege 15 " + "password " + _sDict["NewAdminPassword"]);
-
-            _telnetSender.SendMessage("interface vlan 1");
-            _telnetSender.SendMessage("ip address " + _ethernetSwitch.AddressIP + " /" + _sDict["IPmask"]);
-        }
-        */
+        
     }
 }

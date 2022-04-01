@@ -77,7 +77,17 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             Stream.WriteLine(SettingsDict["NewAdminPassword"]);
             Stream.WriteLine("conf t");
 
+            Stream.WriteLine("interface vlan 1");
+            Stream.WriteLine("no ip address");
+            Stream.WriteLine("shutdown");
 
+
+
+
+
+            // IP головного коммутатора
+            Stream.WriteLine("ip default-gateway 192.168.3.1");
+            Stream.WriteLine("ip routing");
 
             Stream.WriteLine("loopback-detection enable");
             Stream.WriteLine("spanning-tree");
@@ -98,7 +108,7 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             Stream.WriteLine("no ip telnet server");
             Stream.WriteLine("exit");
             Stream.WriteLine("wr mem");
-            Stream.WriteLine("Y");
+            Stream.WriteLine("N");
         }        
     }
 }

@@ -36,10 +36,11 @@ namespace DeviceTunerNET
 
         private List<System.Type> _strategies = new List<System.Type>() { typeof(Eltex) };
 
-        //enum SrvKey { telnetKey, sshKey };
+        
         enum Strategies { eltex };
         */
 
+        enum SrvKey { telnetKey, sshKey };
         protected override Window CreateShell()
         {
             _sp = new SerialPort();
@@ -66,11 +67,11 @@ namespace DeviceTunerNET
             containerRegistry.Register<ISwitchConfigUploader, Eltex>();
             containerRegistry.Register<ISerialSender, SerialSender>();
             containerRegistry.Register<ISerialTasks, SerialTasks>();
+            containerRegistry.Register<INetworkUtils, NetworkUtils>();
+
+            containerRegistry.GetContainer().Register<ISender, EltexTelnet>(serviceKey: SrvKey.telnetKey);
+            containerRegistry.GetContainer().Register<ISender, EltexSsh>(serviceKey: SrvKey.sshKey);
             
-            /*
-            containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: SrvKey.telnetKey);
-            containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: SrvKey.sshKey);
-            */
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
         }
 
