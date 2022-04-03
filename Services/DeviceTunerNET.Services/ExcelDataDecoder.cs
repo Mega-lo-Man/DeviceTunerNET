@@ -54,7 +54,6 @@ namespace DeviceTunerNET.Services
         //Dictionary with all found C2000-Ethernet
         private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = new Dictionary<C2000Ethernet, Tuple<char, int>>();
         
-
         public ExcelDataDecoder()
         {
             // Remove "IBM437 is not a supported encoding" error
@@ -106,7 +105,8 @@ namespace DeviceTunerNET.Services
 
                 TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out var devRS232Addr);
                 TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out var devRS485Addr);
-                bool.TryParse(worksheet.Cells[rowIndex, qcCol].Value?.ToString(), out var devQcPassed);
+                bool devQcPassed = GetQcStatus(worksheet.Cells[rowIndex, qcCol].Value?.ToString());
+                //bool.TryParse(worksheet.Cells[rowIndex, qcCol].Value?.ToString(), out var devQcPassed);
 
                 if (!string.Equals(devParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
                 {
@@ -174,6 +174,15 @@ namespace DeviceTunerNET.Services
             FillDevicesDependencies(dictC2000Ethernet, master, slave);
             FillDevicesDependencies(dictC2000Ethernet, slave, master);
             return cabinetsLst;
+        }
+
+        private bool GetQcStatus(string qcStatus)
+        {
+            if(qcStatus != null && qcStatus.Equals(qcPassed))
+            {
+                return true;
+            }
+            return false;
         }
 
         private Tuple<char, int> GetRangTuple(string rang)
@@ -269,7 +278,10 @@ namespace DeviceTunerNET.Services
         {
             // записываем метку прохождения прохождения контроля качества в графу "QC" напротив номера строки указанного в id
             if (qualityControlPassed)
+            {
+                worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Black);
                 worksheet.Cells[id, qcCol].Value = qcPassed;
+            }
             else
             {
                 worksheet.Cells[id, qcCol].Style.Font.Color.SetColor(Color.Red);

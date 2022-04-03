@@ -7,8 +7,6 @@ using Prism.Events;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -68,7 +66,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private bool CheckCommandCanExecute()
         {
-            return CurrentRS485Port != null; //&& DevicesForProgramming.Count > 0;
+            return CurrentRS485Port != null; 
         }
 
         private Task CheckCommandExecuteAsync()
@@ -99,7 +97,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private void VerificationCabinetsLoop()
         {
             // Если кол-во приборов с адресом по умолчанию (определяется по наличию серийника) более одного - их уже не настроить без демонтажа
-            if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) > 1)
+            var numberOfDeviceWithoutSerial = GetNumberOfDeviceWithoutSerial(DevicesForProgramming);
+            if (numberOfDeviceWithoutSerial > 1)
             {
                 MessageBox.Show("В списке приборов более одного прибора не имеют серийника!");
                 return;
@@ -110,7 +109,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             // Displaying a window asking user to enter the serial number.
             string serial = "";
             VerificationCanStart = VerificationStart.waitFor;
-            if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) == 1)
+
+            if(numberOfDeviceWithoutSerial == 1)
             {
                 _dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -125,6 +125,12 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         if (dialogResult.Result == ButtonResult.OK)
                         {
                             serial = dialogResult.Parameters.GetValue<string>("Serial");
+                            if (serial == null)
+                            {
+                                StartButtonEnable = true;// Unlock start button
+                                return;
+                            }
+
                             VerificationCanStart = VerificationStart.canExecute;
                         }
 
@@ -135,7 +141,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     });
                 }));
 
-
                 while (VerificationCanStart == VerificationStart.waitFor)
                 {
 
@@ -143,26 +148,85 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
                 if (VerificationCanStart == VerificationStart.cantExecute)
                 {
-                    StartButtonEnable = true;// Lock start button
+                    StartButtonEnable = true;// Unlock start button
                     return;
                 }
-                    
-            }
-            
-            // Если только один прибор не настроен, надо его настроить
-            if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) == 1)
-            {
-                var device = (Device)GetDeviceWithoutSerial(DevicesForProgramming);
-                Download(device, serial);
             }
 
-            foreach (RS485device device in DevicesForProgramming)
+            // Провести контроль качества всех приборов с серийниками и если какой-то прибор отсутсвует
+            // вывести предупреждение об этом
+            var devsWithSerial = GetDevicesWithSerial(DevicesForProgramming);
+            var passedQcNumb = QualityControl(devsWithSerial);
+
+            // Обновляем всю коллекцию в UI целиком
+            _dispatcher.BeginInvoke(new Action(() =>
+            {
+                CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+            }));
+
+            if (passedQcNumb != devsWithSerial.Count())
+            {
+                MessageBox.Show("Количество не ответивших приборов имеющих серийник: " + (devsWithSerial.Count() - passedQcNumb));
+                StartButtonEnable = true; // Unlock start button
+                return;
+            }
+
+            // Если только один прибор не настроен, надо его настроить
+            // и провести контроль качества
+            if (GetDevicesWithoutSerial(DevicesForProgramming).Count() == 1)
+            {
+                var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
+                Download(device, serial);
+
+                // Обновляем всю коллекцию в UI целиком
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+                }));
+
+                if (device.Serial == null)
+                {
+                    StartButtonEnable = true; // Unlock start button
+                    return;
+                }
+
+                var passedQc = QualityControl(new List<RS485device>() { device });
+            }
+
+            _dispatcher.BeginInvoke(new Action(() =>
+            {
+                CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+            }));
+
+            var numberOfDeviceWithoutQcPassed = GetNumberOfDeviceWithoutQcPassed(DevicesForProgramming);
+            if (numberOfDeviceWithoutQcPassed != 0)
+            {
+                MessageBox.Show("Колчиство не прошедших проверку приборов: " + numberOfDeviceWithoutQcPassed);
+                StartButtonEnable = true;// unlock start button
+                return;
+            }
+
+            MessageBox.Show("All good!");
+            SerialTextBox = "";
+            StartButtonEnable = true;// unlock start button
+        }
+
+        private int QualityControl(IEnumerable<RS485device> devices)
+        {
+            var result = 0;
+            foreach (RS485device device in devices)
             {
                 var checkAddress = Convert.ToByte(device.AddressRS485);
                 if (_serialTasks.CheckOnlineDevice(CurrentRS485Port, checkAddress, device.Model) == ISerialTasks.ResultCode.ok)
+                {
                     device.QualityControlPassed = true;
+                    result++;
+                }
+
                 else
+                {
                     device.QualityControlPassed = false;
+                }
 
                 _dataRepositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
 
@@ -172,31 +236,12 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
                 }));
             }
-
-            // Если всё ещё как-либо прибор не настроен - ничего не вышло. Пусть проверяющий включает голову
-            if (GetNumberOfDeviceWithoutQcPassed(DevicesForProgramming) != 0)
-            {
-                var devicesWithoutQC = GetDevicesWithoutQualityControl(DevicesForProgramming);
-                
-                var devicesStr = "";
-                foreach (var device in devicesWithoutQC)
-                {
-                    devicesStr += Environment.NewLine + device.AddressRS485 + " : " + device.Model;
-                }
-                MessageBox.Show("Некоторые приборы не прошли проверку:" + devicesStr);
-            }
-            else
-            {
-                MessageBox.Show("All good!");
-            }
-
-            SerialTextBox = "";
-            StartButtonEnable = true;// unlock start button
+            return result;
         }
 
         private void DownloadSettings()
         {
-            var device = (Device)GetDeviceWithoutSerial(DevicesForProgramming);
+            var device = (Device)GetDevicesWithoutSerial(DevicesForProgramming).FirstOrDefault();
 
             if (device == null)
             {
@@ -210,7 +255,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             Download(device, SerialTextBox);
 
             // Is Device Was Last?
-            if (GetDeviceWithoutSerial(DevicesForProgramming) == null)
+            if (GetDevicesWithoutSerial(DevicesForProgramming) == null)
             {
                 MessageBox.Show("Alles!");
             }
@@ -274,17 +319,24 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return counter;
         }
 
-        private object GetDeviceWithoutSerial(IEnumerable<object> devices)
+        private IEnumerable<RS485device> GetDevicesWithoutSerial(IEnumerable<object> devices)
         {
             //исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
-            return devices.Cast<RS485device>().FirstOrDefault(device => string.IsNullOrEmpty(device.Serial));
+            return devices.Cast<RS485device>().Where(device => string.IsNullOrEmpty(device.Serial));
         }
 
+        private IEnumerable<RS485device> GetDevicesWithSerial(IEnumerable<object> devices)
+        {
+            //исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
+            return devices.Cast<RS485device>().Where(device => !string.IsNullOrEmpty(device.Serial));
+        }
+
+        /*
         private IEnumerable<RS485device> GetDevicesWithoutQualityControl(IEnumerable<object> devices)
         {
             return devices.Cast<RS485device>().Where(device => device.QualityControlPassed == false).ToList();
         }
-
+        */
         private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1, string serialNumb)
         {
             switch (sendResult)
@@ -322,11 +374,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
         }
 
-        private void SetDeviceStatus(Device device)
-        {
-            DeviceStatus = GetCurrentDeviceStatus(device.Serial, device.QualityControlPassed);
-        }
-
+        /*
         private int GetCurrentDeviceStatus(string deviceSerial, bool deviceChecked)
         {
             if (!string.IsNullOrEmpty(deviceSerial) && deviceChecked)
@@ -335,7 +383,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 return 1;
             return 0;
         }
-
+        */
         private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
