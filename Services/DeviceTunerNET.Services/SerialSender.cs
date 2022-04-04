@@ -27,12 +27,21 @@ namespace DeviceTunerNET.Services
         private byte currentAddress = 127;
         private byte commandCounter;
 
+        private enum PacketIndexes
+        {
+            address = 0,
+            packetLength = 1,
+            commandCounter = 2
+
+        }
+
         private enum Timeouts
         {
             addressChange = 500, // Сингал-20П V3.10 после смены адреса подтверждает через 400 мс (остальные быстрее)
             readModel = 60, // Чтение типа прибора занимает не более 50 мс
             ethernetConfig = 350,
-            restartC2000Ethernet = 7000
+            restartC2000Ethernet = 7000,
+            notResponse = 400 // оижидание конца пакета, если пакет за это время полоностью не пришёл, наверно, уже и не придёт
         }
 
         //private const int ADDRESS_CHANGE_TIMEOUT = 400; 
@@ -226,29 +235,84 @@ namespace DeviceTunerNET.Services
             return AddressTransaction(currentAddress, sendArray, timeout);
         }
 
+        private List<byte> readBuffer = new List<byte>();
         private byte[] AddressTransaction(byte address, byte[] sendArray, Timeouts timeout)
         {
             var addr = new[] { address };
             var sendBytes = CombineArrays(addr, sendArray);
+            
+            
             // make DataReceived event handler
             _serialPort.DataReceived += sp_DataReceived;
 
-            for (var i = 0; i < maxRepetitions; i++)
+            for(int i = 0; i < maxRepetitions; i++)
             {
+                readBuffer.Clear();
                 SendPacket(sendBytes);
-                while (portReceive) { }
-                Thread.Sleep((int)timeout);
-                if (receiveBuffer == null)
+
+                var timeCounter = (int)Timeouts.notResponse;
+                while (!IsReceivePacketComplete(readBuffer) && timeCounter >= 0)
+                {
+                    Thread.Sleep((int)timeout);
+                    timeCounter -= (int)timeout;
+                }
+
+                if (!IsReceivePacketComplete(readBuffer))
                     continue;
-                break;
+
+                if (IsCrcValid(readBuffer))
+                    break;
             }
 
-            if (receiveBuffer == null)
-                return new byte[1] { 0x00 };
+            if (readBuffer.Count == 0)
+                return null;
 
-            var result = receiveBuffer;
-            receiveBuffer = null;
-            return Encoding.ASCII.GetBytes(result);
+            // Удаляем последний байт (CRC8)
+            readBuffer.RemoveAt(readBuffer.Count - 1);
+            var array = readBuffer.ToArray();
+            
+            return array;
+        }
+
+        private bool IsCrcValid(IEnumerable<byte> packetWithCrc)
+        {
+            var packet = readBuffer.ToList();
+            var crc = packet.Last();
+            
+            packet.RemoveAt(packet.Count - 1);
+            var packetArray = packet.ToArray();
+
+            if(CRC8(packetArray).First() == crc)
+                return true;
+
+            return false;
+        }
+
+        private bool IsReceivePacketComplete(IEnumerable<byte> packet)
+        {
+            if(packet.Count() < 2)
+                return false;
+
+            var packetLength = packet.ElementAt(1);
+            
+            // CompletePacket = Packet - CRC8
+            if(packetLength != packet.Count() - 1)
+                return false;
+
+            return true;
+        }
+
+        private void sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            var sPort = (SerialPort)sender;
+
+            var tempBuffer = new byte[sPort.BytesToRead];
+            sPort.Read(tempBuffer, 0, tempBuffer.Length);
+
+            foreach (byte b in tempBuffer)
+            {
+                readBuffer.Add(b);
+            }
         }
 
         private void SendPacket(byte[] sendArray)
@@ -295,25 +359,6 @@ namespace DeviceTunerNET.Services
         {
             return _serialPort;
         }
-
-        private void sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            portReceive = true;
-            //Console.WriteLine("I am in event handler");
-            var sPort = (SerialPort)sender;
-            var data = sPort.ReadExisting();
-            foreach (var ch in data)
-
-            receiveBuffer += data;
-            Debug.WriteLine("ReceiveBuffer: " + receiveBuffer + "  Length: " + receiveBuffer.Length);
-            portReceive = false;
-        }
-
-
-
-
-       
-
 
         public bool SetC2000EthernetConfig(SerialPort ComPortName, byte deviceAddress, C2000Ethernet device)
         {
@@ -689,12 +734,7 @@ namespace DeviceTunerNET.Services
             Transaction(new byte[] { 0x17, 0x00, 0x00 }, Timeouts.ethernetConfig);
             return true;
         }
-        /*
-        private int GetAddressSearchProgressBar(int address)
-        {
-            return 100 * address / 127;
-        }
-        */
+        
         private static byte[] IpToByteArray(string ipAddress)
         {
             var ipWithoutDots = ipAddress.Split(new char[] { '.' });
