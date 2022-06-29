@@ -18,6 +18,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
 
         public override bool SendPacket()
         {
+            var tftpServerIp = NetUtils.GetLocalIpAddress();
+            SendMessage("copy tftp://" + tftpServerIp + "/config.txt running-config");
+            /*
             SendMessage("terminal datadump");
             SendMessage("conf t");
             SendMessage("hostname " + _ethernetDevice.Designation);
@@ -67,6 +70,7 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
 
             Debug.WriteLine(SendMessage(Environment.NewLine));
             */
+            /*
             Debug.WriteLine(SendMessage("conf t"));
             Debug.WriteLine(SendMessage("interface gi1/0/9"));
             Debug.WriteLine(SendMessage("switchport mode trunk"));
@@ -81,7 +85,7 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             //SendMessage("switchport forbidden default-vlan");
             SendMessage("exit");
 
-            
+            */
 
             return true;
         }

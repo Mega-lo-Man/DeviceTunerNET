@@ -71,6 +71,9 @@ namespace DeviceTunerNET
 
             containerRegistry.GetContainer().Register<ISender, EltexTelnet>(serviceKey: SrvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, EltexSsh>(serviceKey: SrvKey.sshKey);
+
+            containerRegistry.Register<ITftpServerManager, TftpServerManager>();
+            containerRegistry.Register<IConfigParser, ConfigParser>();
             
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
         }

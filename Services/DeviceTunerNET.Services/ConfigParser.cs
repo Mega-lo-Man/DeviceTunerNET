@@ -15,7 +15,8 @@ namespace DeviceTunerNET.Services
 
         public IConfigParser.Errors Parse(Dictionary<string, string> variables, string templateConfigPath, string outputConfigPath)
         {
-            if(!File.Exists(templateConfigPath))
+            //var templateConfigPath = Path.GetFullPath(templateConfigRelativePath);
+            if (!File.Exists(templateConfigPath))
                 return IConfigParser.Errors.FileNotFound;
 
             try

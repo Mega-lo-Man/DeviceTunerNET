@@ -125,6 +125,8 @@
   <ItemGroup>
     <Compile Include="ConfigParser.cs" />
     <Compile Include="DataRepositoryService.cs" />
+    <Compile Include="NetUtils.cs" />
+    <Compile Include="TftpServerManager.cs" />
     <Compile Include="UploadManager.cs" />
     <Compile Include="FileDialogService.cs" />
     <Compile Include="ExcelDataDecoder.cs" />

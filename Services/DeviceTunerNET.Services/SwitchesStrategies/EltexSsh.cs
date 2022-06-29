@@ -62,8 +62,8 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             NetworkSwitch.MACaddress = MACaddress;
             NetworkSwitch.HardwareVersion = HardwareVersion;
             NetworkSwitch.Serial = SerialNumber;
-            NetworkSwitch.Username = SettingsDict["NewAdminLogin"];
-            NetworkSwitch.Password = SettingsDict["NewAdminPassword"];
+            NetworkSwitch.Username = SettingsDict["%%NEW_ADMIN_LOGIN%%"];
+            NetworkSwitch.Password = SettingsDict["%%NEW_ADMIN_PASSWORD%%"];
             return true;
         }
 
@@ -74,28 +74,16 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             GetIdOverSsh();
 
             Stream.WriteLine("en");
-            Stream.WriteLine(SettingsDict["NewAdminPassword"]);
+            Stream.WriteLine(SettingsDict["%%NEW_ADMIN_PASSWORD%%"]);
             Stream.WriteLine("conf t");
-
+/*
             Stream.WriteLine("interface vlan 1");
             Stream.WriteLine("no ip address");
             Stream.WriteLine("shutdown");
 
-
-
-
-
             // IP головного коммутатора
             Stream.WriteLine("ip default-gateway 192.168.3.1");
             Stream.WriteLine("ip routing");
-
-            Stream.WriteLine("loopback-detection enable");
-            Stream.WriteLine("spanning-tree");
-            Stream.WriteLine("spanning-tree mode rstp");
-            Stream.WriteLine("spanning-tree priority 16384");
-            Stream.WriteLine("spanning-tree forward-time 20");
-            Stream.WriteLine("spanning-tree hello-time 5");
-            Stream.WriteLine("spanning-tree max-age 38");
 
             Stream.WriteLine("clock source sntp");
             Stream.WriteLine("no clock timezone");
@@ -104,11 +92,11 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             Stream.WriteLine("sntp unicast client enable");
             Stream.WriteLine("sntp unicast client poll");
             Stream.WriteLine("sntp server 192.168.0.1 poll");
-
+*/
             Stream.WriteLine("no ip telnet server");
             Stream.WriteLine("exit");
             Stream.WriteLine("wr mem");
-            Stream.WriteLine("N");
+            Stream.WriteLine("Y");
         }        
     }
 }
