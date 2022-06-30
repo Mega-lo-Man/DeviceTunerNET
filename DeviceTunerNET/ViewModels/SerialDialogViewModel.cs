@@ -34,6 +34,20 @@ namespace DeviceTunerNET.ViewModels
             set => SetProperty(ref _message, value);
         }
 
+        private string _model;
+        public string Model
+        {
+            get => _model;
+            set => SetProperty(ref _model, value);
+        }
+
+        private string _designation;
+        public string Designation
+        {
+            get => _designation;
+            set => SetProperty(ref _designation, value);
+        }
+
         public bool CanCloseDialog() => true;
 
         protected virtual void CloseDialog(string parameter)
@@ -67,6 +81,8 @@ namespace DeviceTunerNET.ViewModels
         public void OnDialogOpened(IDialogParameters parameters)
         {
             Message = parameters.GetValue<string>("message");
+            Model = parameters.GetValue<string>("model");
+            Designation = parameters.GetValue<string>("designation");
         }
 
         public event Action<IDialogResult> RequestClose;

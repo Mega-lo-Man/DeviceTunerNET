@@ -112,13 +112,19 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             VerificationCanStart = VerificationStart.waitFor;
             if (GetNumberOfDeviceWithoutSerial(DevicesForProgramming) == 1)
             {
+                var device = (Device)GetDeviceWithoutSerial(DevicesForProgramming);
+                var model = device.Model;
+                var designation = device.Designation;
+
                 _dispatcher.BeginInvoke(new Action(() =>
                 {
-                    var tcs = new TaskCompletionSource<string>();
+                    //var tcs = new TaskCompletionSource<string>();
                     var parameters = new DialogParameters
                     {
                         {"title", "Ввод серийного номера."},
-                        {"message", "Серийник: "}
+                        {"message", "Серийник: "},
+                        {"model", model},
+                        {"designation", designation}
                     };
                     _dialogService.ShowDialog("SerialDialog", parameters, dialogResult =>
                     {

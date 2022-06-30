@@ -15,15 +15,18 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <Label Content="{Binding Message}" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-            <TextBox Name="SerialTextBox" Text="{Binding Serial}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-
+            <Label Content="{Binding Model}" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <Label Content="{Binding Designation}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <Label Content="{Binding Message}" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <TextBox Name="SerialTextBox" Text="{Binding Serial}" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            
         </Grid>
         <Button Command="{Binding CloseDialogCommand}" 
                 CommandParameter="true" 

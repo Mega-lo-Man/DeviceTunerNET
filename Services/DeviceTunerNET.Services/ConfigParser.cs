@@ -15,7 +15,6 @@ namespace DeviceTunerNET.Services
 
         public IConfigParser.Errors Parse(Dictionary<string, string> variables, string templateConfigPath, string outputConfigPath)
         {
-            //var templateConfigPath = Path.GetFullPath(templateConfigRelativePath);
             if (!File.Exists(templateConfigPath))
                 return IConfigParser.Errors.FileNotFound;
 
@@ -34,7 +33,6 @@ namespace DeviceTunerNET.Services
                         while ((line = sourceFile.ReadLine()) != null)
                         {
                             // Do the word replacement
-                            //line = line.Replace("tea", "cabbage");
                             var newLine = ReplaceByDictionary(variables, line);
                             // Write the modified line to the new file
                             outputFileStream.WriteLine(newLine);
