@@ -195,7 +195,6 @@ namespace DeviceTunerNET.SharedDataModel
                     AddressIP = "192.168.1.127"
                 }
             };*/
-            DestinationUdp = 40000;
             MasterSlaveUdp = 40001;
             ConfirmationTimeout = 0x02;
             ConnectionTimeout = 0x1E;
