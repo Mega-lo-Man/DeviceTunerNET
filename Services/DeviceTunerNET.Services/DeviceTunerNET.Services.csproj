@@ -134,6 +134,7 @@
     <Compile Include="ExcelDataDecoder.cs" />
     <Compile Include="MessageService.cs" />
     <Compile Include="NetworkUtils.cs" />
+    <Compile Include="OrionCommon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialSender.cs" />
     <Compile Include="SerialTasks.cs" />

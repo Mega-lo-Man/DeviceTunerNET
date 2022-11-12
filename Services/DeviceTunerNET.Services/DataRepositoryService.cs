@@ -160,7 +160,7 @@ namespace DeviceTunerNET.Services
                     if (!cab232.Designation.Equals(cab485.Designation))
                         continue;
 
-                    foreach (RS232device device232 in cab232.GetAllDevicesList)
+                    foreach (EthernetOrionDevice device232 in cab232.GetAllDevicesList)
                     {
                         cab485.AddItem(device232);
                     }

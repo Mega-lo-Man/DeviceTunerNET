@@ -1,10 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using DeviceTunerNET.Services;
-using DeviceTunerNET.SharedDataModel;
+﻿using DeviceTunerNET.Services;
+using DeviceTunerNET.SharedDataModel.Devices;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Prism.Events;
+using System.IO.Ports;
+using System.Linq;
+using System.Runtime.Serialization;
+using static DeviceTunerNET.SharedDataModel.ElectricModules.Shleif;
 
 namespace UnitTestDeviceTunerNET
 {
@@ -16,7 +17,7 @@ namespace UnitTestDeviceTunerNET
         [TestMethod]
         public void TestIsDeviceOnline()
         {
-            const string comPort = "COM6";
+            const string comPort = "COM3";
             
             var serialPort = new SerialPort {PortName = comPort};
             var testService = new SerialSender(new EventAggregator());
@@ -27,146 +28,139 @@ namespace UnitTestDeviceTunerNET
         }
 
         [TestMethod]
-        public void TestChangeDeviceAddress()
+        public void TestSetDeviceAddress()
         {
-            const string comPort = "COM6";
+            const string comPort = "COM3";
             
             var serialPort = new SerialPort { PortName = comPort };
-            var testService = new SerialSender(new EventAggregator());
+            var testDevice = new Signal20P
+            {
+                AddressRS485 = 3,
+                ComPort = serialPort
+            };
+            testDevice.ComPort.Open();
 
-            var result = testService.SetDeviceRS485Address(serialPort, 127, newAddress);
+            var result = testDevice.SetAddress();
+
+            testDevice.ComPort.Close();
 
             Assert.IsTrue(result);
         }
 
         [TestMethod]
-        public void TestSendC2000EthernetConfig()
+        public void TestAdcShleif()
         {
-            const string comPort = "COM6";
-            var testDevice = new C2000Ethernet
+            const string comPort = "COM3";
+
+            var serialPort = new SerialPort { PortName = comPort };
+            var testDevice = new Signal20P
             {
-                AddressRS485 = 2,
-                NetName = "DEADBEAF",
-                AddressIP = "1.2.3.4", 
-                Netmask = "5.6.7.8",
-                DefaultGateway = "7.8.9.10",
-                Dhcp = true, 
-                FirstDns = "11.12.13.14", 
-                SecondDns = "15.16.17.18",
-                NetworkMode = C2000Ethernet.Mode.master,
-                InterfaceType = C2000Ethernet.ProtocolType.RS485,
-                ConnectionSpeed = C2000Ethernet.Speed.b9600,
-                FrameFormat = C2000Ethernet.DataParityStop.data9Stop2,
-                TimeoutSign = false,
-                Timeout = 65534,
-                PauseSign = true,
-                Pause = 65533,
-                Optimization = false,
-                AccessNotifySign = true,
-                PauseBeforeResponseRs = 0x10,
-                RemoteDevicesList = new List<C2000Ethernet>()
-                {
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.1.1.1",
-                        DestinationUdp = 54789,
-                        UdpPortType = C2000Ethernet.UdpType.dynamicUdp,
-                        CryptoKey = System.Text.Encoding.Default.GetString(new byte[]{0x3c, 0x3e, 0x15, 0xff, 0x8c, 0x89, 0x94, 0xd3, 0xaa, 0x9e, 0x9c, 0x2e, 0xcc, 0xdd, 0x2a, 0x06})
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.1.2.2",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.1.3.3",
-                        DestinationUdp = 54789,
-                        UdpPortType = C2000Ethernet.UdpType.dynamicUdp
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.4",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.5",
-                        DestinationUdp = 54789,
-                        UdpPortType = C2000Ethernet.UdpType.dynamicUdp
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.6",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.7",
-                        DestinationUdp = 54789,
-                        UdpPortType = C2000Ethernet.UdpType.dynamicUdp
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.8",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.9",
-                        DestinationUdp = 54789,
-                        UdpPortType = C2000Ethernet.UdpType.dynamicUdp
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.10",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.11",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.12",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.13",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.14",
-                        DestinationUdp = 54789
-                    },
-                    new C2000Ethernet()
-                    {
-                        AddressIP = "192.168.3.15",
-                        DestinationUdp = 54789,
-                        UdpPortType = C2000Ethernet.UdpType.dynamicUdp
-                    }
-                },
-                MasterSlaveUdp = 12345,
-                ConfirmationTimeout = 0xFD,
-                ConnectionTimeout = 0xFE,
-
-                FreeConnectionUdpType = C2000Ethernet.UdpType.staticUdp,
-                AllowFreeConnection = false,
-
-                TransparentUdp = 5554,
-                TransparentProtocol = C2000Ethernet.TransparentProtocolType.S2000,
-                TransparentCrypto = true
+                AddressRS485 = 3,
+                ComPort = serialPort
             };
+            testDevice.ComPort.Open();
 
-            var serialPort = new SerialPort {PortName = comPort};
-            var testService = new SerialSender(new EventAggregator());
-            var result = testService.SetC2000EthernetConfig(serialPort, newAddress, testDevice);
+            testDevice.ComPort = serialPort;
+            var result = testDevice.Shleifs.ElementAt(0).GetShleifAdcValue();
+
+            testDevice.ComPort.Close();
+
+            Assert.AreEqual(0xff, (byte)result);
+        }
+
+        [TestMethod]
+        public void TestStateShleif()
+        {
+            const string comPort = "COM3";
+
+            var serialPort = new SerialPort { PortName = comPort };
+            var testDevice = new Signal20P
+            {
+                AddressRS485 = 3,
+                ComPort = serialPort
+            };
+            testDevice.ComPort.Open();
+            testDevice.ComPort = serialPort;
+
+            var result = testDevice.Shleifs.ElementAt(0).GetShleifState();
+
+            testDevice.ComPort.Close();
+
+            Assert.AreEqual(States.RemovedGuard, result);
+        }
+
+        [TestMethod]
+        public void TestRelayOn()
+        {
+            const string comPort = "COM3";
+
+            var serialPort = new SerialPort { PortName = comPort };
+            var testDevice = new Signal20P
+            {
+                AddressRS485 = 3,
+                ComPort = serialPort
+            };
+            testDevice.ComPort.Open();
+            testDevice.ComPort = serialPort;
+
+            var result = testDevice.Relays.ElementAt(1).TurnOn();
+
+            testDevice.ComPort.Close();
 
             Assert.IsTrue(result);
         }
 
+
+        [TestMethod]
+        public void TestRelayOff()
+        {
+            const string comPort = "COM3";
+
+            var serialPort = new SerialPort { PortName = comPort };
+            var testDevice = new Signal20P
+            {
+                AddressRS485 = 3,
+                ComPort = serialPort
+            };
+            testDevice.ComPort.Open();
+            testDevice.ComPort = serialPort;
+
+            var result = testDevice.Relays.ElementAt(1).TurnOff();
+
+            testDevice.ComPort.Close();
+
+            Assert.IsTrue(result);
+        }
+        
+        [TestMethod]
+        public void TestSendC2000EthernetConfig()
+        {
+            const string comPort = "COM3";
+            var masterDevice = new C2000Ethernet()
+            {
+                AddressIP = "192.168.2.22",
+                NetworkMode = C2000Ethernet.Mode.master,
+                NetName = "MASTER",
+                AddressRS485 = 5,
+                MACaddress = "AA:BB:CC:DD:EE:FF"
+            };
+            var slaveDevice = new C2000Ethernet()
+            {
+                AddressIP = "192.168.2.33",
+                NetName = "SLAVE",
+                NetworkMode = C2000Ethernet.Mode.slave,
+                RemoteDevicesList = new System.Collections.Generic.List<C2000Ethernet> { masterDevice },
+                AddressRS485= 127,
+                MACaddress = "AA-BB-CC-DD-EE-FF"
+            };
+
+            var serialPort = new SerialPort {PortName = comPort};
+            serialPort.Open();
+            var target = 1;
+            var result = slaveDevice.WriteConfig(serialPort, null);
+            serialPort.Close();
+            Assert.IsTrue(result);
+        }
+        
     }
 }

@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using OfficeOpenXml.Style;
 using static System.Int32;
+using DeviceTunerNET.SharedDataModel.Devices;
 
 namespace DeviceTunerNET.Services
 {
@@ -128,7 +129,7 @@ namespace DeviceTunerNET.Services
                             Designation = devName,
                             Model = devModel,
                             Serial = devSerial,
-                            AddressRS485 = devRS485Addr,
+                            AddressRS485 = (uint)devRS485Addr,
                             QualityControlPassed = devQcPassed
                         });
                         break;
@@ -153,7 +154,7 @@ namespace DeviceTunerNET.Services
                             Designation = devName,
                             Model = devModel,
                             Serial = devSerial,
-                            AddressRS485 = devRS485Addr,
+                            AddressRS485 = (uint)devRS485Addr,
                             AddressRS232 = devRS232Addr,
                             AddressIP = devIPAddr,
                             NetName = devName,

@@ -1,6 +1,7 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Core.Mvvm;
 using DeviceTunerNET.SharedDataModel;
+using DeviceTunerNET.SharedDataModel.Devices;
 using Prism.Events;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels

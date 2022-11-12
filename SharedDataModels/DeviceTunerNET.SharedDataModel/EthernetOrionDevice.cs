@@ -1,23 +1,12 @@
-﻿using System;
+﻿using DeviceTunerNET.SharedDataModel.Devices;
+using System;
+using System.IO.Ports;
 using static System.String;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public class RS232device : RS485device
+    public class EthernetOrionDevice : OrionDevice
     {
-        /// <summary>
-        /// Адрес прибора на линии RS-232 ("24")
-        /// </summary>
-        private int? _address_RS232;
-        public int? AddressRS232
-        {
-            get => _address_RS232;
-            set
-            {
-                if (value > 0 && value <= 127) _address_RS232 = value;
-            }
-        }
-
         /// <summary>
         /// IP адрес прибора ("192.168.2.12")
         /// </summary>
@@ -35,15 +24,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// MAC-адрес прибора
         /// </summary>
-        private string _macAddress;
-        public string MACaddress
-        {
-            get => _macAddress;
-            set
-            {
-                if (value.Length <= 17 && value.Length >= 12) _macAddress = value;
-            }
-        }
+        public string MACaddress { get; set; }
 
         public string DefaultGateway { get; set; }
 

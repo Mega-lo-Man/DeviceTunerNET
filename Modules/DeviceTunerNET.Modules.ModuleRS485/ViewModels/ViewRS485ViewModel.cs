@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Prism.Services.Dialogs;
+using DeviceTunerNET.SharedDataModel.Devices;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -346,7 +347,11 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     
                     if (!_dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial))
                     {
-                        Clipboard.SetText(device1.Serial ?? string.Empty);
+                        _dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            Clipboard.SetText(device1.Serial ?? string.Empty);
+                        }));
+                        
                         MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
                     }
                     //erialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего

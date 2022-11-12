@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Prism.Services.Dialogs;
+using DeviceTunerNET.SharedDataModel.Devices;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {

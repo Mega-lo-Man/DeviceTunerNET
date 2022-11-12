@@ -80,16 +80,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="C2000Ethernet.cs" />
     <Compile Include="Cabinet.cs" />
     <Compile Include="ConstructionSite.cs" />
     <Compile Include="Device.cs" />
+    <Compile Include="Devices\C2000Ethernet.cs" />
+    <Compile Include="Devices\ITransaction.cs" />
+    <Compile Include="Devices\OrionCommands.cs" />
+    <Compile Include="Devices\OrionNet.cs" />
+    <Compile Include="Devices\Signal20P.cs" />
+    <Compile Include="Devices\С2000_2.cs" />
+    <Compile Include="ElectricModules.Interfaces\IRelays.cs" />
+    <Compile Include="ElectricModules.Interfaces\IShleifs.cs" />
+    <Compile Include="ElectricModules\Relay.cs" />
+    <Compile Include="ElectricModules\Shleif.cs" />
+    <Compile Include="ElectricModules\SupervisedRelay.cs" />
     <Compile Include="EthernetSwitch.cs" />
+    <Compile Include="Devices\IOrionNet.cs" />
+    <Compile Include="Devices\IOrionNetTimeouts.cs" />
+    <Compile Include="IOrionDevice.cs" />
+    <Compile Include="IRS485device.cs" />
+    <Compile Include="Devices\OrionDevice.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RS232device.cs" />
+    <Compile Include="EthernetOrionDevice.cs" />
     <Compile Include="RS485device.cs" />
     <Compile Include="SimplestСomponent.cs" />
+    <Compile Include="Utils\NetHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

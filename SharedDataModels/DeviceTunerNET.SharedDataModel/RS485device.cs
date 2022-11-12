@@ -1,27 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using DeviceTunerNET.SharedDataModel.Devices;
+using System;
+using System.IO.Ports;
+using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public class RS485device : Device
+    public class RS485device : Device, IRS485device
     {
         /// <summary>
-        /// Адрес прибора на линии RS-485 ("23")
+        /// Адрес прибора на линии RS-485 ("23").
         /// </summary>
-        private int? _address_RS485;
-        public int? AddressRS485
-        {
-            get => _address_RS485;
-            set
-            {
-                if (value > 0 && value <= 127) _address_RS485 = value;
-            }
-        }
-        
-        private List<byte[]> _getConfigCommandLines;
-        
+        public uint AddressRS485 { get; set; }
+
+
         /// <summary>
-        /// Получить список команд которые содержат конфигурацию устройства в формате Болид
+        /// Делегат для получения текущего прогресса выполнения заливки конфига
         /// </summary>
-        public List<byte[]> GetConfigCommandLines => _getConfigCommandLines;
+        /// <param name="progress"></param>
+        public delegate void SearchStatus(int progress);
+        public virtual bool WriteConfig(SerialPort serialPort, SearchStatus searchStatus) => false;
+
+
     }
 }

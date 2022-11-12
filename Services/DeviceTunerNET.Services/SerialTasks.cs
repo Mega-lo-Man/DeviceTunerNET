@@ -1,5 +1,6 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
+using DeviceTunerNET.SharedDataModel.Devices;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.SharedDataModel;
+using DeviceTunerNET.SharedDataModel.Devices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Ports;

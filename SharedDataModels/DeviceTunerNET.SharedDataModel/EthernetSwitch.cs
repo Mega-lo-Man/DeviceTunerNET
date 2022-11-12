@@ -1,6 +1,6 @@
 ﻿namespace DeviceTunerNET.SharedDataModel
 {
-    public class EthernetSwitch : RS232device
+    public class EthernetSwitch : EthernetOrionDevice
     {
         /// <summary>
         /// LogIn user name
