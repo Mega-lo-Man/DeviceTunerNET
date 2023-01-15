@@ -129,7 +129,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigParser.cs" />
     <Compile Include="DataRepositoryService.cs" />
+    <Compile Include="NetUtils.cs" />
+    <Compile Include="TftpServerManager.cs" />
+    <Compile Include="UploadManager.cs" />
     <Compile Include="FileDialogService.cs" />
     <Compile Include="ExcelDataDecoder.cs" />
     <Compile Include="MessageService.cs" />
@@ -142,7 +146,9 @@
     <Compile Include="SwitchesStrategies\Eltex.cs" />
     <Compile Include="SwitchesStrategies\EltexSsh.cs" />
     <Compile Include="SwitchesStrategies\EltexTelnet.cs" />
+    <Compile Include="SwitchesStrategies\PortFactory.cs" />
     <Compile Include="SwitchesStrategies\SshAbstract.cs" />
+    <Compile Include="SwitchesStrategies\SwitchPort.cs" />
     <Compile Include="SwitchesStrategies\TelnetAbstract.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +156,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\tftp.net\Tftp.Net\Tftp.Net.csproj">
+      <Project>{F45CA915-C3EC-4C0A-8101-85F8DED2F7A1}</Project>
+      <Name>Tftp.Net</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\DeviceTunerNET.Core\DeviceTunerNET.Core.csproj">
       <Project>{E894DF23-8056-4B80-8707-2089566E6515}</Project>
       <Name>DeviceTunerNET.Core</Name>

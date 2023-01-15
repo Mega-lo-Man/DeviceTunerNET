@@ -24,22 +24,21 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
     {
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
-        private readonly ISwitchConfigUploader _eltex;
+        private readonly ISwitchConfigUploader _configUploader;
         private readonly IPrintService _printService;
 
         private CancellationTokenSource _tokenSource = null;
         private readonly Dispatcher _dispatcher;
-        //private IMessageService _messageService;
 
         public ViewSwitchViewModel(IRegionManager regionManager,
                                    IDataRepositoryService dataRepositoryService,
-                                   ISwitchConfigUploader eltex,
+                                   ISwitchConfigUploader switchFactory,
                                    IEventAggregator ea,
                                    IPrintService printService) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
-            _eltex = eltex;
+            _configUploader = switchFactory;
             _printService = printService;
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
@@ -159,12 +158,14 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     }
                 }
                 if (token.IsCancellationRequested)
-                {
+                { 
                     return;
                 }
             }
             if (IsCheckedByArea)
             {
+                
+
                 foreach (var ethernetSwitch in SwitchList)
                 {
                     //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
@@ -174,6 +175,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                     }
                     if (token.IsCancellationRequested)
                     {
+                        
                         return;
                     }
                 }
@@ -188,7 +190,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             ethernetSwitch.CIDR = IPMask;
 
             //var completeEthernetSwitch = _strategies.GetInstance<Eltex>().SendConfig(ethernetSwitch, GetSettingsDict(), token);
-            var completeEthernetSwitch = _eltex.SendConfig(ethernetSwitch, GetSettingsDict(), token);
+            var completeEthernetSwitch = _configUploader.SendConfig(ethernetSwitch, GetSettingsDict(ethernetSwitch), token);
             if (completeEthernetSwitch == null)
             {
                 // Выводим сообщение о прерывании операции
@@ -198,7 +200,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
 
             if (!_dataRepositoryService.SaveSerialNumber(completeEthernetSwitch.Id, completeEthernetSwitch.Serial))
             {
-                Clipboard.SetText(completeEthernetSwitch.Serial ?? string.Empty);
+                _dispatcher.BeginInvoke(new Action(() => { Clipboard.SetText(completeEthernetSwitch.Serial ?? string.Empty); })); 
                 MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
             }
 
@@ -226,16 +228,26 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
         }
 
         // Формирование словаря с необходимыми данными для настройки коммутаторов (логин, пароль, адрес по умолчанию и т.п.)
-        private Dictionary<string, string> GetSettingsDict()
+        private Dictionary<string, string> GetSettingsDict(EthernetSwitch ethernetSwitch)
         {
             var settingsDict = new Dictionary<string, string>
             {
+                /*
                 {"DefaultIPAddress", DefaultIP},
                 {"DefaultAdminLogin", DefaultLogin},
                 {"DefaultAdminPassword", DefaultPassword},
                 {"NewAdminPassword", NewPassword},
                 {"NewAdminLogin", NewLogin},
                 {"IPmask", IPMask.ToString()}
+                */
+                {"%%DEFAULT_IP_ADDRESS%%", DefaultIP},
+                {"%%DEFAULT_ADMIN_LOGIN%%", DefaultLogin},
+                {"%%DEFAULT_ADMIN_PASSWORD%%", DefaultPassword},
+                {"%%NEW_ADMIN_PASSWORD%%", NewPassword},
+                {"%%NEW_ADMIN_LOGIN%%", NewLogin},
+                {"%%IP_MASK%%", IPMask.ToString()},
+                {"%%NEW_IP_ADDRESS%%", ethernetSwitch.AddressIP },
+                {"%%HOST_NAME%%", ethernetSwitch.Designation }
             };
             return settingsDict;
         }

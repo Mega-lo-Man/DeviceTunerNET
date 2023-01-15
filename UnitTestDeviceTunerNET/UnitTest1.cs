@@ -2,10 +2,6 @@
 using DeviceTunerNET.SharedDataModel.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Prism.Events;
-using System.IO.Ports;
-using System.Linq;
-using System.Runtime.Serialization;
-using static DeviceTunerNET.SharedDataModel.ElectricModules.Shleif;
 
 namespace UnitTestDeviceTunerNET
 {
@@ -13,6 +9,40 @@ namespace UnitTestDeviceTunerNET
     public class UnitTest1
     {
         private byte newAddress = 0x02;
+        /*
+        [TestMethod]
+        public void TestTryParsePortSwitchResponse()
+        {
+            const string respornse = @"-------- ------------ ------  ----- -------- ---- ----------- ------------- -------- ------- ------------------------
+gi1/0/1  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/2  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/3  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/4  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/5  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/6  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/7  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/8  1G-Copper      --      --     --     --  Down (nc)         --         --     --     Access (1)
+gi1/0/9  1G-Combo-C   Full    1000  Enabled  Off  Up          00,03:42:45   Disabled On      Trunk
+gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         --     --     Access (1)
+-------- ------- ------  -----  -------- -------  ------------- ------------------------
+";
+
+            
+        }
+
+        [TestMethod]
+        public void TestTryParseFirstStringOfSwitchResponse()
+        {
+            const string respornse = @"-------- ------------ ------  ----- -------- ---- ----------- ------------- -------- ------- ------------------------"; 
+            var portFactory = new PortFactory();
+
+            var result = portFactory.GetColumnsShifting(respornse);
+
+            Assert.AreEqual(11, result.Count());
+        }
+        */
+
+        
 
         [TestMethod]
         public void TestIsDeviceOnline()

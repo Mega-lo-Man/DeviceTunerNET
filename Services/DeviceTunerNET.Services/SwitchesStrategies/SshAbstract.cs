@@ -15,12 +15,12 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
     public abstract class SshAbstract : ISender
     {
         private SshClient _sshClient;
-        private readonly EventAggregator _ea;
+        private readonly IEventAggregator _ea;
         protected EthernetSwitch NetworkSwitch;
         protected Dictionary<string, string> SettingsDict;
         protected ShellStream Stream;
 
-        public SshAbstract(EventAggregator ea)
+        public SshAbstract(IEventAggregator ea)
         {
             _ea = ea;
         }
@@ -81,6 +81,13 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             return NetworkSwitch;
         }
 
+        /// <summary>
+        /// Запрос у коммутатора и заполнение полей:
+        /// NetworkSwitch.MACaddress;
+        /// NetworkSwitch.HardwareVersion;
+        /// NetworkSwitch.Serial;
+        /// </summary>
+        /// <returns>True если успешно распарсили</returns>
         protected abstract bool GetIdOverSsh();
 
         // Пакет команд для отправки на коммутатор

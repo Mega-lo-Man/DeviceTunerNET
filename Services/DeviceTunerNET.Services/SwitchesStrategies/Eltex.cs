@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,27 +17,43 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
     public class Eltex : ISwitchConfigUploader
     {
         private readonly IEventAggregator _ea;
-        private readonly NetworkUtils _networkUtils;
-        private readonly EltexTelnet _telnetSender;
-        private readonly EltexSsh _sshSender;
-
+        private readonly INetworkUtils _networkUtils;
+        private readonly ISender _telnetSender;
+        private readonly ISender _sshSender;
+        private readonly ITftpServerManager _tftpServer;
+        private readonly IConfigParser _configParser;
         private EthernetSwitch _ethernetSwitch;
         private int repeatNumer = 5;
         private Dictionary<string, string> _sDict;
+        
+        private string _tftpSharedDirectory = @"C:\Temp\";
+        private string _resourcePath = "Resources\\Files\\";
+        private string configTemplateFileName = @"EltexTemplateConfig.txt";
+        private string configOutputFileName = @"config.txt";
 
         public string DefaultIpAddress { get; set; } = "192.168.1.239";
         public ushort DefaultTelnetPort { get; set; } = 23;
         public ushort DefaultSshPort { get; set; } = 22;
         public string DefaultUsername { get; set; } = "admin";
         public string DefaultPassword { get; set; } = "admin";
-        public string RsaKeyFile { get; set; } = "Resources\\Files\\id_rsa.key";
+        public string RsaKeyFile { get; set; } = "id_rsa.key";
 
-        public Eltex(NetworkUtils networkUtils, EltexTelnet telnetSender, EltexSsh sshSender, IEventAggregator eventAggregator)
+        
+        public Eltex(INetworkUtils networkUtils,
+                     IEnumerable<ISender> senders,
+                     ITftpServerManager tftpServer,
+                     IConfigParser configParser,
+                     IEventAggregator eventAggregator)
         {
             _networkUtils = networkUtils;
-            _telnetSender = telnetSender;
-            _sshSender = sshSender;
+            _telnetSender = senders.ElementAt(0);//telnetSender;
+            _sshSender = senders.ElementAt(1);//sshSender;
+            _tftpServer = tftpServer;
+            _configParser = configParser;
             _ea = eventAggregator;
+
+            // Start TFTP Server
+            _tftpServer.Start(_tftpSharedDirectory);
         }
 
         public string GetSwitchModel()
@@ -47,6 +66,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             _ethernetSwitch = ethernetSwitch;
             MessageToConsole("Waiting device...");
             _sDict = settingsDict;
+
+            var result = _configParser.Parse(settingsDict, _resourcePath + configTemplateFileName, _tftpSharedDirectory + configOutputFileName);
+            Debug.WriteLine("Parse result: " + result);
             var State = 0;
             var IsSendComplete = false;
 
@@ -57,19 +79,20 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
                     case 0:
                         // Пингуем в цикле коммутатор по дефолтному адресу пока коммутатор не ответит на пинг
                         MessageForUser("Ожидание" + "\r\n" + "коммутатора");
-                        if (_networkUtils.SendMultiplePing(_sDict["DefaultIPAddress"], repeatNumer))
+                        if (_networkUtils.SendMultiplePing(_sDict["%%DEFAULT_IP_ADDRESS%%"], repeatNumer))
                             State = 1;
                         break;
                     case 1:
                         // Пытаемся в цикле подключиться по Telnet (сервер Telnet загружается через некоторое время после успешного пинга)
-                        if (_telnetSender.CreateConnection(_sDict["DefaultIPAddress"],
-                                                           DefaultTelnetPort, _sDict["DefaultAdminLogin"],
-                                                           _sDict["DefaultAdminPassword"],
+                        if (_telnetSender.CreateConnection(_sDict["%%DEFAULT_IP_ADDRESS%%"],
+                                                           DefaultTelnetPort, _sDict["%%DEFAULT_ADMIN_LOGIN%%"],
+                                                           _sDict["%%DEFAULT_ADMIN_PASSWORD%%"],
                                                            null))
                             State = 2;
                         break;
                     case 2:
                         // Заливаем первую часть конфига в коммутатор по Telnet
+                        // copy tftp://192.168.1.254/config.txt running-config
                         MessageToConsole("Заливаем первую часть конфига в коммутатор по Telnet.");
 
                         _telnetSender.Send(_ethernetSwitch, _sDict);
@@ -80,9 +103,9 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
                     case 3:
                         // Пытаемся в цикле подключиться к SSH-серверу
                         if (_sshSender.CreateConnection(_ethernetSwitch.AddressIP,
-                                                        DefaultSshPort, _sDict["NewAdminLogin"],
-                                                        _sDict["NewAdminPassword"],
-                                                        RsaKeyFile))
+                                                        DefaultSshPort, _sDict["%%NEW_ADMIN_LOGIN%%"],
+                                                        _sDict["%%NEW_ADMIN_PASSWORD%%"],
+                                                        _resourcePath + RsaKeyFile))
                             State = 4;
                         break;
                     case 4:
@@ -131,33 +154,5 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
                 MessageString = message
             });
         }
-
-        /*
-        private void TelnetCommandPacket()
-        {
-            _telnetSender.SendMessage("conf t");
-            _telnetSender.SendMessage("hostname " + _ethernetSwitch.Designation);
-            _telnetSender.SendMessage("aaa authentication login default line");
-            _telnetSender.SendMessage("aaa authentication enable default line");
-
-            _telnetSender.SendMessage("line console");
-            _telnetSender.SendMessage("login authentication default");
-            _telnetSender.SendMessage("enable authentication default");
-            _telnetSender.SendMessage("password " + _sDict["NewAdminPassword"]);
-            _telnetSender.SendMessage("exit");
-
-            _telnetSender.SendMessage("ip ssh server");
-            _telnetSender.SendMessage("line ssh");
-            _telnetSender.SendMessage("login authentication default");
-            _telnetSender.SendMessage("enable authentication default");
-            _telnetSender.SendMessage("password " + _sDict["NewAdminPassword"]);
-            _telnetSender.SendMessage("exit");
-
-            _telnetSender.SendMessage("username " + _sDict["NewAdminLogin"] + " privilege 15 " + "password " + _sDict["NewAdminPassword"]);
-
-            _telnetSender.SendMessage("interface vlan 1");
-            _telnetSender.SendMessage("ip address " + _ethernetSwitch.AddressIP + " /" + _sDict["IPmask"]);
-        }
-        */
     }
 }

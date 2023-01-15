@@ -89,7 +89,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IConfigParser.cs" />
     <Compile Include="IDataRepositoryService.cs" />
+    <Compile Include="ITftpServerManager.cs" />
     <Compile Include="IFileDialogService.cs" />
     <Compile Include="IExcelDataDecoder.cs" />
     <Compile Include="IMessageService.cs" />

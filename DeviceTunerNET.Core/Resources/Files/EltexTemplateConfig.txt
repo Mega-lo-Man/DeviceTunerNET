@@ -1,0 +1,27 @@
+hostname %%HOST_NAME%%
+aaa authentication login default line
+aaa authentication enable default line
+line console
+login authentication default
+enable authentication default
+password %%NEW_ADMIN_PASSWORD%%
+ip ssh server
+line ssh
+login authentication default
+enable authentication default
+password %%NEW_ADMIN_PASSWORD%%
+username %%NEW_ADMIN_LOGIN%% privilege 15 password %%NEW_ADMIN_PASSWORD%%
+loopback-detection enable
+spanning-tree
+spanning-tree mode rstp
+spanning-tree priority 16384
+spanning-tree forward-time 20
+spanning-tree hello-time 5
+spanning-tree max-age 38
+vlan database
+vlan 101 name SERVERS
+vlan 102 name DEVICES
+vlan 103 name SWITCHES
+vlan 104 name CAMERAS
+interface vlan 1
+ip address %%NEW_IP_ADDRESS%% /%%IP_MASK%%

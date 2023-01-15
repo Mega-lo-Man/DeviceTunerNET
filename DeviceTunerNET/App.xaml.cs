@@ -17,6 +17,10 @@ using System.Windows;
 using DeviceTunerNET.ViewModels;
 using System.Collections.Generic;
 using System.Collections;
+using System.Threading;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System;
 
 namespace DeviceTunerNET
 {
@@ -36,16 +40,34 @@ namespace DeviceTunerNET
 
         private List<System.Type> _strategies = new List<System.Type>() { typeof(Eltex) };
 
-        //enum SrvKey { telnetKey, sshKey };
+        
         enum Strategies { eltex };
         */
 
+        enum SrvKey { telnetKey, sshKey };
         protected override Window CreateShell()
         {
             _sp = new SerialPort();
             _ea = Container.Resolve<IEventAggregator>();
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
             return Container.Resolve<MainWindow>();
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern void SwitchToThisWindow(IntPtr hWnd, bool turnOn);
+        
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            var appName = Process.GetCurrentProcess().ProcessName;
+            var sameProcesses = Process.GetProcessesByName(appName);
+            
+            if(sameProcesses != null && sameProcesses.Length > 1)
+            {
+                SwitchToThisWindow(sameProcesses[1].MainWindowHandle, true);
+                Application.Current.Shutdown();
+            }
+
+            base.OnStartup(e);
         }
 
         private void MessageReceived(Message message)
@@ -66,11 +88,14 @@ namespace DeviceTunerNET
             containerRegistry.Register<ISwitchConfigUploader, Eltex>();
             containerRegistry.Register<ISerialSender, SerialSender>();
             containerRegistry.Register<ISerialTasks, SerialTasks>();
+            containerRegistry.Register<INetworkUtils, NetworkUtils>();
+
+            containerRegistry.GetContainer().Register<ISender, EltexTelnet>(serviceKey: SrvKey.telnetKey);
+            containerRegistry.GetContainer().Register<ISender, EltexSsh>(serviceKey: SrvKey.sshKey);
+
+            containerRegistry.Register<ITftpServerManager, TftpServerManager>();
+            containerRegistry.Register<IConfigParser, ConfigParser>();
             
-            /*
-            containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: SrvKey.telnetKey);
-            containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: SrvKey.sshKey);
-            */
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
         }
 
