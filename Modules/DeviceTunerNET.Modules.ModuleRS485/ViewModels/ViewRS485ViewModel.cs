@@ -113,7 +113,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             if(numberOfDeviceWithoutSerial == 1)
             {
-                var device = (Device)GetDeviceWithoutSerial(DevicesForProgramming);
+                var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
                 var model = device.Model;
                 var designation = device.Designation;
 

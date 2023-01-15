@@ -2,6 +2,9 @@
 using DeviceTunerNET.SharedDataModel.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Prism.Events;
+using System.IO.Ports;
+using System.Linq;
+using static DeviceTunerNET.SharedDataModel.ElectricModules.Shleif;
 
 namespace UnitTestDeviceTunerNET
 {
