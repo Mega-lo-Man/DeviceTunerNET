@@ -17,6 +17,10 @@ using System.Windows;
 using DeviceTunerNET.ViewModels;
 using System.Collections.Generic;
 using System.Collections;
+using System.Threading;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System;
 
 namespace DeviceTunerNET
 {
@@ -47,6 +51,23 @@ namespace DeviceTunerNET
             _ea = Container.Resolve<IEventAggregator>();
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
             return Container.Resolve<MainWindow>();
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern void SwitchToThisWindow(IntPtr hWnd, bool turnOn);
+        
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            var appName = Process.GetCurrentProcess().ProcessName;
+            var sameProcesses = Process.GetProcessesByName(appName);
+            
+            if(sameProcesses != null && sameProcesses.Length > 1)
+            {
+                SwitchToThisWindow(sameProcesses[1].MainWindowHandle, true);
+                Application.Current.Shutdown();
+            }
+
+            base.OnStartup(e);
         }
 
         private void MessageReceived(Message message)

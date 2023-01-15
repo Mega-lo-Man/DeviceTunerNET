@@ -149,8 +149,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\tftp.net\Tftp.Net\Tftp.Net.csproj">
-      <Project>{7272379a-e4cb-4120-a2fd-9ac2c597bcc6}</Project>
+    <ProjectReference Include="..\..\..\tftp.net\Tftp.Net\Tftp.Net.csproj">
+      <Project>{F45CA915-C3EC-4C0A-8101-85F8DED2F7A1}</Project>
       <Name>Tftp.Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\DeviceTunerNET.Core\DeviceTunerNET.Core.csproj">
