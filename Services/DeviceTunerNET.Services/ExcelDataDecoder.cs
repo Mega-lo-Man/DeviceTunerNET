@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using OfficeOpenXml.Style;
 using static System.Int32;
 using DeviceTunerNET.SharedDataModel.Devices;
 
@@ -61,7 +60,7 @@ namespace DeviceTunerNET.Services
         {
             _devicesGenerator = deviceGenerator;
             // Remove "IBM437 is not a supported encoding" error
-            //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
