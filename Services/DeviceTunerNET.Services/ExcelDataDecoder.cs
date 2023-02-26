@@ -54,29 +54,16 @@ namespace DeviceTunerNET.Services
 
         //Dictionary with all found C2000-Ethernet
         private Dictionary<C2000Ethernet, Tuple<char, int>> dictC2000Ethernet = new Dictionary<C2000Ethernet, Tuple<char, int>>();
-        
-        public ExcelDataDecoder()
+
+        private readonly IDeviceGenerator _devicesGenerator;
+
+        public ExcelDataDecoder(IDeviceGenerator deviceGenerator)
         {
+            _devicesGenerator = deviceGenerator;
             // Remove "IBM437 is not a supported encoding" error
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-        }
-
-        private int GetDeviceType(string DevModel)
-        {
-            var devType = 0;
-
-            if (DevModel.Contains("MES3508"))
-                devType = 1;
-            if (DevModel.Contains("MES2308"))
-                devType = 1;
-            if (DevModel.Contains("MES2324"))
-                devType = 1;
-            if (DevModel.Contains("2000-Ethernet"))
-                devType = 2;
-
-            return devType;
         }
 
         public List<Cabinet> GetCabinetsFromExcel(string excelFileFullPath)
@@ -93,84 +80,49 @@ namespace DeviceTunerNET.Services
         {
             var cabinetsLst = new List<Cabinet>();
             var cabinet = new Cabinet();
-            var lastDevParent = ""; //= worksheet.Cells[CaptionRow + 1, parentCol].Value?.ToString();;
+            var lastDevParent = "";
             for (var rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
             {
-                var devParent = worksheet.Cells[rowIndex, parentCol].Value?.ToString();
-                var devName = worksheet.Cells[rowIndex, nameCol].Value?.ToString();
-                var devModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString();
-                var devIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString();
-                var devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
-                var devRang = worksheet.Cells[rowIndex, rangCol].Value?.ToString();
-                
-
                 TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out var devRS232Addr);
                 TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out var devRS485Addr);
-                bool devQcPassed = GetQcStatus(worksheet.Cells[rowIndex, qcCol].Value?.ToString());
-                //bool.TryParse(worksheet.Cells[rowIndex, qcCol].Value?.ToString(), out var devQcPassed);
 
-                if (!string.Equals(devParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
+                var deviceDataSet = new DeviceDataSet
+                {
+                    Id = rowIndex,
+                    DevParent = worksheet.Cells[rowIndex, parentCol].Value?.ToString(),
+                    DevName = worksheet.Cells[rowIndex, nameCol].Value?.ToString(),
+                    DevModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString(),
+                    DevIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString(),
+                    DevSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString(),
+                    DevRang = worksheet.Cells[rowIndex, rangCol].Value?.ToString(),
+                    DevRS232Addr = devRS232Addr,
+                    DevRS485Addr = devRS485Addr,
+                    DevQcPassed = GetQcStatus(worksheet.Cells[rowIndex, qcCol].Value?.ToString())
+                };
+
+                if (!string.Equals(deviceDataSet.DevParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
                 {
                     if (rowIndex != CaptionRow + 1) 
                         cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
                     
                     cabinet = new Cabinet
                     {
-                        Designation = devParent
+                        Designation = deviceDataSet.DevParent
                     };
                 }
 
-                switch (GetDeviceType(devModel))
+                if(_devicesGenerator.TryGetDevice(deviceDataSet.DevModel, out var device))
                 {
-                    case 0:
-                        cabinet.AddItem(new RS485device
-                        {
-                            Id = rowIndex,
-                            Designation = devName,
-                            Model = devModel,
-                            Serial = devSerial,
-                            AddressRS485 = (uint)devRS485Addr,
-                            QualityControlPassed = devQcPassed
-                        });
-                        break;
-
-                    case 1:
-                        cabinet.AddItem(new EthernetSwitch
-                        {
-                            Id = rowIndex,
-                            Designation = devName,
-                            Model = devModel,
-                            Serial = devSerial,
-                            AddressIP = devIPAddr,
-                            Cabinet = cabinet.Designation,
-                            QualityControlPassed = devQcPassed
-                        });
-                        break;
-
-                    case 2:
-                        var c2000Ethernet = new C2000Ethernet
-                        {
-                            Id = rowIndex,
-                            Designation = devName,
-                            Model = devModel,
-                            Serial = devSerial,
-                            AddressRS485 = (uint)devRS485Addr,
-                            AddressRS232 = devRS232Addr,
-                            AddressIP = devIPAddr,
-                            NetName = devName,
-                            QualityControlPassed = devQcPassed
-                        };
-                        //Add to dict for master/slave/translate sort
-                        dictC2000Ethernet.Add(c2000Ethernet, GetRangTuple(devRang));
-                        //Add to Cabinet
-                        cabinet.AddItem(c2000Ethernet);
-                        break;
+                    var deviceWithSettings = GetDeviceWithSettings(device, deviceDataSet);
+                    deviceWithSettings.Cabinet = cabinet.Designation;
+                    cabinet.AddItem(deviceWithSettings);
                 }
+                               
                 if (rowIndex == rows) // В последней строчке таблицы надо добавить последний шкаф в список шкафов, иначе (исходя из условия) он туда не попадёт
                 {
                     cabinetsLst.Add(cabinet);
                 }
-                lastDevParent = devParent;
+                lastDevParent = deviceDataSet.DevParent;
             }
             FillDevicesDependencies(dictC2000Ethernet, master, slave);
             FillDevicesDependencies(dictC2000Ethernet, slave, master);
@@ -184,20 +136,6 @@ namespace DeviceTunerNET.Services
                 return true;
             }
             return false;
-        }
-
-        private Tuple<char, int> GetRangTuple(string rang)
-        {
-            var _rang = rang[0];
-            var lineStr = rang.Substring(1); //right part of rang
-
-            if (_rang != master && _rang != slave && _rang != transparent)
-                return null;
-
-            if (!TryParse(lineStr, out var lineNumb)) 
-                return null;
-
-            return new Tuple<char, int>(_rang, lineNumb);
         }
 
         // связываем все C2000-Ethernet в общую сеть, добавляя ссылки мастеров на слейв и прописывая мастеров в слейвы
@@ -247,6 +185,45 @@ namespace DeviceTunerNET.Services
             rows = worksheet.Dimension.Rows; // 20
             columns = worksheet.Dimension.Columns; // 7
 
+        }
+
+        private RS485device GetDeviceWithSettings(RS485device device, DeviceDataSet settings)
+        {
+            if (device is EthernetSwitch ethernetSwitch)
+            {
+                ethernetSwitch.Id = settings.Id;
+                ethernetSwitch.Designation = settings.DevName;
+                ethernetSwitch.Model = settings.DevModel;
+                ethernetSwitch.Serial = settings.DevSerial;
+                ethernetSwitch.AddressIP = settings.DevIPAddr;
+                ethernetSwitch.QualityControlPassed = settings.DevQcPassed;
+
+                return ethernetSwitch;
+            }
+
+            if (device is C2000Ethernet C2000Ethernet)
+            {
+                C2000Ethernet.Id = settings.Id;
+                C2000Ethernet.Designation = settings.DevName;
+                C2000Ethernet.Model = settings.DevModel;
+                C2000Ethernet.Serial = settings.DevSerial;
+                C2000Ethernet.AddressRS485 = (uint)settings.DevRS485Addr;
+                C2000Ethernet.AddressRS232 = settings.DevRS232Addr;
+                C2000Ethernet.AddressIP = settings.DevIPAddr;
+                C2000Ethernet.NetName = settings.DevName;
+                C2000Ethernet.QualityControlPassed = settings.DevQcPassed;
+
+                return C2000Ethernet;
+            }
+
+            device.Id = settings.Id;
+            device.Designation = settings.DevName;
+            device.Model = settings.DevModel;
+            device.Serial = settings.DevSerial;
+            device.AddressRS485 = (uint)settings.DevRS485Addr;
+            device.QualityControlPassed = settings.DevQcPassed;
+
+            return device;
         }
 
         private void FindColumnIndexesByHeader()
@@ -304,5 +281,19 @@ namespace DeviceTunerNET.Services
             }
             return true;
         }
+    }
+    
+    internal class DeviceDataSet
+    {
+        internal int Id { get; set; }
+        internal string DevParent { get; set; } = "";
+        internal string DevName { get; set; } = "";
+        internal string DevModel { get; set; } = "";
+        internal string DevIPAddr { get; set; } = "";
+        internal string DevSerial { get; set; } = "";
+        internal string DevRang { get; set; } = "";
+        internal int DevRS232Addr { get; set; }
+        internal int DevRS485Addr { get; set; }
+        internal bool DevQcPassed { get; set; }
     }
 }

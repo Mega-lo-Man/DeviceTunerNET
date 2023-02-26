@@ -12,7 +12,7 @@ namespace DeviceTunerNET.SharedDataModel
         {
             get
             {
-                var childNodes = new ObservableCollection<object>();
+                var childNodes = new List<object>();
 
                 foreach (var item in objLst)
                 {
@@ -29,9 +29,9 @@ namespace DeviceTunerNET.SharedDataModel
             List<T> lst = new List<T>();
             foreach (var item in objLst)
             {
-                if (item.GetType() == typeof(T))
+                if (item is T component/*item.GetType() == typeof(T)*/)
                 {
-                    lst.Add((T)item);
+                    lst.Add(component);
                 }
             }
             return lst;
@@ -42,11 +42,18 @@ namespace DeviceTunerNET.SharedDataModel
             objLst.Add(arg);
         }
 
+        public void AddItems<T>(IEnumerable<T> args) where T : SimplestСomponent
+        {
+            objLst.AddRange(args);
+        }
+
         public void ClearItems()
         {
             objLst.Clear();
         }
         #endregion
+
+        /*
         private bool _isExpanded = false;
         /// <summary>
         /// Gets/sets whether the TreeViewItem 
@@ -64,7 +71,7 @@ namespace DeviceTunerNET.SharedDataModel
             }
         }
 
-
+        
 
         private bool _isSelected = false;
         /// <summary>
@@ -82,5 +89,6 @@ namespace DeviceTunerNET.SharedDataModel
                 }
             }
         }
+        */
     }
 }

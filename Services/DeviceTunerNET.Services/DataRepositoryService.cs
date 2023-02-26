@@ -3,6 +3,7 @@ using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Events;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DeviceTunerNET.Services
 {
@@ -185,6 +186,23 @@ namespace DeviceTunerNET.Services
             return cabOut;
         }
 
-        
+        public IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : SimplestСomponent
+        {
+
+            foreach(var cabinet in GetFullCabinets())
+            {
+                var newCabinet = new Cabinet()
+                {
+                    Designation = cabinet.Designation,
+                    DeviceType = cabinet.DeviceType,
+                };
+
+                var devices = cabinet.GetAllDevicesList.Where(c => c is not T).Cast<SimplestСomponent>();
+                newCabinet.AddItems(devices);
+
+                yield return newCabinet;
+            }
+        }
+
     }
 }

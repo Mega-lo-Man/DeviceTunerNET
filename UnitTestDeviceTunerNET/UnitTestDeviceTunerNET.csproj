@@ -56,6 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestDeviceGenerator.cs" />
     <Compile Include="TestNetHelper.cs" />
     <Compile Include="TestSignal20P.cs" />
     <Compile Include="UnitTest1.cs" />

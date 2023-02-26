@@ -89,6 +89,7 @@ namespace DeviceTunerNET
             containerRegistry.Register<ISerialSender, SerialSender>();
             containerRegistry.Register<ISerialTasks, SerialTasks>();
             containerRegistry.Register<INetworkUtils, NetworkUtils>();
+            containerRegistry.Register<IDeviceGenerator, DeviceGenerator>();
 
             containerRegistry.GetContainer().Register<ISender, EltexTelnet>(serviceKey: SrvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, EltexSsh>(serviceKey: SrvKey.sshKey);

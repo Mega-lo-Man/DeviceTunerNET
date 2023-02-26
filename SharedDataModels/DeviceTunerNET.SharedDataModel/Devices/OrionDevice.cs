@@ -24,8 +24,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             set;
         }
 
-        public IEnumerable<string> SupportedModels { get; set; }
-
         public bool ChangeDeviceAddress(byte newDeviceAddress)
         {
 
@@ -34,7 +32,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var result = OrionNet.AddressTransaction(ComPort, (byte)AddressRS485, cmdString, Timeouts.addressChanging);
 
             if (result.Length <= ResponseNewAddressOffset)
-                return false;
+                throw new Exception("Device response was not valid or null");
 
             return result[ResponseNewAddressOffset] == newDeviceAddress;
         }
@@ -45,7 +43,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             var result = OrionNet.AddressTransaction(ComPort, (byte)_defaultAddress, cmdString, Timeouts.addressChanging);
 
-            if (result.Length <= ResponseNewAddressOffset)
+            if (result == null || result?.Length <= ResponseNewAddressOffset)
                 return false;
 
             return result[ResponseNewAddressOffset] == (byte)AddressRS485;
@@ -70,14 +68,14 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             for (int i = 0; i < TransmissionAttempts; i++)
             {
                 var deviceResponse = OrionNet.AddressTransaction(ComPort, deviceAddress, cmdString, Timeouts.readModel);
-                /*
-                if (deviceResponse.Length <= ResponseDeviceModelOffset)
-                    continue;
-                */
+
                 return deviceResponse[ResponseDeviceModelOffset];
             }
             return 0xFF;
         }
 
+        public virtual void WriteBaseConfig(SerialPort serialPort, Action<int> progressStatus)
+        {
+        }
     }
 }

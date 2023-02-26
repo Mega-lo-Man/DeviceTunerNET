@@ -248,21 +248,58 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return OrionNet.AddressTransaction(serialPort, address, sendArray, Timeouts.ethernetConfig);
         }
 
-        public override bool WriteConfig(SerialPort serialPort, SearchStatus searchStatus)
+        public override void WriteConfig(SerialPort serialPort, Action<int> searchStatus)
         {
-            if (serialPort == null && !serialPort.IsOpen)
-                return false;
-            ComPort = serialPort;
-
-            if (GetModelCode((byte)AddressRS485) != ModelCode)
-                return false;
+            CheckDeviceModel(serialPort);
 
             foreach (var command in GetConfig())
             {
                 if (Transaction(ComPort, (byte)AddressRS485, command) == null)
-                    return false;
+                    throw new Exception("Transaction false!");
             }
-            return true;
+        }
+
+        public override void WriteBaseConfig(SerialPort serialPort, Action<int> progressStatus)
+        {
+            foreach (var command in GetBaseConfig())
+            {
+                if (Transaction(ComPort, (byte)AddressRS485, command) == null)
+                    throw new Exception("Transaction false!");
+            }
+        }
+
+        private void CheckDeviceModel(SerialPort serialPort)
+        {
+            if (serialPort == null && !serialPort.IsOpen)
+                throw new Exception("Port is closed");
+            ComPort = serialPort;
+
+            if (GetModelCode((byte)AddressRS485) != ModelCode)
+                throw new Exception("Wrong model!");
+        }
+
+        private IEnumerable<byte[]> GetBaseConfig()
+        {
+            var config = new List<byte[]>
+            {
+                GetPromoter(),
+                GetDeviceNetName(NetName),
+                GetEthernetTune(AddressIP, Netmask, DefaultGateway, FirstDns, SecondDns),
+                GetDhcpStatus(DhcpEnable),
+                GetDhcpStatus(Dhcp),
+                GetMasterSlaveTransparent(NetworkMode),
+                GetInterfaceType(InterfaceType),
+                
+                GetMasterSlaveUdp(MasterSlaveUdp),
+                
+                GetFreeConnectionTune(FreeConnectionUdpType, AllowFreeConnection),
+                GetFreeConnectionUdp(FreeConnectionUdp),
+                GetTransparentTune(TransparentUdp, TransparentProtocol, TransparentCrypto),
+
+            };
+            config.AddRange(GetRemoteDevices(RemoteDevicesList));
+            config.Add(GetSuffix());
+            return config;
         }
 
         public IEnumerable<byte[]> GetConfig()

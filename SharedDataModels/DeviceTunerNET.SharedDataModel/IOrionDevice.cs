@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO.Ports;
+using static DeviceTunerNET.SharedDataModel.RS485device;
 
 namespace DeviceTunerNET.SharedDataModel
 {
@@ -39,5 +41,12 @@ namespace DeviceTunerNET.SharedDataModel
         /// <param name="address">RS485 адрес прибора</param>
         /// <returns>Код прибора</returns>
         byte GetModelCode(byte address);
+
+        /// <summary>
+        /// Запись сокращенного конфига (WriteConfig - очень долго)
+        /// </summary>
+        /// <param name="serialPort"></param>
+        /// <param name="progressStatus"></param>
+        void WriteBaseConfig(SerialPort serialPort, Action<int> progressStatus);
     }
 }

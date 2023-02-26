@@ -24,11 +24,12 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         {
             foreach (var device in _cabinet.GetDevicesList<RS485device>())
             {
+                if (device is C2000Ethernet c2000Ethernet)
+                {
+                    Children.Add(new C2000EthernetDeviceViewModel(c2000Ethernet, this, _ea));
+                    continue;
+                }
                 Children.Add(new RS485DeviceViewModel(device, this, _ea));
-            }
-            foreach (var item in _cabinet.GetDevicesList<C2000Ethernet>())
-            {
-                Children.Add(new C2000EthernetDeviceViewModel(item, this, _ea));
             }
         }
 

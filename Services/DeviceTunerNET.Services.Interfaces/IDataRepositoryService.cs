@@ -29,6 +29,13 @@ namespace DeviceTunerNET.Services.Interfaces
             where T2 : SimplestСomponent;
 
         /// <summary>
+        /// Получить список шкафов с приборами исключая заданный тип T для настройки
+        /// </summary>
+        /// <typeparam name="T">Тип прибора</typeparam>
+        /// <returns></returns>
+        IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : SimplestСomponent;
+
+        /// <summary>
         /// Получить список шкафов со всеми приборами внутри
         /// </summary>
         /// <returns>Список шкафов со всеми приборами (всех типов)</returns>

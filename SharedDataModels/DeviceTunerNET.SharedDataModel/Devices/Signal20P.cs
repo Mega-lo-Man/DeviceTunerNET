@@ -3,6 +3,7 @@ using DeviceTunerNET.SharedDataModel.ElectricModules.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Security.Cryptography;
@@ -125,21 +126,49 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return OrionNet.AddressTransaction(serialPort, address, sendArray, Timeouts.ethernetConfig);
         }
 
-        public override bool WriteConfig(SerialPort serialPort, SearchStatus searchStatus)
+        public override void WriteConfig(SerialPort serialPort, Action<int> progressStatus)
         {
-            if (serialPort == null && !serialPort.IsOpen)
-                return false;
-            ComPort = serialPort;
-
-            if (GetModelCode((byte)AddressRS485) != ModelCode)
-                return false;
+            CheckDeviceType(serialPort);
+            var progress = 0.0;
 
             foreach (var command in GetConfig())
             {
                 if (Transaction(ComPort, (byte)AddressRS485, command) == null)
-                    return false;
+                    throw new Exception("Transaction was false!");
+
+                progressStatus(Convert.ToInt32(progress));
+                progress += 0.364;
             }
-            return true;
+            progressStatus(100);
+        }
+
+        public override void WriteBaseConfig(SerialPort serialPort, Action<int> progressStatus)
+        {
+            CheckDeviceType(serialPort);
+            var progress = 0.0;
+
+            foreach (var command in GetBaseConfig())
+            {
+                if (Transaction(ComPort, (byte)AddressRS485, command) == null)
+                    throw new Exception("Transaction was false!");
+
+                progressStatus(Convert.ToInt32(progress));
+                progress += 1.587;
+            }
+            progressStatus(100);
+        }
+
+        private IEnumerable<byte[]> GetBaseConfig()
+        {
+            var config = new List<byte[]>
+            {
+                GetPromoter(),
+                GetPromoter(),
+                GetTwoPowerInputsMonitor(),
+            };
+            config.AddRange(GetInputsProps(GetBaseInputsProps));
+            config.Add(GetSuffix());
+            return config;
         }
 
         public IEnumerable<byte[]> GetConfig()
@@ -150,13 +179,13 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 GetPromoter(),
                 GetTwoPowerInputsMonitor(),
             };
-            //config.AddRange(GetInputsProperties());
-            config.AddRange(GetRelaysProperties());
+            config.AddRange(GetInputsProps(GetInputProperties));
+            config.AddRange(GetRelaysProps());
             config.Add(GetSuffix());
             return config;
         }
 
-        private IEnumerable<byte[]> GetRelaysProperties()
+        private IEnumerable<byte[]> GetRelaysProps()
         {
             var bytesList = new List<byte[]>();
 
@@ -266,17 +295,34 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             };
         }
 
-        private IEnumerable<byte[]> GetInputsProperties()
+        private IEnumerable<byte[]> GetInputsProps(Func<Shleif, IEnumerable<byte[]>> inputParameters)
         {
             var bytesList = new List<byte[]>();
 
             foreach(var shleif in Shleifs)
             {
-                bytesList.AddRange(GetInputProperties(shleif));
+                bytesList.AddRange(inputParameters(shleif)/*GetInputProperties(shleif)*/);
             }
             return bytesList;
         }
 
+        private IEnumerable<byte[]>GetBaseInputsProps(Shleif shleif)
+        {
+            var result = new List<byte[]>();
+
+            ushort offset = (ushort)((shleif.ShleifIndex - 1) * 0x0016);
+
+            var bytes = new byte[2];
+
+            bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.InputType));
+            result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, (byte)shleif.InputType });
+
+            result.AddRange(GetBitsShleifTune(shleif, offset));
+            result.AddRange(GetBitsShleifRelayTune(shleif, offset));
+
+            return result;
+        }
+            
         private IEnumerable<byte[]> GetInputProperties(Shleif shleif)
         {
             var result = new List<byte[]>();
@@ -315,13 +361,13 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.RelayActivationDelay5));
             result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.RelayActivationDelay5 });
 
-            result.AddRange(BitsShleifTune(shleif, offset));
-            result.AddRange(BitsShleifRelayTune(shleif, offset));
+            result.AddRange(GetBitsShleifTune(shleif, offset));
+            result.AddRange(GetBitsShleifRelayTune(shleif, offset));
 
             return result;
         }
 
-        private IEnumerable<byte[]> BitsShleifRelayTune(Shleif shleif, ushort offset)
+        private IEnumerable<byte[]> GetBitsShleifRelayTune(Shleif shleif, ushort offset)
         {
             var controlByteB = new byte[1] { 0x00 };
             var bits = new BitArray(controlByteB);
@@ -341,7 +387,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return cmd;
         }
 
-        private IEnumerable<byte[]> BitsShleifTune(Shleif shleif, ushort offset)
+        private IEnumerable<byte[]> GetBitsShleifTune(Shleif shleif, ushort offset)
         {
             var controlByte = new byte[1] { 0x00 };
             var bits = new BitArray(controlByte);
@@ -372,6 +418,16 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             var cmd = new byte[] { 0x17, 0x00, 0x00 };
             return cmd;
+        }
+
+        private void CheckDeviceType(SerialPort serialPort)
+        {
+            if (serialPort == null && !serialPort.IsOpen)
+                throw new Exception("Port is close!");
+            ComPort = serialPort;
+
+            if (GetModelCode((byte)AddressRS485) != ModelCode)
+                throw new Exception("Wrong model!");
         }
     }
 }

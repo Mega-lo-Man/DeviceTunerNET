@@ -14,6 +14,8 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using Prism.Services.Dialogs;
 using DeviceTunerNET.SharedDataModel.Devices;
+using System.Diagnostics;
+using System.IO.Ports;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -67,7 +69,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private bool CheckCommandCanExecute()
         {
-            return CurrentRS485Port != null; 
+            return CurrentRS485Port != null;
         }
 
         private Task CheckCommandExecuteAsync()
@@ -84,14 +86,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private Task StartCommandExecuteAsync()
         {
-            
+
             if (IsCheckedByArea || IsCheckedByCabinets)
             {
                 return Task.Run(DownloadSettings);
             }
 
             SearchProgressBar = 1;
-            
+
             return Task.Run(VerificationCabinetsLoop);
         }
 
@@ -111,7 +113,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             string serial = "";
             VerificationCanStart = VerificationStart.waitFor;
 
-            if(numberOfDeviceWithoutSerial == 1)
+            if (numberOfDeviceWithoutSerial == 1)
             {
                 var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
                 var model = device.Model;
@@ -248,14 +250,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private void DownloadSettings()
         {
-            var device = (Device)GetDevicesWithoutSerial(DevicesForProgramming).FirstOrDefault();
+            var device = GetDevicesWithoutSerial(DevicesForProgramming).FirstOrDefault();
 
             if (device == null)
             {
                 MessageBox.Show("Nothing to program!");
                 return;
             }
-            
+
             StartButtonEnable = false; // Lock start button
             //var devSerial = "";
 
@@ -271,7 +273,51 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = true; // unlock start button
         }
 
-        private void Download(Device device, string serialNumb)
+        private void Download(RS485device device, string serialNumb)
+        {
+            _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
+            
+            var serialPort = new SerialPort(CurrentRS485Port);
+            
+            try
+            {    
+                serialPort.Open();
+                if (device is OrionDevice orionDevice)
+                {
+                    orionDevice.ComPort = serialPort;
+                    orionDevice.SetAddress();
+                    orionDevice.WriteBaseConfig(serialPort, UpdateProgressBar());
+                    SaveSerial(orionDevice, serialNumb);
+                }
+                serialPort.Close();
+            }
+            catch (Exception ex) 
+            { 
+                serialPort?.Close();
+                MessageBox.Show(ex.Message);
+
+                return;
+            }
+
+            // Обновляем всю коллекцию в UI целиком
+            _dispatcher.BeginInvoke(new Action(() =>
+            {
+                CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+            }));
+        }
+
+        private Action<int> UpdateProgressBar()
+        {
+            return val =>
+            {
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SearchProgressBar = val;
+                }));
+            };
+        }
+
+        private void Download2(Device device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
 
@@ -385,16 +431,21 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
         }
 
-        /*
-        private int GetCurrentDeviceStatus(string deviceSerial, bool deviceChecked)
+        private void SaveSerial(Device device, string serialNumb)
         {
-            if (!string.IsNullOrEmpty(deviceSerial) && deviceChecked)
-                return 2;
-            if (!string.IsNullOrEmpty(deviceSerial) && !deviceChecked)
-                return 1;
-            return 0;
+            device.Serial = serialNumb;
+
+            if (!_dataRepositoryService.SaveSerialNumber(device.Id, device.Serial))
+            {
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    Clipboard.SetText(device.Serial ?? string.Empty);
+                }));
+
+                MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
+            }
         }
-        */
+
         private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
@@ -402,8 +453,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 CabinetList.Clear();
                 CabsVM.Clear();
 
-
-                var cabOut = _dataRepositoryService.GetCabinetsWithTwoTypeDevices<C2000Ethernet, RS485device>();
+                var cabOut = _dataRepositoryService.GetCabinetsWithoutExcludeDevices<EthernetSwitch>();
 
                 foreach (var cabinet in cabOut)
                 {
@@ -416,17 +466,13 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var dev = message.AttachedObject;
                 if (IsCheckedByCabinets)
                 {
-                    if (dev.GetType() == typeof(RS485device)) // Юзер кликнул на прибор RS485 в дереве
-                    {
-                        DevicesForProgramming.Clear();
-                        DevicesForProgramming.Add((RS485device)message.AttachedObject);
-                    }
                     if (dev.GetType() == typeof(C2000Ethernet)) // Юзер кликнул на прибор RS232 в дереве
                     {
                         DevicesForProgramming.Clear();
                         DevicesForProgramming.Add((C2000Ethernet)message.AttachedObject);
+                        
                     }
-                    if (dev.GetType() == typeof(Cabinet)) //Юзер кликнул на шкаф в дереве
+                    else if (dev.GetType() == typeof(Cabinet)) //Юзер кликнул на шкаф в дереве
                     {
                         DevicesForProgramming.Clear();
                         var cab = (Cabinet)message.AttachedObject;
@@ -435,6 +481,12 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                             DevicesForProgramming.Add(item);
                         }
                     }
+                    else if (dev is RS485device) // Юзер кликнул на прибор RS485 в дереве
+                    {
+                        DevicesForProgramming.Clear();
+                        DevicesForProgramming.Add((RS485device)message.AttachedObject);
+                    } 
+                    
                 }
                 if (IsCheckedComplexVerification)
                 {
