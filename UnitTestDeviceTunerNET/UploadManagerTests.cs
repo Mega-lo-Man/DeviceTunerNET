@@ -16,7 +16,7 @@ namespace UnitTestDeviceTunerNET
         [TestMethod]
         public void TestUploadingConfig()
         {
-            var ethernetSwitch = new EthernetSwitch();
+            var ethernetSwitch = new EthernetSwitch(null);
 
             var manager = new UploadManager(new ConfigParser(), new TftpServerManager());
             var token = new CancellationToken();

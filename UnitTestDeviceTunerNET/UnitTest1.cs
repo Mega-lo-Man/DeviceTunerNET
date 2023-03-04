@@ -1,9 +1,11 @@
 ﻿using DeviceTunerNET.Services;
 using DeviceTunerNET.SharedDataModel.Devices;
+using DeviceTunerNET.SharedDataModel.Ports;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Prism.Events;
 using System.IO.Ports;
 using System.Linq;
+using System.Web.Services.Description;
 using static DeviceTunerNET.SharedDataModel.ElectricModules.Shleif;
 
 namespace UnitTestDeviceTunerNET
@@ -12,6 +14,8 @@ namespace UnitTestDeviceTunerNET
     public class UnitTest1
     {
         private byte newAddress = 0x02;
+        const string comPort = "COM3";
+        const uint deviceAddress = 127;
         /*
         [TestMethod]
         public void TestTryParsePortSwitchResponse()
@@ -45,12 +49,12 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         }
         */
 
-        
+
 
         [TestMethod]
         public void TestIsDeviceOnline()
         {
-            const string comPort = "COM3";
+            
             
             var serialPort = new SerialPort {PortName = comPort};
             var testService = new SerialSender(new EventAggregator());
@@ -63,19 +67,18 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         [TestMethod]
         public void TestSetDeviceAddress()
         {
-            const string comPort = "COM3";
+            
             
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P
+            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
             {
-                AddressRS485 = 3,
-                Port = serialPort
+                AddressRS485 = deviceAddress,
             };
-            testDevice.Port.Open();
+            serialPort.Open();
 
             var result = testDevice.SetAddress();
 
-            testDevice.Port.Close();
+            serialPort.Close();
 
             Assert.IsTrue(result);
         }
@@ -83,41 +86,37 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         [TestMethod]
         public void TestAdcShleif()
         {
-            const string comPort = "COM3";
+            
 
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P
+            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
             {
-                AddressRS485 = 3,
-                Port = serialPort
+                AddressRS485 = deviceAddress,
             };
-            testDevice.Port.Open();
+            serialPort.Open();
 
-            testDevice.Port = serialPort;
             var result = testDevice.Shleifs.ElementAt(0).GetShleifAdcValue();
 
-            testDevice.Port.Close();
+            serialPort.Close();
 
-            Assert.AreEqual(0xff, (byte)result);
+            Assert.AreEqual(0x00, (byte)result);
         }
 
         [TestMethod]
         public void TestStateShleif()
         {
-            const string comPort = "COM3";
-
+            
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P
+            
+            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
             {
-                AddressRS485 = 3,
-                Port = serialPort
+                AddressRS485 = deviceAddress,
             };
-            testDevice.Port.Open();
-            testDevice.Port = serialPort;
+            serialPort.Open();
 
             var result = testDevice.Shleifs.ElementAt(0).GetShleifState();
 
-            testDevice.Port.Close();
+            serialPort.Close();
 
             Assert.AreEqual(States.RemovedGuard, result);
         }
@@ -125,20 +124,18 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         [TestMethod]
         public void TestRelayOn()
         {
-            const string comPort = "COM3";
+           
 
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P
+            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
             {
-                AddressRS485 = 3,
-                Port = serialPort
+                AddressRS485 = deviceAddress,
             };
-            testDevice.Port.Open();
-            testDevice.Port = serialPort;
+            serialPort.Open();
 
             var result = testDevice.Relays.ElementAt(1).TurnOn();
 
-            testDevice.Port.Close();
+            serialPort.Close();
 
             Assert.IsTrue(result);
         }
@@ -147,20 +144,18 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         [TestMethod]
         public void TestRelayOff()
         {
-            const string comPort = "COM3";
+           
 
             var serialPort = new SerialPort { PortName = comPort };
-            var testDevice = new Signal20P
+            var testDevice = new Signal20P(new ComPort() { SerialPort = serialPort })
             {
-                AddressRS485 = 3,
-                Port = serialPort
+                AddressRS485 = deviceAddress,
             };
-            testDevice.Port.Open();
-            testDevice.Port = serialPort;
+            serialPort.Open();
 
             var result = testDevice.Relays.ElementAt(1).TurnOff();
 
-            testDevice.Port.Close();
+            serialPort.Close();
 
             Assert.IsTrue(result);
         }
@@ -168,8 +163,9 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         [TestMethod]
         public void TestSendC2000EthernetConfig()
         {
-            const string comPort = "COM3";
-            var masterDevice = new C2000Ethernet()
+
+            var serialPort = new SerialPort { PortName = comPort };
+            var masterDevice = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.22",
                 NetworkMode = C2000Ethernet.Mode.master,
@@ -177,7 +173,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
                 AddressRS485 = 5,
                 MACaddress = "AA:BB:CC:DD:EE:FF"
             };
-            var slaveDevice = new C2000Ethernet()
+            var slaveDevice = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.33",
                 NetName = "SLAVE",
@@ -187,12 +183,16 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
                 MACaddress = "AA-BB-CC-DD-EE-FF"
             };
 
-            var serialPort = new SerialPort {PortName = comPort};
             serialPort.Open();
             var target = 1;
-            slaveDevice.WriteConfig(serialPort, null);
+            slaveDevice.WriteConfig(null);
             serialPort.Close();
             //Assert.IsTrue(result);
+        }
+
+        private void Progress(int progress)
+        {
+
         }
         
     }

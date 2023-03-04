@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DeviceTunerNET.SharedDataModel.Devices;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 
@@ -47,5 +48,16 @@ namespace DeviceTunerNET.SharedDataModel
         /// <param name="port"></param>
         /// <param name="progressStatus"></param>
         void WriteBaseConfig(Action<int> progressStatus);
+
+        /// <summary>
+        /// Send full packet (with checksum) and get full response from device
+        /// </summary>
+        /// <param name="address">Device address</param>
+        /// <param name="sendArray">Data to send</param>
+        /// <param name="timeout">Timeout</param>
+        /// <returns></returns>
+        public byte[] AddressTransaction(byte address,
+                                         byte[] sendArray,
+                                         IOrionNetTimeouts.Timeouts timeout);
     }
 }

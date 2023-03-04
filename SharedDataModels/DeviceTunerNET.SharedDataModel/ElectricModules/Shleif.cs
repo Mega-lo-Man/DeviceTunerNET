@@ -5,8 +5,11 @@ using System.Net;
 
 namespace DeviceTunerNET.SharedDataModel.ElectricModules
 {
-    public class Shleif : OrionDevice
+    public class Shleif
     {
+        private const int shleifValueIndex = 2;
+        private const int getAdcValueCode = 0x1B;
+        private const int getAdcState = 0x19;
         private readonly IOrionDevice _parentDevice;
 
         public enum InputTypes : byte
@@ -146,7 +149,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         /// </summary>
         public bool Relay5 { get; set; } = false;
 
-        public Shleif(IPort port, IOrionDevice orionDevice, byte ShleifIndex) : base(port)
+        public Shleif(IOrionDevice orionDevice, byte ShleifIndex)
         {
             _parentDevice = orionDevice;
             this.ShleifIndex = ++ShleifIndex;
@@ -160,16 +163,16 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         {
             var serialPort = _parentDevice.Port;
             var address = (byte)_parentDevice.AddressRS485;
-            var adcValue = AddressTransaction(address, new byte[] { 0x1B, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
-            return adcValue[4];
+            var adcValue = _parentDevice.AddressTransaction(address, new byte[] { getAdcValueCode, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            return adcValue[shleifValueIndex];
         }
 
         public States GetShleifState()
         {
             var serialPort = _parentDevice.Port;
             var address = (byte)_parentDevice.AddressRS485;
-            var adcValue = AddressTransaction(address, new byte[] { 0x19, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
-            return adcValue[4] switch
+            var adcValue = _parentDevice.AddressTransaction(address, new byte[] { getAdcState, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            return adcValue[shleifValueIndex] switch
             {
                 (byte)States.Alarm => States.Alarm,
                 (byte)States.TakeFailed => States.TakeFailed,

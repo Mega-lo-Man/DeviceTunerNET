@@ -44,7 +44,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
             PeriodicLoadDisconnection = 0x02
         }
 
-        public SupervisedRelay(IPort port, IOrionDevice orionDevice, byte relayIndex) : base(port, orionDevice, relayIndex)
+        public SupervisedRelay(IOrionDevice orionDevice, byte relayIndex) : base(orionDevice, relayIndex)
         {
             parentDevice = orionDevice;
             RelayIndex = ++relayIndex;

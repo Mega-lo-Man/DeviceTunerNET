@@ -35,7 +35,7 @@ namespace DeviceTunerNET.SharedDataModel.Ports
 
         public SerialPort SerialPort { get; set; }
         public int MaxRepetitions { get; set; } = 15;
-        public int Timeout { get; set; }
+        public int Timeout { get; set; } = 1;
 
         public byte[] Send(byte[] command)
         {
@@ -56,6 +56,8 @@ namespace DeviceTunerNET.SharedDataModel.Ports
 
                 if (!IsReceivePacketComplete())
                     continue;
+
+                break;
             }
 
             if (_readBuffer.Count == 0)

@@ -84,7 +84,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var inputs = new List<Shleif>();
             for(byte i = 0; i < inputsCount; i++)
             {
-                inputs.Add(new Shleif(port, this, i));
+                inputs.Add(new Shleif(this, i));
             }
             Shleifs = inputs;
 
@@ -92,15 +92,15 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             for(byte i = 0; i < relayNumber; i++)
             {
-                relays.Add(new Relay(port, this, i));
+                relays.Add(new Relay(this, i));
             }
             
             Relays = relays;
 
             var supervisedRelays = new List<SupervisedRelay>
             {
-                new SupervisedRelay(port, this, 3),
-                new SupervisedRelay(port, this, 4)
+                new SupervisedRelay(this, 3),
+                new SupervisedRelay(this, 4)
                 {
                     ControlTime = sirenTime
                 }

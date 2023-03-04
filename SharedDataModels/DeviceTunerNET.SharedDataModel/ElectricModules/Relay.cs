@@ -2,7 +2,7 @@
 
 namespace DeviceTunerNET.SharedDataModel.ElectricModules
 {
-    public class Relay : OrionDevice
+    public class Relay
     {
         protected IOrionDevice parentDevice;
 
@@ -71,7 +71,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         public bool Events { get; set; } = false;
         public bool EndlessControlTime = true;
 
-        public Relay(IPort port, IOrionDevice orionDevice, byte relayIndex) : base(port)
+        public Relay(IOrionDevice orionDevice, byte relayIndex)
         {
             parentDevice = orionDevice;
             RelayIndex = ++relayIndex; // внутренняя нумерация в приборах Болид начинается с единицы
@@ -81,7 +81,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         {
             var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
-            var result = AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x01 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var result = parentDevice.AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x01 }, IOrionNetTimeouts.Timeouts.addressChanging);
             
             if (result == null)
                 return false;
@@ -95,7 +95,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         {
             var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
-            var result = AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x02 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var result = parentDevice.AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x02 }, IOrionNetTimeouts.Timeouts.addressChanging);
             
             if (result == null)
                 return false;
