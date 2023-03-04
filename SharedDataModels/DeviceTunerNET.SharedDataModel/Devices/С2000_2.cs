@@ -8,7 +8,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class С2000_2 : OrionDevice
     {
-        public С2000_2()
+        public С2000_2(IPort port) : base (port)
         {
 
         }

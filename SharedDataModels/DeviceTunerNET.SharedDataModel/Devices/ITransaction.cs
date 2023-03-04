@@ -9,6 +9,6 @@ namespace DeviceTunerNET.SharedDataModel
 {
     public interface ITransaction
     {
-        public byte[] Transaction(SerialPort serialPort, byte address, byte[] sendArray);
+        public byte[] Transaction(byte address, byte[] sendArray);
     }
 }

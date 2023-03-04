@@ -20,7 +20,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// </summary>
         /// <param name="progress"></param>
         public delegate void SearchStatus(int progress);
-        public virtual void WriteConfig(SerialPort serialPort, /*SearchStatus*/ Action<int> searchStatus)
+        public virtual void WriteConfig(Action<int> searchStatus)
         {
 
         }

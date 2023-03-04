@@ -3,14 +3,7 @@ using DeviceTunerNET.SharedDataModel.ElectricModules.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO.Ports;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
-using static DeviceTunerNET.SharedDataModel.ElectricModules.Shleif;
 
 namespace DeviceTunerNET.SharedDataModel.Devices
 {
@@ -19,10 +12,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private const int sirenTime = 0x03C0;
         private readonly int inputsCount = 20;
         private readonly int relayNumber = 3;
-        private readonly int supervisedRelayNumber = 2;
-
-        // 03 08 62 41 14 02 00 7f
-        //private byte[] _secondPowerControlCmd = new byte[] { 0x41, 0x14, 0x02, 0x00, 0x7f };
+        //private readonly int supervisedRelayNumber = 2;
 
         #region Enums
         /// <summary>
@@ -82,7 +72,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         #endregion Properties
 
         #region Constructor
-        public Signal20P()
+        public Signal20P(IPort port) : base(port)
         {
             ModelCode = 2;
             SupportedModels = SupportedModels = new List<string> 
@@ -94,7 +84,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var inputs = new List<Shleif>();
             for(byte i = 0; i < inputsCount; i++)
             {
-                inputs.Add(new Shleif(this, i));
+                inputs.Add(new Shleif(port, this, i));
             }
             Shleifs = inputs;
 
@@ -102,15 +92,15 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             for(byte i = 0; i < relayNumber; i++)
             {
-                relays.Add(new Relay(this, i));
+                relays.Add(new Relay(port, this, i));
             }
             
             Relays = relays;
 
             var supervisedRelays = new List<SupervisedRelay>
             {
-                new SupervisedRelay(this, 3),
-                new SupervisedRelay(this, 4)
+                new SupervisedRelay(port, this, 3),
+                new SupervisedRelay(port, this, 4)
                 {
                     ControlTime = sirenTime
                 }
@@ -121,19 +111,19 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         }
         #endregion Constructor
 
-        public byte[] Transaction(SerialPort serialPort, byte address, byte[] sendArray)
+        public byte[] Transaction(byte address, byte[] sendArray)
         {
-            return OrionNet.AddressTransaction(serialPort, address, sendArray, Timeouts.ethernetConfig);
+            return AddressTransaction(address, sendArray, Timeouts.ethernetConfig);
         }
 
-        public override void WriteConfig(SerialPort serialPort, Action<int> progressStatus)
+        public override void WriteConfig(Action<int> progressStatus)
         {
-            CheckDeviceType(serialPort);
+            CheckDeviceType();
             var progress = 0.0;
 
             foreach (var command in GetConfig())
             {
-                if (Transaction(ComPort, (byte)AddressRS485, command) == null)
+                if (Transaction((byte)AddressRS485, command) == null)
                     throw new Exception("Transaction was false!");
 
                 progressStatus(Convert.ToInt32(progress));
@@ -142,14 +132,14 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             progressStatus(100);
         }
 
-        public override void WriteBaseConfig(SerialPort serialPort, Action<int> progressStatus)
+        public override void WriteBaseConfig(Action<int> progressStatus)
         {
-            CheckDeviceType(serialPort);
+            CheckDeviceType();
             var progress = 0.0;
 
             foreach (var command in GetBaseConfig())
             {
-                if (Transaction(ComPort, (byte)AddressRS485, command) == null)
+                if (Transaction((byte)AddressRS485, command) == null)
                     throw new Exception("Transaction was false!");
 
                 progressStatus(Convert.ToInt32(progress));
@@ -420,12 +410,8 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return cmd;
         }
 
-        private void CheckDeviceType(SerialPort serialPort)
+        private void CheckDeviceType()
         {
-            if (serialPort == null && !serialPort.IsOpen)
-                throw new Exception("Port is close!");
-            ComPort = serialPort;
-
             if (GetModelCode((byte)AddressRS485) != ModelCode)
                 throw new Exception("Wrong model!");
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Ports;
-using static DeviceTunerNET.SharedDataModel.RS485device;
 
 namespace DeviceTunerNET.SharedDataModel
 {
@@ -20,7 +19,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// Серийный порт
         /// </summary>
-        SerialPort ComPort { get; set; }
+        IPort Port { get; set; }
 
         /// <summary>
         /// Изменить адрес прибора с текущего на новый. При этом прибор ищется по адресу  в поле Rs485Address.
@@ -45,8 +44,8 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// Запись сокращенного конфига (WriteConfig - очень долго)
         /// </summary>
-        /// <param name="serialPort"></param>
+        /// <param name="port"></param>
         /// <param name="progressStatus"></param>
-        void WriteBaseConfig(SerialPort serialPort, Action<int> progressStatus);
+        void WriteBaseConfig(Action<int> progressStatus);
     }
 }

@@ -11,12 +11,12 @@ namespace DeviceTunerNET.Services
 {
     public class DeviceGenerator : IDeviceGenerator
     {
-        private static readonly Dictionary<string, Func<IRS485device>> _deviceFactory = new Dictionary<string, Func<IRS485device>>()
+        private static readonly Dictionary<string, Func<IRS485device>> _deviceFactory = new()
         {
             {"С2000М", () => new RS485device()},
             {"Сигнал-20", () => new RS485device() },
-            {"Сигнал-20П", () => new Signal20P() }, // complete
-            {"Сигнал-20П исп.01", () => new Signal20P() }, // complete
+            {"Сигнал-20П", () => new Signal20P(null) }, // complete
+            {"Сигнал-20П исп.01", () => new Signal20P(null) }, // complete
             {"С2000-СП1", () => new RS485device() },
             {"С2000-СП1 исп.01", () => new RS485device() },
             {"С2000-4", () => new RS485device() },
@@ -37,7 +37,7 @@ namespace DeviceTunerNET.Services
             {"Поток-3Н", () => new RS485device() },
             {"Сигнал-20М", () => new RS485device() },
             {"С2000-БИ-01", () => new RS485device() },
-            {"С2000-Ethernet", () => new C2000Ethernet() }, // complete
+            {"С2000-Ethernet", () => new C2000Ethernet(null) }, // complete
             {"Рупор-01", () => new RS485device() },
             {"С2000-Adem", () => new RS485device() },
 
@@ -67,11 +67,11 @@ namespace DeviceTunerNET.Services
             {"С2000-КДЛ-Modbus", () => new RS485device() },
             {"Рупор исп.03", () => new RS485device() },
             {"Рупор-300", () => new RS485device() },
-            {"MES3508", () => new EthernetSwitch() },
-            {"MES3508P", () => new EthernetSwitch() },
-            {"MES2308", () => new EthernetSwitch() },
-            {"MES2308P", () => new EthernetSwitch() },
-            {"MES2324", () => new EthernetSwitch() },
+            {"MES3508", () => new EthernetSwitch(null) },
+            {"MES3508P", () => new EthernetSwitch(null) },
+            {"MES2308", () => new EthernetSwitch(null) },
+            {"MES2308P", () => new EthernetSwitch(null) },
+            {"MES2324", () => new EthernetSwitch(null) },
 
         };
 

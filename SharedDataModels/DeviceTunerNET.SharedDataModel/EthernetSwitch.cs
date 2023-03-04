@@ -2,6 +2,10 @@
 {
     public class EthernetSwitch : EthernetOrionDevice
     {
+        public EthernetSwitch(IPort port) : base(port)
+        {
+        }
+
         /// <summary>
         /// LogIn user name
         /// </summary>

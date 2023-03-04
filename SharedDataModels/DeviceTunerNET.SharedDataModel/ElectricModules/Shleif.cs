@@ -5,11 +5,9 @@ using System.Net;
 
 namespace DeviceTunerNET.SharedDataModel.ElectricModules
 {
-    public class Shleif
+    public class Shleif : OrionDevice
     {
         private readonly IOrionDevice _parentDevice;
-        private uint _parentDeviceAddressRef;
-        private SerialPort _serialPort;
 
         public enum InputTypes : byte
         {
@@ -148,12 +146,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         /// </summary>
         public bool Relay5 { get; set; } = false;
 
-        private Shleif()
-        {
-
-        }
-
-        public Shleif(IOrionDevice orionDevice, byte ShleifIndex)
+        public Shleif(IPort port, IOrionDevice orionDevice, byte ShleifIndex) : base(port)
         {
             _parentDevice = orionDevice;
             this.ShleifIndex = ++ShleifIndex;
@@ -165,17 +158,17 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         /// <returns>ADC current value</returns>
         public byte GetShleifAdcValue()
         {
-            var serialPort = _parentDevice.ComPort;
+            var serialPort = _parentDevice.Port;
             var address = (byte)_parentDevice.AddressRS485;
-            var adcValue = OrionNet.AddressTransaction(serialPort, address, new byte[] { 0x1B, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var adcValue = AddressTransaction(address, new byte[] { 0x1B, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
             return adcValue[4];
         }
 
         public States GetShleifState()
         {
-            var serialPort = _parentDevice.ComPort;
+            var serialPort = _parentDevice.Port;
             var address = (byte)_parentDevice.AddressRS485;
-            var adcValue = OrionNet.AddressTransaction(serialPort, address, new byte[] { 0x19, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var adcValue = AddressTransaction(address, new byte[] { 0x19, ShleifIndex, 0x00 }, IOrionNetTimeouts.Timeouts.addressChanging);
             return adcValue[4] switch
             {
                 (byte)States.Alarm => States.Alarm,

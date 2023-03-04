@@ -1,14 +1,8 @@
 ﻿using DeviceTunerNET.SharedDataModel.Devices;
-using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceTunerNET.SharedDataModel.ElectricModules
 {
-    public class Relay
+    public class Relay : OrionDevice
     {
         protected IOrionDevice parentDevice;
 
@@ -77,12 +71,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         public bool Events { get; set; } = false;
         public bool EndlessControlTime = true;
 
-        private Relay()
-        {
-
-        }
-
-        public Relay(IOrionDevice orionDevice, byte relayIndex)
+        public Relay(IPort port, IOrionDevice orionDevice, byte relayIndex) : base(port)
         {
             parentDevice = orionDevice;
             RelayIndex = ++relayIndex; // внутренняя нумерация в приборах Болид начинается с единицы
@@ -90,9 +79,9 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
 
         public bool TurnOn()
         {
-            var serialPort = parentDevice.ComPort;
+            var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
-            var result = OrionNet.AddressTransaction(serialPort, address, new byte[] { 0x15, RelayIndex, 0x01 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var result = AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x01 }, IOrionNetTimeouts.Timeouts.addressChanging);
             
             if (result == null)
                 return false;
@@ -104,9 +93,9 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         }
         public bool TurnOff()
         {
-            var serialPort = parentDevice.ComPort;
+            var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
-            var result = OrionNet.AddressTransaction(serialPort, address, new byte[] { 0x15, RelayIndex, 0x02 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var result = AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x02 }, IOrionNetTimeouts.Timeouts.addressChanging);
             
             if (result == null)
                 return false;

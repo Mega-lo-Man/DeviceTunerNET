@@ -7,6 +7,10 @@ namespace DeviceTunerNET.SharedDataModel
 {
     public class EthernetOrionDevice : OrionDevice
     {
+        public EthernetOrionDevice(IPort port) : base(port)
+        {
+        }
+
         /// <summary>
         /// IP адрес прибора ("192.168.2.12")
         /// </summary>

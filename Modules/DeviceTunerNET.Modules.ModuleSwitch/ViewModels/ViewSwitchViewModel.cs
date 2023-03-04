@@ -116,7 +116,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
                 }));
 
                 if (_printService.CommonPrintLabel(SelectedPrinter, @PrintLabelPath, GetPrintingDict(
-                    new EthernetSwitch()
+                    new EthernetSwitch(null)
                     {
                         AddressIP = "192.168.1.239",
                         CIDR = 22,

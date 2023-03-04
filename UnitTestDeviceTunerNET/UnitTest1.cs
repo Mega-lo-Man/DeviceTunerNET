@@ -69,13 +69,13 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             var testDevice = new Signal20P
             {
                 AddressRS485 = 3,
-                ComPort = serialPort
+                Port = serialPort
             };
-            testDevice.ComPort.Open();
+            testDevice.Port.Open();
 
             var result = testDevice.SetAddress();
 
-            testDevice.ComPort.Close();
+            testDevice.Port.Close();
 
             Assert.IsTrue(result);
         }
@@ -89,14 +89,14 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             var testDevice = new Signal20P
             {
                 AddressRS485 = 3,
-                ComPort = serialPort
+                Port = serialPort
             };
-            testDevice.ComPort.Open();
+            testDevice.Port.Open();
 
-            testDevice.ComPort = serialPort;
+            testDevice.Port = serialPort;
             var result = testDevice.Shleifs.ElementAt(0).GetShleifAdcValue();
 
-            testDevice.ComPort.Close();
+            testDevice.Port.Close();
 
             Assert.AreEqual(0xff, (byte)result);
         }
@@ -110,14 +110,14 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             var testDevice = new Signal20P
             {
                 AddressRS485 = 3,
-                ComPort = serialPort
+                Port = serialPort
             };
-            testDevice.ComPort.Open();
-            testDevice.ComPort = serialPort;
+            testDevice.Port.Open();
+            testDevice.Port = serialPort;
 
             var result = testDevice.Shleifs.ElementAt(0).GetShleifState();
 
-            testDevice.ComPort.Close();
+            testDevice.Port.Close();
 
             Assert.AreEqual(States.RemovedGuard, result);
         }
@@ -131,14 +131,14 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             var testDevice = new Signal20P
             {
                 AddressRS485 = 3,
-                ComPort = serialPort
+                Port = serialPort
             };
-            testDevice.ComPort.Open();
-            testDevice.ComPort = serialPort;
+            testDevice.Port.Open();
+            testDevice.Port = serialPort;
 
             var result = testDevice.Relays.ElementAt(1).TurnOn();
 
-            testDevice.ComPort.Close();
+            testDevice.Port.Close();
 
             Assert.IsTrue(result);
         }
@@ -153,14 +153,14 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             var testDevice = new Signal20P
             {
                 AddressRS485 = 3,
-                ComPort = serialPort
+                Port = serialPort
             };
-            testDevice.ComPort.Open();
-            testDevice.ComPort = serialPort;
+            testDevice.Port.Open();
+            testDevice.Port = serialPort;
 
             var result = testDevice.Relays.ElementAt(1).TurnOff();
 
-            testDevice.ComPort.Close();
+            testDevice.Port.Close();
 
             Assert.IsTrue(result);
         }

@@ -15,13 +15,14 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             commandCounter = 2
         }
 
-        private static List<byte> readBuffer = new List<byte>();// Буфер чтения для RS485
+        //private static List<byte> readBuffer = new List<byte>();// Буфер чтения для RS485
         private static byte commandCounter;
         private const int maxRepetitions = 15; // Максимальное количество повторов посылок пакетов
 
         /// <summary>
         /// Болидовская таблица CRC (MAXIM/DALLAS CRC8 с небольшими изменениями)
         /// </summary>
+        /*
         private static readonly byte[] _crc8Table = {
             0x00,0x5E,0xBC,0xE2,0x61,0x3F,0xDD,0x83,0xC2,0x9C,0x7E,0x20,0xA3,0xFD,0x1F,0x41,
             0x9D,0xC3,0x21,0x7F,0xFC,0xA2,0x40,0x1E,0x5F,0x01,0xE3,0xBD,0x3E,0x60,0x82,0xDC,
@@ -77,9 +78,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             if (packetLength != packet.Count() - 1)
                 return false;
 
-            return true;
-        }
+            if (IsCrcValid(packet))
+                return true;
 
+            return false;
+        }
+        /*
         private static void sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             var sPort = (SerialPort)sender;
@@ -93,12 +97,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             }
         }
 
-        public static byte[] AddressTransaction(SerialPort serialPort,
+        public static byte[] AddressTransaction(IPort port,
                                          byte address,
                                          byte[] sendArray,
                                          IOrionNetTimeouts.Timeouts timeout)
         {
-            var sPort = serialPort;
+            var sPort = port;
             var addr = new[] { address };
             var sendBytes = CombineArrays(addr, sendArray);
 
@@ -126,47 +130,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             if (readBuffer.Count == 0)
                 return null;
-
-            // Удаляем последний байт (CRC8)
-            readBuffer.RemoveAt(readBuffer.Count - 1);
-            // Удаляем первый байт (Адрес ответившего устройства)
-            readBuffer.RemoveAt(0);
-            // Удаляем второй байт (Длина посылки)
-            readBuffer.RemoveAt(1);
-
-            var array = readBuffer.ToArray();
-
-            return array;
+            
+            return GetResponseWithoutAuxiliaryData(response);
         }
 
-        private static byte[] CombineArrays(params byte[][] arrays)
-        {
-            var resultArray = new byte[arrays.Sum(a => a.Length)];
-            var offset = 0;
-            foreach (var item in arrays)
-            {
-                Buffer.BlockCopy(item, 0, resultArray, offset, item.Length);
-                offset += item.Length;
-            }
-            return resultArray;
-        }
+                */
 
-        private static void SendPacket(SerialPort serialPort, byte[] sendArray)
-        {
-            byte bytesCounter = 2; //сразу начнём считать с двойки, т.к. всё равно придётся добавить два байта(сам байт длины команды, и счётчик команд)
-            var lst = new List<byte>();
-            foreach (var bt in sendArray)
-            {
-                lst.Add(bt);
-                bytesCounter++;
-            }
 
-            lst.Insert(1, bytesCounter); //вставляем вторым байтом в пакет длину всего пакета + байт длины пакета
-            lst.Insert(2, commandCounter); //вставляем третьим байтом в пакет счётчик команд
-            serialPort.Write(lst.ToArray(), 0, bytesCounter);
-            serialPort.Write(CRC8(lst.ToArray()), 0, 1);
-
-            commandCounter += (byte)(bytesCounter + 0x01); // увеливаем счётчик комманд на кол-во отправленных байт
-        }
     }
 }

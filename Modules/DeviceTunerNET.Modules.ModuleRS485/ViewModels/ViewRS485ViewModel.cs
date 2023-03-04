@@ -16,6 +16,7 @@ using Prism.Services.Dialogs;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System.Diagnostics;
 using System.IO.Ports;
+using DeviceTunerNET.SharedDataModel.Ports;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -284,9 +285,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 serialPort.Open();
                 if (device is OrionDevice orionDevice)
                 {
-                    orionDevice.ComPort = serialPort;
+                    orionDevice.Port = new ComPort() { SerialPort = serialPort };
                     orionDevice.SetAddress();
-                    orionDevice.WriteBaseConfig(serialPort, UpdateProgressBar());
+                    orionDevice.WriteBaseConfig(UpdateProgressBar());
                     SaveSerial(orionDevice, serialNumb);
                 }
                 serialPort.Close();

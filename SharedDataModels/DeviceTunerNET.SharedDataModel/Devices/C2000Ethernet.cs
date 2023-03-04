@@ -201,7 +201,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         #endregion Properties
 
         #region Constructors
-        public C2000Ethernet()
+        public C2000Ethernet(IPort port) : base(port)
         {
             ModelCode = 29;
             SupportedModels = new List<string> { "С2000-Ethernet" };
@@ -243,37 +243,33 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         }
         #endregion Constructors
 
-        public byte[] Transaction(SerialPort serialPort, byte address, byte[] sendArray)
+        public byte[] Transaction(byte address, byte[] sendArray)
         {
-            return OrionNet.AddressTransaction(serialPort, address, sendArray, Timeouts.ethernetConfig);
+            return AddressTransaction(address, sendArray, Timeouts.ethernetConfig);
         }
 
-        public override void WriteConfig(SerialPort serialPort, Action<int> searchStatus)
+        public override void WriteConfig(Action<int> searchStatus)
         {
-            CheckDeviceModel(serialPort);
+            CheckDeviceModel();
 
             foreach (var command in GetConfig())
             {
-                if (Transaction(ComPort, (byte)AddressRS485, command) == null)
+                if (Transaction((byte)AddressRS485, command) == null)
                     throw new Exception("Transaction false!");
             }
         }
 
-        public override void WriteBaseConfig(SerialPort serialPort, Action<int> progressStatus)
+        public override void WriteBaseConfig(Action<int> progressStatus)
         {
             foreach (var command in GetBaseConfig())
             {
-                if (Transaction(ComPort, (byte)AddressRS485, command) == null)
+                if (Transaction((byte)AddressRS485, command) == null)
                     throw new Exception("Transaction false!");
             }
         }
 
-        private void CheckDeviceModel(SerialPort serialPort)
+        private void CheckDeviceModel()
         {
-            if (serialPort == null && !serialPort.IsOpen)
-                throw new Exception("Port is closed");
-            ComPort = serialPort;
-
             if (GetModelCode((byte)AddressRS485) != ModelCode)
                 throw new Exception("Wrong model!");
         }

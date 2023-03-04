@@ -10,6 +10,6 @@ namespace DeviceTunerNET.SharedDataModel
 
         IEnumerable<string> SupportedModels { get; set; }
 
-        void WriteConfig(SerialPort serialPort, /*RS485device.SearchStatus*/ Action<int> searchStatus);
+        void WriteConfig(Action<int> searchStatus);
     }
 }
