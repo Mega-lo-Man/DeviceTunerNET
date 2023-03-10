@@ -145,28 +145,28 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _currentRS485Port, value);
         }
 
-        private ObservableCollection<Cabinet> _cabinetList = new ObservableCollection<Cabinet>();
+        private ObservableCollection<Cabinet> _cabinetList = new();
         public ObservableCollection<Cabinet> CabinetList
         {
             get => _cabinetList;
             set => SetProperty(ref _cabinetList, value);
         }
 
-        private ObservableCollection<CabinetViewModel> _cabsVM = new ObservableCollection<CabinetViewModel>();
+        private ObservableCollection<CabinetViewModel> _cabsVM = new();
         public ObservableCollection<CabinetViewModel> CabsVM
         {
             get => _cabsVM;
             set => SetProperty(ref _cabsVM, value);
         }
 
-        private ObservableCollection<object> _devicesForProgramming = new ObservableCollection<object>();
+        private ObservableCollection<object> _devicesForProgramming = new();
         public ObservableCollection<object> DevicesForProgramming
         {
             get => _devicesForProgramming;
             set => SetProperty(ref _devicesForProgramming, value);
         }
 
-        private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
+        private ObservableCollection<string> _availableComPorts = new();
         public ObservableCollection<string> AvailableComPorts
         {
             get => _availableComPorts;
@@ -194,8 +194,17 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _startButtonEnable, value);
         }
 
+        public ObservableCollection<string> AvailableProtocols { get; set; } = new();
+
+        private string _currentProtocol;
+        public string CurrentProtocol 
+        { 
+            get => _currentProtocol; 
+            set => SetProperty(ref _currentProtocol, value); 
+        }
+
         #endregion
 
-        
+
     }
 }

@@ -17,6 +17,7 @@ using DeviceTunerNET.SharedDataModel.Devices;
 using System.Diagnostics;
 using System.IO.Ports;
 using DeviceTunerNET.SharedDataModel.Ports;
+using System.Net;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -58,11 +59,24 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
+                .ObservesProperty(() => CurrentProtocol)
+                .ObservesProperty(() => IsCheckedByArea)
+                .ObservesProperty(() => IsCheckedByCabinets)
+                .ObservesProperty(() => IsCheckedComplexVerification)
                 .ObservesProperty(() => SerialTextBox);
 
             CheckCommand = new DelegateCommand(async () => await CheckCommandExecuteAsync(), CheckCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
+                .ObservesProperty(() => CurrentProtocol)
+                .ObservesProperty(() => IsCheckedByArea)
+                .ObservesProperty(() => IsCheckedByCabinets)
+                .ObservesProperty(() => IsCheckedComplexVerification)
                 .ObservesProperty(() => SerialTextBox);
+
+            AvailableProtocols.Add("COM");
+            AvailableProtocols.Add("WIFI");
+            CurrentProtocol = AvailableProtocols.FirstOrDefault();
+            CurrentRS485Port = AvailableComPorts.LastOrDefault();
 
             Title = "RS485";
         }
@@ -70,7 +84,22 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private bool CheckCommandCanExecute()
         {
-            return CurrentRS485Port != null;
+            if (IsCheckedByArea || IsCheckedByCabinets)
+            {
+                if (CurrentProtocol.Contains("WIFI"))
+                    return SerialTextBox?.Length > 0 &&
+                           DevicesForProgramming.Count > 0;
+
+                return CurrentRS485Port != null &&
+                       SerialTextBox?.Length > 0 &&
+                       DevicesForProgramming.Count > 0;
+            }
+
+            if (CurrentProtocol.Contains("WIFI"))
+                return DevicesForProgramming.Count > 0;
+
+            return DevicesForProgramming.Count > 0 &&
+                   CurrentRS485Port != null;
         }
 
         private Task CheckCommandExecuteAsync()
@@ -80,9 +109,22 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private bool StartCommandCanExecute()
         {
-            return CurrentRS485Port != null &&
-                   SerialTextBox?.Length > 0 &&
-                   DevicesForProgramming.Count > 0;
+            if(IsCheckedByArea || IsCheckedByCabinets)
+            {
+                if (CurrentProtocol.Contains("WIFI"))
+                    return SerialTextBox?.Length > 0 &&
+                           DevicesForProgramming.Count > 0;
+
+                return CurrentRS485Port != null &&
+                       SerialTextBox?.Length > 0 &&
+                       DevicesForProgramming.Count > 0;
+            }
+
+            if(CurrentProtocol.Contains("WIFI"))
+                return DevicesForProgramming.Count > 0;
+
+            return DevicesForProgramming.Count > 0 &&
+                   CurrentRS485Port != null;
         }
 
         private Task StartCommandExecuteAsync()
@@ -277,20 +319,35 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private void Download(RS485device device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
-            
-            var serialPort = new SerialPort(CurrentRS485Port);
-            
+            var serialPort = new SerialPort(CurrentRS485Port == null ? "COM1" : CurrentRS485Port);
             try
             {    
-                serialPort.Open();
+                
                 if (device is OrionDevice orionDevice)
                 {
-                    orionDevice.Port = new ComPort() { SerialPort = serialPort };
+                    if (CurrentProtocol.Equals("COM"))
+                    {
+                        
+                        orionDevice.Port = new ComPort() { SerialPort = serialPort };
+                        serialPort.Open();
+                    }
+                
+                    else
+                    {
+                        var ip = IPAddress.Parse("10.10.10.1");
+                        orionDevice.Port = new BolidUdpClient(8100)
+                        {
+                            
+                            RemoteServerIp = ip,
+                            RemoteServerUdpPort = 12000
+
+                        };
+                    }
                     orionDevice.SetAddress();
                     orionDevice.WriteBaseConfig(UpdateProgressBar());
                     SaveSerial(orionDevice, serialNumb);
                 }
-                serialPort.Close();
+                //serialPort.Close();
             }
             catch (Exception ex) 
             { 
@@ -317,7 +374,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 }));
             };
         }
-
+        /*
         private void Download2(Device device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
@@ -354,7 +411,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
             }));
         }
-
+        */
         private int GetNumberOfDeviceWithoutSerial(IEnumerable<object> devices)
         {
             return devices.Cast<RS485device>().Count(device => string.IsNullOrEmpty(device.Serial));
@@ -390,7 +447,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         {
             return devices.Cast<RS485device>().Where(device => device.QualityControlPassed == false).ToList();
         }
-        */
+       
         private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1, string serialNumb)
         {
             switch (sendResult)
@@ -431,7 +488,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     throw new ArgumentOutOfRangeException(nameof(sendResult), sendResult, null);
             }
         }
-
+ */
         private void SaveSerial(Device device, string serialNumb)
         {
             device.Serial = serialNumb;

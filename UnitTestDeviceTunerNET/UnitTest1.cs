@@ -1,12 +1,12 @@
 ﻿using DeviceTunerNET.Services;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DeviceTunerNET.SharedDataModel.Devices;
 using DeviceTunerNET.SharedDataModel.Ports;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Prism.Events;
-using System.IO.Ports;
 using System.Linq;
-using System.Web.Services.Description;
+using System.Net;
 using static DeviceTunerNET.SharedDataModel.ElectricModules.Shleif;
+using System.IO.Ports;
+using Prism.Events;
 
 namespace UnitTestDeviceTunerNET
 {
@@ -62,6 +62,26 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
 
             Assert.IsTrue(result);
             //Assert.AreEqual(result, "С2000-Ethernet");
+        }
+
+        [TestMethod]
+        public void TestIsDeviceOnlineUdp()
+        {
+            var ip = IPAddress.Parse("10.10.10.1");
+
+            var port = new BolidUdpClient(12000)
+            {
+                RemoteServerIp = ip,
+                RemoteServerUdpPort = 12000,
+                Timeout = 100,
+            };
+
+            var device = new Signal20P(port);
+
+            var result = device.GetModelCode(127).ToString();
+
+            
+            Assert.AreEqual(result, device.ModelCode.ToString());
         }
 
         [TestMethod]

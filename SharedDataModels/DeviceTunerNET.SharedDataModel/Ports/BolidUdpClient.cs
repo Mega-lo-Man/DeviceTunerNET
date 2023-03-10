@@ -1,5 +1,7 @@
-﻿using System;
+﻿using DeviceTunerNET.SharedDataModel.Utils;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,6 +14,7 @@ namespace DeviceTunerNET.SharedDataModel.Ports
     {
         private const int DEFAULT_MAX_REPETITIONS = 15;
         private const int DEFAULT_TIMEOUT = 60;
+        private const int ACTUAL_PACKET_LENGTH_INDEX = 1;
         private UdpClient _udpClient;
 
         public int MaxRepetitions { get; set; }
@@ -32,8 +35,13 @@ namespace DeviceTunerNET.SharedDataModel.Ports
             _udpClient = new UdpClient(ClientUdpPort);
         }
 
-        public byte[] Send(byte[] data)
+        public byte[] Send(byte[] packet)
         {
+            
+            var crc = OrionCRC.GetCrc8(packet);
+            var data = ArraysHelper.CombineArrays(packet, crc);
+            var header = GetBolidUdpHeader(data);
+            var complitePacket = ArraysHelper.CombineArrays(header, data);
             int attempts = 0;
             var remoteEndPoint = new IPEndPoint(RemoteServerIp, RemoteServerUdpPort);
             byte[] receiveBuffer = null;
@@ -41,7 +49,7 @@ namespace DeviceTunerNET.SharedDataModel.Ports
             while (attempts < MaxRepetitions)
             {
                 attempts++;
-                _udpClient.Send(data, data.Length, remoteEndPoint);
+                _udpClient.Send(complitePacket, complitePacket.Length, remoteEndPoint);
                 receiveBuffer = _udpClient.Receive(ref remoteEndPoint);
                 if (receiveBuffer != null)
                 {
@@ -54,8 +62,26 @@ namespace DeviceTunerNET.SharedDataModel.Ports
                 throw new TimeoutException("Timeout waiting for server response.");
             }
 
-            return receiveBuffer;
+            var response = GetResponse(receiveBuffer);
+            return response;
         }
 
+        /// <summary>
+        /// We have to remove Bolid UDP header (second byte = actual response length with CRC8)
+        /// </summary>
+        /// <param name="receiveBuffer">Full response</param>
+        /// <returns>Response with CRC8</returns>
+        private byte[] GetResponse(byte[] receiveBuffer)
+        {
+            var packetLength = receiveBuffer[ACTUAL_PACKET_LENGTH_INDEX];
+            var length = receiveBuffer.Length;
+            return receiveBuffer.Skip(length - packetLength).ToArray();
+        }
+
+        private byte[] GetBolidUdpHeader(byte[] data)
+        {
+            var length = (byte)data.Length;
+            return new byte[] { 0x10, length, 0x00, 0x00, 0x10 }; //0x10 0x07 0x00 0x00 0x10
+        }
     }
 }
