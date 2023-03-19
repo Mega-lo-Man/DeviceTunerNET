@@ -16,6 +16,7 @@ namespace DeviceTunerNET.SharedDataModel.Ports
         private const int DEFAULT_TIMEOUT = 60;
         private const int ACTUAL_PACKET_LENGTH_INDEX = 1;
         private UdpClient _udpClient;
+        private byte commandCounter = 0x00;
 
         public int MaxRepetitions { get; set; }
 
@@ -81,7 +82,7 @@ namespace DeviceTunerNET.SharedDataModel.Ports
         private byte[] GetBolidUdpHeader(byte[] data)
         {
             var length = (byte)data.Length;
-            return new byte[] { 0x10, length, 0x00, 0x00, 0x10 }; //0x10 0x07 0x00 0x00 0x10
+            return new byte[] { 0x10, length, 0x00, commandCounter, 0x10 }; //0x10 0x07 0x00 0x00 0x10
         }
     }
 }
