@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 
 namespace DeviceTunerNET.SharedDataModel.Devices
 {
-    public abstract class OrionDevice : RS485device, IOrionDevice
+    public class OrionDevice : RS485device, IOrionDevice
     {
         private const int ResponseNewAddressOffset = 2;
         private const int ResponseDeviceModelOffset = 1;
@@ -56,6 +57,23 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return result[ResponseNewAddressOffset] == (byte)AddressRS485;
         }
 
+        public void Reboot()
+        {
+            byte[] completePacket = GetCompletePacket((byte)AddressRS485, GetRebootPacket());
+            Port.Timeout = (int)Timeouts.readModel;
+            Port.SendWithoutСonfirmation(completePacket);
+        }
+
+        private byte[] GetRebootPacket()
+        {
+            return new byte[]
+            {
+                (byte)OrionCommands.Reboot,
+                0x00,
+                0x00,
+            };
+        }
+
         private byte[] GetChangeAddressPacket(byte address)
         {
             // формируем команду на отправку
@@ -65,6 +83,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 address,
                 address
             };
+        }
+
+        public bool IsDeviceOnline()
+        {
+            return ModelCode == GetModelCode((byte)AddressRS485);
         }
 
         public byte GetModelCode(byte deviceAddress)
@@ -78,24 +101,31 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
                 return deviceResponse[ResponseDeviceModelOffset];
             }
-            return 0xFF;
+            throw new Exception("Device model getting failed!");
         }
 
         public virtual void WriteBaseConfig(Action<int> progressStatus)
         {
+
         }
 
         public byte[] AddressTransaction(byte address,
                                          byte[] sendArray,
                                          IOrionNetTimeouts.Timeouts timeout)
         {
-
-            var addr = new[] { address };
-            var sendCommand = ArraysHelper.CombineArrays(addr, sendArray);
-            var completePacket = GetComplitePacket(sendCommand);
+            byte[] completePacket = GetCompletePacket(address, sendArray);
+            Port.Timeout = (int)timeout;
             var response = Port.Send(completePacket);
 
             return GetResponseWithoutAuxiliaryData(response);
+        }
+
+        private byte[] GetCompletePacket(byte address, byte[] sendArray)
+        {
+            var addr = new[] { address };
+            var sendCommand = ArraysHelper.CombineArrays(addr, sendArray);
+            var completePacket = GetComplitePacket(sendCommand);
+            return completePacket;
         }
 
         private static byte[] GetResponseWithoutAuxiliaryData(byte[] responseArray)

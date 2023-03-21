@@ -66,6 +66,11 @@ namespace DeviceTunerNET.SharedDataModel.Ports
             return response;
         }
 
+        public void SendWithoutСonfirmation(byte[] data)
+        {
+            Send(data);
+        }
+
         /// <summary>
         /// We have to remove Bolid UDP header (second byte = actual response length with CRC8)
         /// </summary>

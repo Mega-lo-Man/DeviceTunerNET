@@ -1,5 +1,6 @@
 ﻿using DeviceTunerNET.SharedDataModel.Devices;
 using DeviceTunerNET.SharedDataModel.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -48,23 +49,27 @@ namespace DeviceTunerNET.SharedDataModel.Ports
                 SendPacketWithCrc(command);
 
                 var timeCounter = (int)IOrionNetTimeouts.Timeouts.notResponse;
-                while (!IsReceivePacketComplete() && timeCounter >= 0)
+                while ((IsReceivePacketComplete() != true) && (timeCounter >= 0))
                 {
                     Thread.Sleep(Timeout);
                     timeCounter -= Timeout;
                 }
 
-                if (!IsReceivePacketComplete())
-                    continue;
+                if (IsReceivePacketComplete())
+                    break;
 
-                break;
             }
 
             if (_readBuffer.Count == 0)
-                return null;
+                throw new Exception("Device is not responding!");
 
             return _readBuffer.ToArray();
             
+        }
+
+        public void SendWithoutСonfirmation(byte[] command)
+        {
+            SendPacketWithCrc(command);
         }
 
         private void SendPacketWithCrc(byte[] command)

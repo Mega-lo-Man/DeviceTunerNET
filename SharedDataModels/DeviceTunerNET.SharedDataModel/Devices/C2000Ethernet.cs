@@ -1,10 +1,12 @@
 ﻿using DeviceTunerNET.SharedDataModel.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 using static System.String;
 
@@ -248,24 +250,57 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return AddressTransaction(address, sendArray, Timeouts.ethernetConfig);
         }
 
-        public override void WriteConfig(Action<int> searchStatus)
+        public override void WriteConfig(Action<int> progressStatus)
         {
             CheckDeviceModel();
+
+            var progress = 1.0;
+            progressStatus(Convert.ToInt32(progress));
+
+            Reboot();
+
+            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
 
             foreach (var command in GetConfig())
             {
                 if (Transaction((byte)AddressRS485, command) == null)
                     throw new Exception("Transaction false!");
+
+                progress += 1.666;
+                Debug.WriteLine(progress.ToString());
             }
+
+            Reboot();
+
+            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
+
+            progressStatus(100);
         }
 
         public override void WriteBaseConfig(Action<int> progressStatus)
         {
+            CheckDeviceModel();
+            var progress = 1.0;
+            progressStatus(Convert.ToInt32(progress));
+            Reboot();
+
+            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
+
             foreach (var command in GetBaseConfig())
             {
                 if (Transaction((byte)AddressRS485, command) == null)
                     throw new Exception("Transaction false!");
+                
+                progressStatus(Convert.ToInt32(progress));
+                progress += 3.666;
+                Debug.WriteLine(progress.ToString());
             }
+
+            Reboot();
+
+            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
+
+            progressStatus(100);
         }
 
         private void CheckDeviceModel()
@@ -278,7 +313,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             var config = new List<byte[]>
             {
-                GetPromoter(),
+                ReadDeviceNetworkSettings(),
                 GetDeviceNetName(NetName),
                 GetEthernetTune(AddressIP, Netmask, DefaultGateway, FirstDns, SecondDns),
                 GetDhcpStatus(DhcpEnable),
@@ -294,7 +329,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             };
             config.AddRange(GetRemoteDevices(RemoteDevicesList));
-            config.Add(GetSuffix());
+            
             return config;
         }
 
@@ -302,7 +337,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             var config = new List<byte[]>
             {
-                GetPromoter(),
+                ReadDeviceNetworkSettings(),
                 GetDeviceNetName(NetName),
                 GetEthernetTune(AddressIP, Netmask, DefaultGateway, FirstDns, SecondDns),
                 GetDhcpStatus(DhcpEnable),
@@ -321,10 +356,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 GetFreeConnectionTune(FreeConnectionUdpType, AllowFreeConnection),
                 GetFreeConnectionUdp(FreeConnectionUdp),
                 GetTransparentTune(TransparentUdp, TransparentProtocol, TransparentCrypto),
-                
             };
             config.AddRange(GetRemoteDevices(RemoteDevicesList));
-            config.Add(GetSuffix());
+
             return config;
         }
         private string CidrToString(int cidr)
@@ -397,11 +431,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 ipBytes[counter] = numbByte;
             }
             return ipBytes;
-        }
-
-        private byte[] GetPromoter()
-        {
-            return new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }; // 7f 08 6e 43 00 00 00 40
         }
 
         private byte[] GetDeviceNetName(string name)
@@ -667,6 +696,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return cmd;
         }
 
-        
+        private byte[] ReadDeviceNetworkSettings()
+        {
+            return new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }; // 7f 08 6e 43 00 00 00 40
+        }
     }
 }

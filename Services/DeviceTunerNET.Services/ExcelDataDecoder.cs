@@ -114,6 +114,13 @@ namespace DeviceTunerNET.Services
                 {
                     var deviceWithSettings = GetDeviceWithSettings(device, deviceDataSet);
                     deviceWithSettings.Cabinet = cabinet.Designation;
+                    
+                    if(device is C2000Ethernet c2000Ethernet)
+                    {
+                        //Add to dict for master/slave/translate sort
+                        dictC2000Ethernet.Add(c2000Ethernet, GetRangTuple(deviceDataSet.DevRang));
+                    }
+                    
                     cabinet.AddItem(deviceWithSettings);
                 }
                                
@@ -135,6 +142,20 @@ namespace DeviceTunerNET.Services
                 return true;
             }
             return false;
+        }
+
+        private Tuple<char, int> GetRangTuple(string rang)
+        {
+            var _rang = rang[0];
+            var lineStr = rang.Substring(1); //right part of rang
+
+            if (_rang != master && _rang != slave && _rang != transparent)
+                return null;
+
+            if (!TryParse(lineStr, out var lineNumb))
+                return null;
+
+            return new Tuple<char, int>(_rang, lineNumb);
         }
 
         // связываем все C2000-Ethernet в общую сеть, добавляя ссылки мастеров на слейв и прописывая мастеров в слейвы

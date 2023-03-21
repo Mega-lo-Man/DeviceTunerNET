@@ -129,6 +129,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 progressStatus(Convert.ToInt32(progress));
                 progress += 0.364;
             }
+            Reboot();
             progressStatus(100);
         }
 
@@ -145,6 +146,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 progressStatus(Convert.ToInt32(progress));
                 progress += 1.587;
             }
+            Reboot();
             progressStatus(100);
         }
 
@@ -157,7 +159,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 GetTwoPowerInputsMonitor(),
             };
             config.AddRange(GetInputsProps(GetBaseInputsProps));
-            config.Add(GetSuffix());
+
             return config;
         }
 
@@ -171,7 +173,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             };
             config.AddRange(GetInputsProps(GetInputProperties));
             config.AddRange(GetRelaysProps());
-            config.Add(GetSuffix());
+
             return config;
         }
 
@@ -401,13 +403,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private byte[] GetPromoter()
         {
             return new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }; // Unrecognized pattern
-        }
-
-        // Reboot device?
-        private byte[] GetSuffix()
-        {
-            var cmd = new byte[] { 0x17, 0x00, 0x00 };
-            return cmd;
         }
 
         private void CheckDeviceType()

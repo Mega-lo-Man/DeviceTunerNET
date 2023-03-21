@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.IO.Ports;
 using DeviceTunerNET.SharedDataModel.Ports;
 using System.Net;
+using System.Threading;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -70,8 +71,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 .ObservesProperty(() => CurrentProtocol)
                 .ObservesProperty(() => IsCheckedByArea)
                 .ObservesProperty(() => IsCheckedByCabinets)
-                .ObservesProperty(() => IsCheckedComplexVerification)
-                .ObservesProperty(() => SerialTextBox);
+                .ObservesProperty(() => IsCheckedComplexVerification);
 
             AvailableProtocols.Add("COM");
             AvailableProtocols.Add("WIFI");
@@ -87,11 +87,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             if (IsCheckedByArea || IsCheckedByCabinets)
             {
                 if (CurrentProtocol.Contains("WIFI"))
-                    return SerialTextBox?.Length > 0 &&
-                           DevicesForProgramming.Count > 0;
+                    return DevicesForProgramming.Count > 0;
 
                 return CurrentRS485Port != null &&
-                       SerialTextBox?.Length > 0 &&
                        DevicesForProgramming.Count > 0;
             }
 
@@ -266,20 +264,27 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private int QualityControl(IEnumerable<RS485device> devices)
         {
             var result = 0;
-            foreach (RS485device device in devices)
+            foreach (var device in devices)
             {
+
                 var checkAddress = Convert.ToByte(device.AddressRS485);
-                if (_serialTasks.CheckOnlineDevice(CurrentRS485Port, checkAddress, device.Model) == ISerialTasks.ResultCode.ok)
+                if(device is OrionDevice orionDevice)
                 {
-                    device.QualityControlPassed = true;
-                    result++;
+                    var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
+                    orionDevice.Port = new ComPort() { SerialPort = serialPort };
+                    serialPort.Open();
+                    if (orionDevice.IsDeviceOnline())
+                    {
+                        device.QualityControlPassed = true;
+                        result++;
+                    }
+                    else
+                    {
+                        device.QualityControlPassed = false;
+                    }
+                    serialPort.Close();
                 }
-
-                else
-                {
-                    device.QualityControlPassed = false;
-                }
-
+                
                 _dataRepositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
 
                 // Обновляем всю коллекцию в UI целиком
@@ -319,7 +324,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private void Download(RS485device device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
-            var serialPort = new SerialPort(CurrentRS485Port == null ? "COM1" : CurrentRS485Port);
+            var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
             try
             {    
                 
@@ -343,16 +348,25 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
                         };
                     }
+
+
                     orionDevice.SetAddress();
+
+                    if (orionDevice.GetModelCode((byte)orionDevice.AddressRS485) != orionDevice.ModelCode)
+                    {
+                        throw new Exception("Device code with new address is not equal with expected code!");
+                    }
+
                     orionDevice.WriteBaseConfig(UpdateProgressBar());
+                    serialPort.Close();
                     SaveSerial(orionDevice, serialNumb);
                 }
-                //serialPort.Close();
             }
             catch (Exception ex) 
             { 
                 serialPort?.Close();
                 MessageBox.Show(ex.Message);
+                StartButtonEnable = true;// unlock start button
 
                 return;
             }
