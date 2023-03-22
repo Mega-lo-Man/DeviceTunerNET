@@ -26,8 +26,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
     {
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
-        private readonly ISerialTasks _serialTasks;
+        private readonly IDeviceConfigUploader _configUploader;
         private readonly IDialogService _dialogService;
+        private readonly IPortManager _portManager;
         private readonly Dispatcher _dispatcher;
 
         private enum VerificationStart
@@ -44,19 +45,22 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         #region Constructor
         public ViewRS485ViewModel(IRegionManager regionManager,
-                                  ISerialTasks serialTasks,
+                                  IDeviceConfigUploader configUploader,
                                   IDataRepositoryService dataRepositoryService,
                                   IEventAggregator ea,
-                                  IDialogService dialogService) : base(regionManager)
+                                  IDialogService dialogService,
+                                  IPortManager portManager) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
-            _serialTasks = serialTasks;
+            _configUploader = configUploader;
+            _configUploader.Progress = UpdateProgressBar();
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
             _dialogService = dialogService;
+            _portManager = portManager;
             _dispatcher = Dispatcher.CurrentDispatcher;
 
-            AvailableComPorts = _serialTasks.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
+            AvailableComPorts = _portManager.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
 
             StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
@@ -64,14 +68,16 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 .ObservesProperty(() => IsCheckedByArea)
                 .ObservesProperty(() => IsCheckedByCabinets)
                 .ObservesProperty(() => IsCheckedComplexVerification)
-                .ObservesProperty(() => SerialTextBox);
+                .ObservesProperty(() => SerialTextBox)
+                .ObservesProperty(() => DevicesForProgramming); //doesn't work
 
             CheckCommand = new DelegateCommand(async () => await CheckCommandExecuteAsync(), CheckCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => CurrentProtocol)
                 .ObservesProperty(() => IsCheckedByArea)
                 .ObservesProperty(() => IsCheckedByCabinets)
-                .ObservesProperty(() => IsCheckedComplexVerification);
+                .ObservesProperty(() => IsCheckedComplexVerification)
+                .ObservesProperty(() => DevicesForProgramming); //doesn't work
 
             AvailableProtocols.Add("COM");
             AvailableProtocols.Add("WIFI");
@@ -226,7 +232,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             if (GetDevicesWithoutSerial(DevicesForProgramming).Count() == 1)
             {
                 var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
-                Download(device, serial);
+                //Download(device, serial);
+
+                UploadConfig(device);
 
                 // Обновляем всю коллекцию в UI целиком
                 _dispatcher.BeginInvoke(new Action(() =>
@@ -307,9 +315,9 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
 
             StartButtonEnable = false; // Lock start button
-            //var devSerial = "";
 
-            Download(device, SerialTextBox);
+            //Download(device, SerialTextBox);
+            UploadConfig(device);
 
             // Is Device Was Last?
             if (GetDevicesWithoutSerial(DevicesForProgramming) == null)
@@ -321,18 +329,35 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = true; // unlock start button
         }
 
+        private void UploadConfig(RS485device device)
+        {
+            _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
+            _configUploader.PortName = CurrentRS485Port;
+            _configUploader.Protocol = CurrentProtocol;
+            var serial = SerialTextBox;
+            if (_configUploader.Upload(device, serial))
+            {
+                SaveSerial(device, serial);
+            }
+
+            // Обновляем всю коллекцию в UI целиком
+            _dispatcher.BeginInvoke(new Action(() =>
+            {
+                CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+            }));
+            
+            StartButtonEnable = true;// unlock start button
+        }
         private void Download(RS485device device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
             var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
             try
             {    
-                
                 if (device is OrionDevice orionDevice)
                 {
                     if (CurrentProtocol.Equals("COM"))
                     {
-                        
                         orionDevice.Port = new ComPort() { SerialPort = serialPort };
                         serialPort.Open();
                     }
@@ -342,13 +367,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         var ip = IPAddress.Parse("10.10.10.1");
                         orionDevice.Port = new BolidUdpClient(8100)
                         {
-                            
                             RemoteServerIp = ip,
                             RemoteServerUdpPort = 12000
-
                         };
                     }
-
 
                     orionDevice.SetAddress();
 
@@ -388,44 +410,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 }));
             };
         }
-        /*
-        private void Download2(Device device, string serialNumb)
-        {
-            _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
 
-            if (device.GetType() == typeof(RS485device))
-            {
-                var sendResult = _serialTasks.SendConfig(device,
-                    CurrentRS485Port,
-                    DefaultRS485Address);
-                SendResponseProcessing(sendResult, device, serialNumb);
-            }
-            else if (device.GetType() == typeof(C2000Ethernet))
-            {
-                var c2000Ethernet = (C2000Ethernet) device;
-                c2000Ethernet.Netmask = IPMask;
-                if (c2000Ethernet.NetworkMode == C2000Ethernet.Mode.master)
-                {
-                    c2000Ethernet.RemoteIpTrasparentMode = RemoteDefaultFirstIP;
-                }
-
-                var sendResult = _serialTasks.SendConfig(c2000Ethernet,
-                    CurrentRS485Port,
-                    DefaultRS485Address);
-                SendResponseProcessing(sendResult, device, serialNumb);
-            }
-            else
-            {
-                MessageBox.Show("Устройство в очереди неизвестного типа!");
-            }
-
-            // Обновляем всю коллекцию в UI целиком
-            _dispatcher.BeginInvoke(new Action(() =>
-            {
-                CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
-            }));
-        }
-        */
         private int GetNumberOfDeviceWithoutSerial(IEnumerable<object> devices)
         {
             return devices.Cast<RS485device>().Count(device => string.IsNullOrEmpty(device.Serial));
@@ -456,53 +441,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return devices.Cast<RS485device>().Where(device => !string.IsNullOrEmpty(device.Serial));
         }
 
-        /*
-        private IEnumerable<RS485device> GetDevicesWithoutQualityControl(IEnumerable<object> devices)
-        {
-            return devices.Cast<RS485device>().Where(device => device.QualityControlPassed == false).ToList();
-        }
-       
-        private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1, string serialNumb)
-        {
-            switch (sendResult)
-            {
-                case ISerialTasks.ResultCode.ok:
-                    device1.Serial = serialNumb;
-                    
-                    if (!_dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial))
-                    {
-                        _dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            Clipboard.SetText(device1.Serial ?? string.Empty);
-                        }));
-                        
-                        MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
-                    }
-                    //erialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
-                    break;
-                case ISerialTasks.ResultCode.deviceNotRespond:
-                    MessageBox.Show("Прибор с адресом 127 не отвечает!");
-                    break;
-                case ISerialTasks.ResultCode.deviceTypeMismatch:
-                    MessageBox.Show("Тип обнаруженного прибора не совпадает с ожидаемым типом!");
-                    break;
-                case ISerialTasks.ResultCode.addressFieldNotValid:
-                    MessageBox.Show("Неверный адрес!");
-                    break;
-                case ISerialTasks.ResultCode.undefinedError:
-                    MessageBox.Show("Неопознанная ошибка!");
-                    break;
-                case ISerialTasks.ResultCode.errorConfigDownload:
-                    MessageBox.Show("Ошибка заливки конфигурации в С2000-Ethernet!");
-                    break;
-                case ISerialTasks.ResultCode.comPortBusy:
-                    MessageBox.Show("COM порт занят! Возможно запущен UProg.");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(sendResult), sendResult, null);
-            }
-        }
- */
         private void SaveSerial(Device device, string serialNumb)
         {
             device.Serial = serialNumb;

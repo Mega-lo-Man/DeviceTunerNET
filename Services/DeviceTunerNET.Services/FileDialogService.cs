@@ -1,5 +1,5 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
-using Microsoft.WindowsAPICodePack.Dialogs;
+using Microsoft.Win32;
 using System;
 using System.Windows;
 
@@ -25,12 +25,13 @@ namespace DeviceTunerNET.Services
 
         public bool OpenFileDialog()
         {
-            var openfileDlg = new CommonOpenFileDialog();
-            openfileDlg.Title = "MyTitle";
-            if (openfileDlg.ShowDialog() != CommonFileDialogResult.Ok) 
-                return false;
-
-            _fullFileNames = openfileDlg.FileName;
+            var openfileDlg = new OpenFileDialog
+            {
+                Title = "MyTitle",
+                Filter = "txt files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
+            };
+            if (openfileDlg.ShowDialog() == true)
+                _fullFileNames = openfileDlg.FileName;
 
             return true;
         }

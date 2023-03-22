@@ -23,15 +23,17 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         #region Constructor
         public ViewRS232ViewModel(IRegionManager regionManager,
-                                  ISerialSender serialSender,
-                                  ISerialTasks serialTasks,
+                                  //ISerialSender serialSender,
+                                  //ISerialTasks serialTasks,
+                                  IPortManager portManager,
                                   IEventAggregator ea)
         {
             Title = "ПНР";
 
-            _serialTasks = serialTasks;
+            _portManager = portManager;
+            //_serialTasks = serialTasks;
 
-            AvailableComPorts = _serialTasks.GetAvailableCOMPorts();
+            AvailableComPorts = _portManager.GetAvailableCOMPorts();
 
             dispatcher = Dispatcher.CurrentDispatcher;
 
@@ -81,10 +83,10 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             {
                 if (SelectedDevice.AddressRS485 != null)
                 {
-                    _serialTasks.ShiftDevicesAddresses(CurrentRS485Port,
+                    /*_serialTasks.ShiftDevicesAddresses(CurrentRS485Port,
                                                    (int)SelectedDevice.AddressRS485,
                                                    _targetAddress,
-                                                   _addressRange);
+                                                   _addressRange);*/
                 }
             });
         }

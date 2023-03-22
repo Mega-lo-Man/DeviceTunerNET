@@ -68,7 +68,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         public string Title { get; private set; }
 
-
+        private IPortManager _portManager;
 
         public string Message
         {

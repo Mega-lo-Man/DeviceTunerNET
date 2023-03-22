@@ -1,20 +1,7 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Core.Mvvm;
-using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Regions;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Threading;
-using Prism.Services.Dialogs;
 using DeviceTunerNET.SharedDataModel.Devices;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels

@@ -86,10 +86,12 @@ namespace DeviceTunerNET
             containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
             containerRegistry.Register<IPrintService, DymoModule>();
             containerRegistry.Register<ISwitchConfigUploader, Eltex>();
-            containerRegistry.Register<ISerialSender, SerialSender>();
-            containerRegistry.Register<ISerialTasks, SerialTasks>();
+            //containerRegistry.Register<ISerialSender, SerialSender>();
+            //containerRegistry.Register<ISerialTasks, SerialTasks>();
             containerRegistry.Register<INetworkUtils, NetworkUtils>();
             containerRegistry.Register<IDeviceGenerator, DeviceGenerator>();
+            containerRegistry.Register<IDeviceConfigUploader, DeviceConfigUploader>();
+            containerRegistry.Register<IPortManager, PortManager>();
 
             containerRegistry.GetContainer().Register<ISender, EltexTelnet>(serviceKey: SrvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, EltexSsh>(serviceKey: SrvKey.sshKey);

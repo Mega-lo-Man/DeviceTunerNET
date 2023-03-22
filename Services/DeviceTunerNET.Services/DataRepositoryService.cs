@@ -24,6 +24,10 @@ namespace DeviceTunerNET.Services
 
         public void SetDevices(int DataProviderType, string FullPathToData)
         {
+            if (FullPathToData == null)
+            {
+                return;
+            }
             _dataProviderType = DataProviderType;
             var _fullPathToData = FullPathToData;
 
