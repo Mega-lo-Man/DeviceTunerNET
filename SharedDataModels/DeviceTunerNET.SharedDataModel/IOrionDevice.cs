@@ -60,7 +60,11 @@ namespace DeviceTunerNET.SharedDataModel
                                   byte[] sendArray,
                                   IOrionNetTimeouts.Timeouts timeout);
 
-
+        /// <summary>
+        /// Upload settings in device with default address (127)
+        /// </summary>
+        /// <param name="progress">update progress bar</param>
+        /// <returns></returns>
         bool Setup(Action<int> progress);
     }
 }
