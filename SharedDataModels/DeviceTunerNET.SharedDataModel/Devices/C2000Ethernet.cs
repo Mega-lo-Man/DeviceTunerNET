@@ -250,6 +250,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return AddressTransaction(address, sendArray, Timeouts.ethernetConfig);
         }
 
+        //We must override default implementaition of the Setup() because in C2000-Ethernet we need upload config and after that change address
         public override bool Setup(Action<int> progressStatus)
         {
             if (GetModelCode((byte)defaultAddress) != ModelCode)
@@ -271,7 +272,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public override void WriteBaseConfig(Action<int> progressStatus)
         {
-            UploadConfig(3.66, defaultAddress, GetBaseConfig(), progressStatus);
+            UploadConfig(3.0, defaultAddress, GetBaseConfig(), progressStatus);
         }
 
         private void UploadConfig(double progressStep, uint address, IEnumerable<byte[]> config, Action<int> progressStatus)
