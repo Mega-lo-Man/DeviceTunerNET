@@ -58,6 +58,20 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             AvailableComPorts = _serialTasks.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
 
+            SetupRelayCommands();
+
+            AvailableProtocols.Add("COM");
+            AvailableProtocols.Add("WIFI");
+            CurrentProtocol = AvailableProtocols.FirstOrDefault();
+            CurrentRS485Port = AvailableComPorts.LastOrDefault();
+
+            Title = "RS485";
+        }
+
+        #endregion Constructor
+
+        private void SetupRelayCommands()
+        {
             StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => CurrentProtocol)
@@ -72,15 +86,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 .ObservesProperty(() => IsCheckedByArea)
                 .ObservesProperty(() => IsCheckedByCabinets)
                 .ObservesProperty(() => IsCheckedComplexVerification);
-
-            AvailableProtocols.Add("COM");
-            AvailableProtocols.Add("WIFI");
-            CurrentProtocol = AvailableProtocols.FirstOrDefault();
-            CurrentRS485Port = AvailableComPorts.LastOrDefault();
-
-            Title = "RS485";
         }
-        #endregion Constructor
 
         private bool CheckCommandCanExecute()
         {
