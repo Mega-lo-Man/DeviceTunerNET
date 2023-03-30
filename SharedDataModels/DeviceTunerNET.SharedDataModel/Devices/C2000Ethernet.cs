@@ -87,7 +87,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         /// </summary>
         public bool DhcpEnable { get; set; }
 
-        
+
         /// <summary>
         /// Адрес прибора на линии RS-232 ("24")
         /// </summary>
@@ -112,9 +112,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         /// <summary>
         /// MAC-адрес прибора
         /// </summary>
-        
 
-        
+
+
 
         public string FirstDns { get; set; } = "0.0.0.0";
 
@@ -199,7 +199,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         public bool TransparentCrypto { get; set; }
 
         public TransparentProtocolType TransparentProtocol { get; set; }
-        
+
         #endregion Properties
 
         #region Constructors
@@ -233,7 +233,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             MasterSlaveUdp = 40001;
             ConfirmationTimeout = 0x02;
             ConnectionTimeout = 0x1E;
-            
+
             AllowFreeConnection = true;
             FreeConnectionUdpType = UdpType.staticUdp;
 
@@ -310,16 +310,16 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 GetDhcpStatus(Dhcp),
                 GetMasterSlaveTransparent(NetworkMode),
                 GetInterfaceType(InterfaceType),
-                
+
                 GetMasterSlaveUdp(MasterSlaveUdp),
-                
+
                 GetFreeConnectionTune(FreeConnectionUdpType, AllowFreeConnection),
                 GetFreeConnectionUdp(FreeConnectionUdp),
                 GetTransparentTune(TransparentUdp, TransparentProtocol, TransparentCrypto),
-
+                GetSecondPowerControl(),
             };
             config.AddRange(GetRemoteDevices(RemoteDevicesList));
-            
+
             return config;
         }
 
@@ -346,6 +346,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 GetFreeConnectionTune(FreeConnectionUdpType, AllowFreeConnection),
                 GetFreeConnectionUdp(FreeConnectionUdp),
                 GetTransparentTune(TransparentUdp, TransparentProtocol, TransparentCrypto),
+                GetSecondPowerControl(),
             };
             config.AddRange(GetRemoteDevices(RemoteDevicesList));
 
@@ -440,7 +441,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var _secondDNS = IpToByteArray(secondDNS);
             var _header = new byte[] { 0x41, 0x20, 0x00, 0x00 };
             var cmd = CombineArrays(_header, _ip, _netmask, _gateway, _firstDNS, _secondDNS);
-            
+
             return cmd;
         }
 
@@ -448,7 +449,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             var dhcp = Convert.ToByte(dhcpEnable);
             var cmd = new byte[] { 0x41, 0x3A, 0x00, 0x00, dhcp }; //7f 08 0f 41 61 00 00 01
-            
+
             return cmd;
         }
 
@@ -514,7 +515,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             var ans = Convert.ToByte(accessNotifySign);
             var cmd = new byte[] { 0x41, 0x9F, 0x00, 0x00, ans }; // 7f 08 11 41 9f 00 00 01 d3
-            
+
             return cmd;
         }
 
@@ -573,7 +574,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var stringEnd = new byte[] { 0x00 };
 
             var cmd = CombineArrays(header, byteArray, stringEnd);
-            
+
             return cmd;
         }
 
@@ -587,7 +588,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
 
             var cmd = CombineArrays(header, bytes);
-            
+
             return cmd;
         }
 
@@ -598,7 +599,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
 
             var cmd = CombineArrays(header, bytes);
-            
+
             return cmd;
         }
 
@@ -683,6 +684,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private byte[] ReadDeviceNetworkSettings()
         {
             return new byte[] { 0x43, 0x00, 0x00, 0x00, 0x40 }; // 7f 08 6e 43 00 00 00 40
+        }
+
+        private byte[] GetSecondPowerControl()
+        {
+            var cmd = new byte[] { 0x41, 0xF0, 0x00, 0x00, 0x00 };// 7f 08 3a 41 f0 00 00 01
+            return cmd;
         }
     }
 }
