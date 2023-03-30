@@ -250,49 +250,45 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return AddressTransaction(address, sendArray, Timeouts.ethernetConfig);
         }
 
-        public override void WriteConfig(Action<int> progressStatus)
+        public override bool Setup(Action<int> progressStatus)
         {
-            CheckDeviceModel();
-
-            var progress = 1.0;
-            progressStatus(Convert.ToInt32(progress));
-
-            Reboot();
-
-            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
-
-            foreach (var command in GetConfig())
+            if (GetModelCode((byte)defaultAddress) != ModelCode)
             {
-                if (Transaction((byte)AddressRS485, command) == null)
-                    throw new Exception("Transaction false!");
-
-                progress += 1.666;
-                Debug.WriteLine(progress.ToString());
+                throw new Exception("Device code with new address is not equal with expected code!");
             }
 
-            Reboot();
+            WriteBaseConfig(progressStatus);
 
-            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
+            SetAddress();
 
-            progressStatus(100);
+            return true;
+        }
+
+        public override void WriteConfig(Action<int> progressStatus)
+        {
+            UploadConfig(1.66, defaultAddress, GetConfig(), progressStatus);
         }
 
         public override void WriteBaseConfig(Action<int> progressStatus)
         {
-            CheckDeviceModel();
+            UploadConfig(3.66, defaultAddress, GetBaseConfig(), progressStatus);
+        }
+
+        private void UploadConfig(double progressStep, uint address, IEnumerable<byte[]> config, Action<int> progressStatus)
+        {
             var progress = 1.0;
             progressStatus(Convert.ToInt32(progress));
-            Reboot();
+            //Reboot();
 
-            Thread.Sleep((int)Timeouts.restartC2000Ethernet);
+            //Thread.Sleep((int)Timeouts.restartC2000Ethernet);
 
-            foreach (var command in GetBaseConfig())
+            foreach (var command in config)
             {
-                if (Transaction((byte)AddressRS485, command) == null)
+                if (Transaction((byte)address, command) == null)
                     throw new Exception("Transaction false!");
-                
+
                 progressStatus(Convert.ToInt32(progress));
-                progress += 3.666;
+                progress += progressStep;
                 Debug.WriteLine(progress.ToString());
             }
 
@@ -301,12 +297,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             Thread.Sleep((int)Timeouts.restartC2000Ethernet);
 
             progressStatus(100);
-        }
-
-        private void CheckDeviceModel()
-        {
-            if (GetModelCode((byte)AddressRS485) != ModelCode)
-                throw new Exception("Wrong model!");
         }
 
         private IEnumerable<byte[]> GetBaseConfig()
@@ -687,12 +677,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             //7f 0a 62 41 d0 00 00 67 2b 02 57
             var cmd = new byte[] { 0x41, 0xd0, 0x00, 0x00, bytes[0], bytes[1], transparentMode };
 
-            return cmd;
-        }
-
-        private byte[] GetSuffix()
-        {
-            var cmd = new byte[] { 0x17, 0x00, 0x00 };
             return cmd;
         }
 

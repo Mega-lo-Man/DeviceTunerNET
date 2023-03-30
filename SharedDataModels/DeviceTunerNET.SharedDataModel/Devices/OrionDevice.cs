@@ -16,7 +16,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private const int ResponseNewAddressOffset = 2;
         private const int ResponseDeviceModelOffset = 1;
         private const int TransmissionAttempts = 3; // кол-во попыток получить модель прибора
-        private readonly uint _defaultAddress = 127;
+        protected readonly uint defaultAddress = 127;
         private static byte commandCounter;
 
         protected OrionDevice(IPort port)
@@ -49,7 +49,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             byte[] cmdString = GetChangeAddressPacket((byte)AddressRS485);
 
-            var result = AddressTransaction((byte)_defaultAddress, cmdString, Timeouts.addressChanging);
+            var result = AddressTransaction((byte)defaultAddress, cmdString, Timeouts.addressChanging);
 
             if (result == null || result?.Length <= ResponseNewAddressOffset)
                 return false;
@@ -162,6 +162,18 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return cmd;
         }
 
-        
+        public virtual bool Setup(Action<int> updateProgressBar)
+        {
+            SetAddress();
+
+            if (GetModelCode((byte)AddressRS485) != ModelCode)
+            {
+                throw new Exception("Device code with new address is not equal with expected code!");
+            }
+
+            WriteBaseConfig(updateProgressBar);
+
+            return true;
+        }
     }
 }

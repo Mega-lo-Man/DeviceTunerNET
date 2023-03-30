@@ -349,15 +349,8 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         };
                     }
 
+                    orionDevice.Setup(UpdateProgressBar());
 
-                    orionDevice.SetAddress();
-
-                    if (orionDevice.GetModelCode((byte)orionDevice.AddressRS485) != orionDevice.ModelCode)
-                    {
-                        throw new Exception("Device code with new address is not equal with expected code!");
-                    }
-
-                    orionDevice.WriteBaseConfig(UpdateProgressBar());
                     serialPort.Close();
                     SaveSerial(orionDevice, serialNumb);
                 }

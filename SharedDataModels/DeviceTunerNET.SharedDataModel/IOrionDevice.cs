@@ -56,8 +56,11 @@ namespace DeviceTunerNET.SharedDataModel
         /// <param name="sendArray">Data to send</param>
         /// <param name="timeout">Timeout</param>
         /// <returns></returns>
-        public byte[] AddressTransaction(byte address,
-                                         byte[] sendArray,
-                                         IOrionNetTimeouts.Timeouts timeout);
+        byte[] AddressTransaction(byte address,
+                                  byte[] sendArray,
+                                  IOrionNetTimeouts.Timeouts timeout);
+
+
+        bool Setup(Action<int> progress);
     }
 }
