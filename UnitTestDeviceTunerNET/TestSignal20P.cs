@@ -38,8 +38,12 @@ namespace UnitTestDeviceTunerNET
 
             var device = new Signal20P(new ComPort() { SerialPort = port } )
             {
-                AddressRS485 = 127
+                AddressRS485 = 127,
             };
+
+            
+
+            device.Shleifs.ElementAt(19).RelayControlActivations.Add(device.SupervisedRelays.ElementAt(0), 20);
 
             device.WriteConfig(Progress);
             port.Close();

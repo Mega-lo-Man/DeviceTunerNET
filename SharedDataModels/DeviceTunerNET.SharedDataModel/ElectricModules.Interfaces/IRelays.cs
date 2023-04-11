@@ -8,6 +8,6 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules.Interfaces
 {
     internal interface IRelays
     {
-        public IEnumerable<Relay> Relays{ get; set; }
+        public IEnumerable<MechanicalRelay> Relays{ get; set; }
     }
 }

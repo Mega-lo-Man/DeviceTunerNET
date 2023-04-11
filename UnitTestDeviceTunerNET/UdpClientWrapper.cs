@@ -49,7 +49,7 @@ namespace UnitTestDeviceTunerNET
             set { _clientUdpPort = value; }
         }
 
-        public int Timeout { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int Timeout { get; set; }
 
         public byte[] Send(byte[] data)
         {
@@ -61,6 +61,11 @@ namespace UnitTestDeviceTunerNET
             byte[] receiveBuffer = _udpClient.Receive(ref remoteEndPoint);
 
             return receiveBuffer;
+        }
+
+        public void SendWithoutСonfirmation(byte[] data)
+        {
+            throw new NotImplementedException();
         }
     }
 

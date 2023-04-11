@@ -279,9 +279,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             var progress = 1.0;
             progressStatus(Convert.ToInt32(progress));
-            //Reboot();
-
-            //Thread.Sleep((int)Timeouts.restartC2000Ethernet);
 
             foreach (var command in config)
             {

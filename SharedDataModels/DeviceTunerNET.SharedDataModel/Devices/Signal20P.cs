@@ -3,6 +3,7 @@ using DeviceTunerNET.SharedDataModel.ElectricModules.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 
 namespace DeviceTunerNET.SharedDataModel.Devices
@@ -10,6 +11,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     public class Signal20P : OrionDevice, IShleifs, IRelays
     {
         private const int sirenTime = 0x03C0;
+        private const int shleifSettingsOffset = 0x0016;
         private readonly int inputsCount = 20;
         private readonly int relayNumber = 3;
         //private readonly int supervisedRelayNumber = 2;
@@ -23,7 +25,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             InputType = 0x00,
             Zone = 0x01,
             AlarmDelay = 0x02,
-            ArmingDelay = 0x03,    
+            ArmingDelay = 0x03,
             InputAnalysisDelayAfterReset = 0x04,
             ShuntTime = 0x05,
             ActivationDelay1 = 0x06,
@@ -38,11 +40,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             InhibitFireInputMonitoring = 0x0B, // 000X_0000
             DebounceTime = 0x0B, // 00X0_0000
             IgnoreLobbyInputDeviation = 0x0B, // 0X00_0000
-            Relay1 = 0x0C, // 0000_000X
-            Relay2 = 0x0C, // 0000_00X0
-            Relay3 = 0x0C, // 0000_0X00
-            Relay4 = 0x0C, // 0000_X000
-            Relay5 = 0x0C  // 000X_0000
+            ActivateRelayOffset = 0x0C, // 0000_000X
         }
 
         private enum RelayPropertiesOffsets : byte
@@ -51,7 +49,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             ControlProgram = 0x01,
             ControlTime = 0x02,
             Events = 0x0B,
-
         }
 
         private enum SupervisedRelayPropertiesOffsets : byte
@@ -67,47 +64,46 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         #region Properties
         public bool TwoPowerInputsMonitor { get; set; }
         public IEnumerable<Shleif> Shleifs { get; set; }
-        public IEnumerable<Relay> Relays { get; set; }
-        public IEnumerable<SupervisedRelay> SupervisedRelays { get; set; }
+        public IEnumerable<MechanicalRelay> Relays { get; set; }
+        public IEnumerable<ExtendedSupervisedRelay> SupervisedRelays { get; set; }
         #endregion Properties
 
         #region Constructor
         public Signal20P(IPort port) : base(port)
         {
             ModelCode = 2;
-            SupportedModels = SupportedModels = new List<string> 
+            SupportedModels = SupportedModels = new List<string>
             {
                 "Сигнал - 20П",
                 "Сигнал - 20П исп.01"
-            };  
+            };
 
-            var inputs = new List<Shleif>();
-            for(byte i = 0; i < inputsCount; i++)
+            var relays = new List<MechanicalRelay>();
+
+            for (byte i = 0; i < relayNumber; i++)
             {
-                inputs.Add(new Shleif(this, i));
+                relays.Add(new MechanicalRelay(this, i));
             }
-            Shleifs = inputs;
 
-            var relays = new List<Relay>();
-
-            for(byte i = 0; i < relayNumber; i++)
-            {
-                relays.Add(new Relay(this, i));
-            }
-            
             Relays = relays;
 
-            var supervisedRelays = new List<SupervisedRelay>
+            var supervisedRelays = new List<ExtendedSupervisedRelay>
             {
-                new SupervisedRelay(this, 3),
-                new SupervisedRelay(this, 4)
+                new ExtendedSupervisedRelay(this, 3),
+                new ExtendedSupervisedRelay(this, 4)
                 {
                     ControlTime = sirenTime
                 }
             };
 
-
             SupervisedRelays = supervisedRelays;
+
+            var inputs = new List<Shleif>();
+            for (byte i = 0; i < inputsCount; i++)
+            {
+                inputs.Add(new Shleif(this, i));
+            }
+            Shleifs = inputs;
         }
         #endregion Constructor
 
@@ -194,7 +190,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return bytesList;
         }
 
-        private IEnumerable<byte[]> GetRelaysConfigs<T>(T relay) where T : Relay
+        private IEnumerable<byte[]> GetRelaysConfigs<T>(T relay) where T : MechanicalRelay
         {
             var result = new List<byte[]>();
 
@@ -202,7 +198,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             result.AddRange(GetRelayConfig(relay, offset));
 
-            if (relay is SupervisedRelay supervisedRelay)
+            if (relay is ExtendedSupervisedRelay supervisedRelay)
             {
                 result.AddRange(GetSupervisedRelayConfig(offset, supervisedRelay));
             }
@@ -210,7 +206,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return result;
         }
 
-        private IEnumerable<byte[]> GetRelayConfig<T>(T relay, ushort offset) where T : Relay
+        private IEnumerable<byte[]> GetRelayConfig<T>(T relay, ushort offset) where T : MechanicalRelay
         {
             var result = new List<byte[]>();
 
@@ -245,7 +241,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return result;
         }
 
-        private IEnumerable<byte[]> GetSupervisedRelayConfig(ushort offset, SupervisedRelay supervisedRelay)
+        private IEnumerable<byte[]> GetSupervisedRelayConfig(ushort offset, ExtendedSupervisedRelay supervisedRelay)
         {
             var result = new List<byte[]>();
 
@@ -272,16 +268,16 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private byte[] GetTwoPowerInputsMonitor()
         {
             var controlByte = new byte[] { 0xFF };
-            
+
             var bitArray = new BitArray(controlByte);
             bitArray.Set(7, TwoPowerInputsMonitor);
             bitArray.CopyTo(controlByte, 0);
 
-            return new byte[] 
-            { 
-                (byte)OrionCommands.WriteToDeviceMemoryMap, 
-                0x14, 
-                0x02, 
+            return new byte[]
+            {
+                (byte)OrionCommands.WriteToDeviceMemoryMap,
+                0x14,
+                0x02,
                 0x00,
                 controlByte[0]
             };
@@ -291,14 +287,14 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             var bytesList = new List<byte[]>();
 
-            foreach(var shleif in Shleifs)
+            foreach (var shleif in Shleifs)
             {
-                bytesList.AddRange(inputParameters(shleif)/*GetInputProperties(shleif)*/);
+                bytesList.AddRange(inputParameters(shleif));
             }
             return bytesList;
         }
 
-        private IEnumerable<byte[]>GetBaseInputsProps(Shleif shleif)
+        private IEnumerable<byte[]> GetBaseInputsProps(Shleif shleif)
         {
             var result = new List<byte[]>();
 
@@ -314,12 +310,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             return result;
         }
-            
+
         private IEnumerable<byte[]> GetInputProperties(Shleif shleif)
         {
             var result = new List<byte[]>();
 
-            ushort offset = (ushort)((shleif.ShleifIndex - 1) * 0x0016);
+            ushort offset = (ushort)((shleif.ShleifIndex - 1) * shleifSettingsOffset);
 
             var bytes = new byte[2];
 
@@ -328,6 +324,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.Zone));
             result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.Zone });
+
+            bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.AlarmDelay));
+            result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.AlarmDelay });
 
             bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ArmingDelay));
             result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.ArmingDelay });
@@ -338,20 +337,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ShuntTime));
             result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.ShuntTime });
 
-            bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ActivationDelay1));
-            result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.ActivationDelay1 });
-
-            bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ActivationDelay2));
-            result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.ActivationDelay2 });
-
-            bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ActivationDelay3));
-            result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.ActivationDelay3 });
-
-            bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ActivationDelay4));
-            result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.ActivationDelay4 });
-
-            bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.RelayActivationDelay5));
-            result.Add(new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, shleif.RelayActivationDelay5 });
+            result.AddRange(GetRelayActivationDelays(shleif, offset));
 
             result.AddRange(GetBitsShleifTune(shleif, offset));
             result.AddRange(GetBitsShleifRelayTune(shleif, offset));
@@ -359,19 +345,48 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return result;
         }
 
+        private IEnumerable<byte[]> GetRelayActivationDelays(Shleif shleif, ushort offset)
+        {
+            var relaysCount = Relays.Count() + SupervisedRelays.Count();
+
+            for (var i = -1; i < relaysCount; i++)
+            {
+                var bytes = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ActivationDelay1 + i - 1));
+
+                var relayDelay = GetValueFromDict(i, shleif.RelayControlActivations);
+
+                yield return new byte[]
+                {
+                    (byte)OrionCommands.WriteToDeviceMemoryMap, bytes[0], bytes[1], 0x00, relayDelay
+                };               
+            }
+        }
+
+        private byte GetValueFromDict(int relayIndex, Dictionary<IRelay, byte> relayControlActivations)
+        {
+            foreach(var relay in relayControlActivations)
+            {
+                if(relay.Key.RelayIndex == relayIndex)
+                {
+                    return relay.Value;
+                }
+            }
+            return 0x00;
+        }
+
         private IEnumerable<byte[]> GetBitsShleifRelayTune(Shleif shleif, ushort offset)
         {
             var controlByteB = new byte[1] { 0x00 };
             var bits = new BitArray(controlByteB);
-            bits.Set(0, shleif.Relay1);
-            bits.Set(1, shleif.Relay2);
-            bits.Set(2, shleif.Relay3);
-            bits.Set(3, shleif.Relay4);
-            bits.Set(4, shleif.Relay5);
+
+            foreach(var relayDelayPair in shleif.RelayControlActivations)
+            {
+                bits.Set(relayDelayPair.Key.RelayIndex - 1, true);
+            }
 
             bits.CopyTo(controlByteB, 0);
 
-            var _ = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.Relay1));
+            var _ = BitConverter.GetBytes((ushort)(offset + (ushort)InputPropertiesOffsets.ActivateRelayOffset));
             var cmd = new List<byte[]> 
             { 
                 new byte[] { (byte)OrionCommands.WriteToDeviceMemoryMap, _[0], _[1], 0x00, controlByteB[0] } 

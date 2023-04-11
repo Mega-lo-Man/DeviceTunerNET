@@ -1,17 +1,13 @@
 ﻿using DeviceTunerNET.SharedDataModel.Devices;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace DeviceTunerNET.SharedDataModel.ElectricModules
 {
-    public class Relay
+    public class OptoRelay : IRelay
     {
         protected IOrionDevice parentDevice;
-
-        public enum OutputTypes : byte
-        {
-            Standard = 1,
-            Auxilary = 2,
-            FireEquiped = 3
-        }
 
         public enum ControlPrograms : byte
         {
@@ -65,13 +61,12 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         /// Relay number Relay 1, Relay, 2, Relay 3 etc.
         /// </summary>
         public byte RelayIndex { get; set; }
-        public OutputTypes OutputType { get; set; } = OutputTypes.Standard;
+
         public ControlPrograms ControlProgram { get; set; } = ControlPrograms.NoControl;
         public ushort ControlTime { get; set; } = 0xFFFF;
         public bool Events { get; set; } = false;
-        public bool EndlessControlTime = true;
-
-        public Relay(IOrionDevice orionDevice, byte relayIndex)
+        
+        public OptoRelay(IOrionDevice orionDevice, byte relayIndex)
         {
             parentDevice = orionDevice;
             RelayIndex = ++relayIndex; // внутренняя нумерация в приборах Болид начинается с единицы
@@ -79,10 +74,10 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
 
         public bool TurnOn()
         {
-            var serialPort = parentDevice.Port;
+            //var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
             var result = parentDevice.AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x01 }, IOrionNetTimeouts.Timeouts.addressChanging);
-            
+
             if (result == null)
                 return false;
 
@@ -91,12 +86,13 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
 
             return false;
         }
+
         public bool TurnOff()
         {
-            var serialPort = parentDevice.Port;
+            //var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
             var result = parentDevice.AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x02 }, IOrionNetTimeouts.Timeouts.addressChanging);
-            
+
             if (result == null)
                 return false;
 

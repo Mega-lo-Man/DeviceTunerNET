@@ -1,5 +1,7 @@
 ﻿using DeviceTunerNET.SharedDataModel.Devices;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Net;
 
@@ -48,7 +50,12 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         /// Zone
         /// </summary>
         public byte Zone { get; set; } = 0;
-        
+
+        /// <summary>
+        /// Alarm delay, s
+        /// </summary>
+        public byte AlarmDelay { get; set; } = 0;
+
         /// <summary>
         /// Arming delay, n
         /// </summary>
@@ -63,39 +70,14 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         /// Shunt time, s
         /// </summary>
         public byte ShuntTime { get; set; } = 1;
-
-        /// <summary>
-        /// Activation delay 1
-        /// </summary>
-        public byte ActivationDelay1 { get; set; } = 0;
-
-        /// <summary>
-        /// Activation delay 2
-        /// </summary>
-        public byte ActivationDelay2 { get; set; } = 0;
-
-        /// <summary>
-        /// Activation delay 3
-        /// </summary>
-        public byte ActivationDelay3 { get; set; } = 0;
-
-        /// <summary>
-        /// Activation delay 4
-        /// </summary>
-        public byte ActivationDelay4 { get; set; } = 0;
-
-        /// <summary>
-        /// Relay activation delay 5
-        /// </summary>
-        public byte RelayActivationDelay5 { get; set; } = 0;
-
+        
         /// <summary>
         /// Never disarm
         /// </summary>
         public bool NeverDisarm { get; set; } = false;
 
         /// <summary>
-        /// Rearming if armed faild
+        /// Rearming if armed failed
         /// </summary>
         public bool RearmingIfArmingFailed { get; set; } = true;
 
@@ -125,29 +107,9 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         public bool IgnoreLobbyInputDeviation { get; set; } = true;
 
         /// <summary>
-        /// Output 1 (Alarm output 1)
+        /// Activation relay control (Relay, delay)
         /// </summary>
-        public bool Relay1 { get; set; } = false;
-
-        /// <summary>
-        /// Output 2 (Alarm output 2)
-        /// </summary>
-        public bool Relay2 { get; set; } = false;
-
-        /// <summary>
-        /// Relay 3 (Alarm output 3)
-        /// </summary>
-        public bool Relay3 { get; set; } = false;
-
-        /// <summary>
-        /// Relay 4 (Lamp)
-        /// </summary>
-        public bool Relay4 { get; set; } = false;
-
-        /// <summary>
-        /// Relay 5 (Siren)
-        /// </summary>
-        public bool Relay5 { get; set; } = false;
+        public Dictionary<IRelay, byte> RelayControlActivations { get; set; } = new ();
 
         public Shleif(IOrionDevice orionDevice, byte ShleifIndex)
         {

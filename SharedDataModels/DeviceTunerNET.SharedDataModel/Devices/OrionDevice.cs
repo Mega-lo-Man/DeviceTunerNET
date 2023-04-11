@@ -6,6 +6,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 
@@ -19,7 +20,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         protected readonly uint defaultAddress = 127;
         private static byte commandCounter;
 
-        protected OrionDevice(IPort port)
+        public OrionDevice(IPort port)
         {
             Port = port;
         }
@@ -87,7 +88,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public bool IsDeviceOnline()
         {
-            return ModelCode == GetModelCode((byte)AddressRS485);
+            return GetModelCode((byte)AddressRS485) > 0;
         }
 
         public byte GetModelCode(byte deviceAddress)
@@ -164,13 +165,14 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public virtual bool Setup(Action<int> updateProgressBar)
         {
-            SetAddress();
-
-            if (GetModelCode((byte)AddressRS485) != ModelCode)
+            if (GetModelCode((byte)defaultAddress) != ModelCode)
             {
                 throw new Exception("Device code with new address is not equal with expected code!");
             }
 
+            SetAddress();
+            Thread.Sleep(100);
+            
             WriteBaseConfig(updateProgressBar);
 
             return true;

@@ -13,7 +13,7 @@ namespace DeviceTunerNET.SharedDataModel
         int MaxRepetitions { get; set; }
 
         /// <summary>
-        /// Send timeout
+        /// Maximum waiting time for response to a request
         /// </summary>
         int Timeout { get; set; }
 
