@@ -530,51 +530,74 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private IEnumerable<byte[]> GetRemoteDevices(IEnumerable<C2000Ethernet> devices)
         {
             if (devices.Count() > 15)
-                return null;
-
+                return Enumerable.Empty<byte[]>();
 
             var cmd = new List<byte[]>();
-            ushort addressOffset = 0x0100;
 
+            ushort addressOffset = 0x0100;
             foreach (var device in devices)
             {
+                var offsetBytes = BitConverter.GetBytes(addressOffset);
                 cmd.Add(GetRemoteDeviceIp(device.AddressIP, addressOffset));
 
-                var udpOffset = (ushort)(addressOffset + 0x20);
-                cmd.Add(GetRemoteDeviceUdp(device.DestinationUdp, udpOffset));
+                cmd.Add(GetRemoteDeviceUdp(device.DestinationUdp, (ushort)(addressOffset + 0x20)));
 
-                var udpTypeOffset = (ushort)(addressOffset + 0x38);
-                cmd.Add(GetRemoteDeviceUdpType((byte)device.UdpPortType, udpTypeOffset));
+                cmd.Add(GetRemoteDeviceUdpType((byte)device.UdpPortType, (ushort)(addressOffset + 0x38)));
 
-                /*                
-                // После расшифровки алгоритма шифрации раскомментировать
-                var cryptoKeyOffset = (ushort)(addressOffset + 0x22);
-                cmd.Add(GetRemoteDeviceCryptoKey(device.CryptoKey, cryptoKeyOffset));
+                //В версии прошивки V3.15 перестало работать
+                //cmd.Add(GetRemoteDeviceMac(device.MACaddress, (ushort)(addressOffset + 0x32)));
 
+                /*
+             
+                   // После расшифровки алгоритма шифрации раскомментировать
+                   var cryptoKeyOffset = (ushort)(addressOffset + 0x22);
+                   cmd.Add(GetRemoteDeviceCryptoKey(device.CryptoKey, cryptoKeyOffset));
                 */
-
-                var macOffset = (ushort)(addressOffset + 0x32);
-                var bytesMac = GetRemoteDeviceMac(device.MACaddress, macOffset);
-                cmd.Add(bytesMac);
-
                 addressOffset += 0x40;
             }
-
             //7f 13 06 41 00 01 00 36 33 2e 36 34 2e 36 35 2e 36 36 00 21
             return cmd;
         }
 
         private byte[] GetRemoteDeviceIp(string sendStr, ushort addressOffset)
         {
-            if (string.IsNullOrEmpty(sendStr))
+            if (IsNullOrEmpty(sendStr))
                 return null;
 
             var byteArray = Encoding.Default.GetBytes(sendStr);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
             var header = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
-            var stringEnd = new byte[] { 0x00 };
+            var stringEnd = new byte[] {  };
 
             var cmd = CombineArrays(header, byteArray, stringEnd);
+
+            return cmd;
+        }
+
+        private IEnumerable<byte[]> GetRemoteDeviceIpByByte(string sendStr, ushort addressOffset)
+        {
+            if (IsNullOrEmpty(sendStr))
+                return Enumerable.Empty<byte[]>();
+
+            var cmd = new List<byte[]>();
+
+            byte[] dot = { 0x2E };
+            var ipDigits =  sendStr.Split('.');
+            const ushort offset = 0x0004;
+            var currentOffset = addressOffset;
+
+            var offsetBytes = BitConverter.GetBytes(currentOffset);
+            var headerFirst = new byte[] { 0x41, offsetBytes[0], offsetBytes[1], 0x00 };
+
+            cmd.Add(CombineArrays(headerFirst, Encoding.Default.GetBytes(ipDigits[0]), dot));
+
+            var secondOffset = BitConverter.GetBytes(currentOffset + offset);
+
+            var headerSecond = new byte[] { 0x41, secondOffset[0], secondOffset[1], 0x00 };
+            cmd.Add(CombineArrays(headerSecond,
+                Encoding.Default.GetBytes(ipDigits[1]), dot,
+                Encoding.Default.GetBytes(ipDigits[2]), dot,
+                Encoding.Default.GetBytes(ipDigits[3])));
 
             return cmd;
         }
@@ -582,7 +605,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private byte[] GetRemoteDeviceUdp(ushort udp, ushort addressOffset)
         {
             if (udp == 0)
-                return null;
+                return Array.Empty<byte>();
 
             var bytes = BitConverter.GetBytes(udp);
             var offsetBytes = BitConverter.GetBytes(addressOffset);
@@ -624,6 +647,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         {
             //stub method
             //7f 0d e8 41 32 01 00 99 99 78 56 34 12 a1
+            //7f 0d b0 41 32 01 00 66 55 44 33 22 11
             var macBytes = NetHelper.GetBytesFromMacAddress(macString).Reverse().ToArray();
             var header = new byte[] { 0x41, 0x32, 0x01, 0x00 };
             var cmd = CombineArrays(header, macBytes);

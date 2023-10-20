@@ -57,7 +57,6 @@ namespace DeviceTunerNET.SharedDataModel.Ports
 
                 if (IsReceivePacketComplete())
                     break;
-
             }
 
             if (_readBuffer.Count == 0)
@@ -80,9 +79,10 @@ namespace DeviceTunerNET.SharedDataModel.Ports
             SerialPort.Write(command, 0, command.Length );
 
             var crc = OrionCRC.GetCrc8(command);
-
+           
             // send CRC
             SerialPort.Write(crc, 0, crc.Length); 
+            
         }
 
         private static void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)

@@ -62,6 +62,11 @@ namespace UnitTestDeviceTunerNET
 
             return receiveBuffer;
         }
+
+        public void SendWithoutСonfirmation(byte[] data)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

@@ -14,7 +14,7 @@ namespace UnitTestDeviceTunerNET
     public class UnitTest1
     {
         private byte newAddress = 0x02;
-        const string comPort = "COM3";
+        const string comPort = "COM4";
         const uint deviceAddress = 127;
         /*
         [TestMethod]
@@ -185,27 +185,77 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
         {
 
             var serialPort = new SerialPort { PortName = comPort };
-            var masterDevice = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            var masterDevice1 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
             {
-                AddressIP = "192.168.2.22",
+                AddressIP = "192.168.2.12",
                 NetworkMode = C2000Ethernet.Mode.master,
-                NetName = "MASTER",
+                NetName = "MASTER1",
                 AddressRS485 = 5,
                 MACaddress = "AA:BB:CC:DD:EE:FF"
+            };
+            var masterDevice2 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            {
+                AddressIP = "192.168.2.13",
+                NetworkMode = C2000Ethernet.Mode.master,
+                NetName = "МАСТЕР2",
+                AddressRS485 = 6,
+                MACaddress = "AA:BB:CC:DD:EE:FE"
+            };
+            var masterDevice3 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            {
+                AddressIP = "192.168.2.14",
+                NetworkMode = C2000Ethernet.Mode.master,
+                NetName = "МАСТЕР2",
+                AddressRS485 = 6,
+                MACaddress = "AA:BB:CC:DD:EE:FD"
+            };
+            var masterDevice4 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            {
+                AddressIP = "192.168.2.15",
+                NetworkMode = C2000Ethernet.Mode.master,
+                NetName = "МАСТЕР3",
+                AddressRS485 = 6,
+                MACaddress = "AA:BB:CC:DD:EE:FC"
+            };
+            var masterDevice5 = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
+            {
+                AddressIP = "192.168.2.16",
+                NetworkMode = C2000Ethernet.Mode.master,
+                NetName = "МАСТЕР3",
+                AddressRS485 = 6,
+                MACaddress = "AA:BB:CC:DD:EE:FB"
             };
             var slaveDevice = new C2000Ethernet(new ComPort() { SerialPort = serialPort })
             {
                 AddressIP = "192.168.2.33",
-                NetName = "SLAVE",
+                NetName = "РАБ",
                 NetworkMode = C2000Ethernet.Mode.slave,
-                RemoteDevicesList = new System.Collections.Generic.List<C2000Ethernet> { masterDevice },
+                RemoteDevicesList = new System.Collections.Generic.List<C2000Ethernet> 
+                { 
+                    masterDevice1, 
+                    masterDevice2, 
+                    masterDevice3, 
+                    masterDevice4, 
+                    masterDevice5, 
+                    masterDevice1, 
+                    masterDevice2, 
+                    masterDevice3, 
+                    masterDevice4, 
+                    masterDevice5, 
+                    masterDevice1, 
+                    masterDevice2, 
+                    masterDevice3, 
+                    masterDevice4, 
+                    masterDevice5/**/
+                },
                 AddressRS485= 127,
-                MACaddress = "AA-BB-CC-DD-EE-FF"
+                MACaddress = "AA-BB-CC-DD-EE-A1"
             };
+
 
             serialPort.Open();
             var target = 1;
-            slaveDevice.WriteConfig(null);
+            slaveDevice.WriteConfig(Progress);
             serialPort.Close();
             //Assert.IsTrue(result);
         }
