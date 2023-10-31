@@ -203,6 +203,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _currentProtocol, value); 
         }
 
+        // For canExecute button only
+        private bool _devicesForProgramWasFill;
+        public bool DevicesForProgramWasFill
+        {
+            get => _devicesForProgramWasFill;
+            set => SetProperty(ref _devicesForProgramWasFill, value);
+        }
+
         #endregion
 
 

@@ -1,9 +1,13 @@
 ﻿using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
+using DeviceTunerNET.SharedDataModel.Devices;
+using DeviceTunerNET.SharedDataModel.Ports;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
+using System;
+using System.IO.Ports;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -13,6 +17,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
     {
         private string _message;
         private readonly ISerialTasks _serialTasks;
+        private readonly Dispatcher _dispatcher;
 
         #region Commands
 
@@ -22,12 +27,13 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         #endregion Commands
 
         #region Constructor
-        public ViewRS232ViewModel(IRegionManager regionManager,
-                                  ISerialSender serialSender,
-                                  ISerialTasks serialTasks,
+        public ViewRS232ViewModel(ISerialTasks serialTasks,
+                                  
                                   IEventAggregator ea)
         {
             Title = "ПНР";
+
+            _dispatcher = Dispatcher.CurrentDispatcher;
 
             _serialTasks = serialTasks;
 
@@ -42,7 +48,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => StartAddress);
         }
-
+        #endregion Constructor
         private bool ScanNetworkCommandCanExecute()
         {
             return CurrentRS485Port != null;
@@ -52,18 +58,34 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         {
             return Task.Run(() =>
             {
-                var enumerator = _serialTasks.GetOnlineDevices(CurrentRS485Port);
+                var port = new SerialPort(CurrentRS485Port);
+                try
+                {
+                    port.Open();
+                }
+                catch
+                {
+                    return;
+                }
+                var comPort = new ComPort
+                {
+                    SerialPort = port
+                };
+
+                var c2000M = new C2000M(comPort);
+                var onlineDevices = c2000M.SearchOnlineDevices(UpdateProgressBar());
                 dispatcher.Invoke(() =>
                 {
                     OnlineDevicesList.Clear();
                 });
-                foreach (var item in enumerator)
+                foreach (var item in onlineDevices)
                 {
                     dispatcher.Invoke(() =>
                     {
-                        OnlineDevicesList.Add(item);
+                        OnlineDevicesList.Add(new ViewOnlineDeviceViewModel(item));
                     });
                 }
+                comPort.SerialPort.Close();
             });
         }
 
@@ -74,21 +96,31 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
                    && OnlineDevicesList.Count > 0 
                    && _addressRange > 0;
         }
-
+        
         private Task ShiftAddressesCommandExecuteAsync()
         {
             return Task.Run(() =>
             {
-                if (SelectedDevice.AddressRS485 != null)
+                if (SelectedDevice.Device.AddressRS485 == null)
                 {
-                    _serialTasks.ShiftDevicesAddresses(CurrentRS485Port,
-                                                   (int)SelectedDevice.AddressRS485,
-                                                   _targetAddress,
-                                                   _addressRange);
+                    return;
                 }
+                _serialTasks.ShiftDevicesAddresses(CurrentRS485Port,
+                                               (int)SelectedDevice.Device.AddressRS485,
+                                               _targetAddress,
+                                               _addressRange);
             });
         }
 
-        #endregion Constructor
+        private Action<int> UpdateProgressBar()
+        {
+            return val =>
+            {
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SearchProgressBar = val;
+                }));
+            };
+        }
     }
 }

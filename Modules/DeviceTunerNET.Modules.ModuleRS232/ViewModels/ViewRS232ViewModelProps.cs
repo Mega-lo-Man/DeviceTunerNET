@@ -15,7 +15,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
     {
         #region Properties
 
-        private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
+        private ObservableCollection<string> _availableComPorts = new();
         public ObservableCollection<string> AvailableComPorts
         {
             get => _availableComPorts;
@@ -23,15 +23,16 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         }
 
         private readonly Dispatcher dispatcher;
-        private ObservableCollection<RS485device> _onlineDevicesList = new ObservableCollection<RS485device>();
-        public ObservableCollection<RS485device> OnlineDevicesList
+
+        private ObservableCollection<ViewOnlineDeviceViewModel> _onlineDevicesList = new();
+        public ObservableCollection<ViewOnlineDeviceViewModel> OnlineDevicesList
         {
             get => _onlineDevicesList;
             set => SetProperty(ref _onlineDevicesList, value);
         }
 
-        private RS485device _selectedDevice;
-        public RS485device SelectedDevice
+        private ViewOnlineDeviceViewModel _selectedDevice;
+        public ViewOnlineDeviceViewModel SelectedDevice
         {
             get => _selectedDevice;
             set => _selectedDevice = value;
@@ -65,15 +66,19 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             set => SetProperty(ref _addressRange, Parse(value));
         }
         
-
         public string Title { get; private set; }
-
-
 
         public string Message
         {
             get => _message;
             set => SetProperty(ref _message, value);
+        }
+
+        private int _searchProgressBar;
+        public int SearchProgressBar
+        {
+            get => _searchProgressBar;
+            set => SetProperty(ref _searchProgressBar, value);
         }
 
         #endregion Properties

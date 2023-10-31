@@ -407,8 +407,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         private void CheckDeviceType()
         {
-            if (GetModelCode((byte)AddressRS485) != ModelCode)
+            var result = GetModelCode((byte)AddressRS485, out var deviceCode);
+            if(!result)
+                throw new Exception("Device doesn't respond!");
+            if (deviceCode != ModelCode)
                 throw new Exception("Wrong model!");
+
         }
     }
 }

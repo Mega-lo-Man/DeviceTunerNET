@@ -38,9 +38,10 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// Запрос кода модели прибора
         /// </summary>
-        /// <param name="address">RS485 адрес прибора</param>
-        /// <returns>Код прибора</returns>
-        byte GetModelCode(byte address);
+        /// <param name="deviceAddress">Адрес прибора</param>
+        /// <param name="deviceCode">код модели прибора</param>
+        /// <returns>True if success, otherwise false</returns>
+        bool GetModelCode(byte deviceAddress, out byte deviceCode);
 
         /// <summary>
         /// Запись сокращенного конфига (WriteConfig - очень долго)

@@ -15,9 +15,7 @@ namespace DeviceTunerNET.Services
     {
         private readonly IOrionNet _orionNet;
 
-
-
-        private readonly Dictionary<byte, string> _bolidDict = new Dictionary<byte, string>()
+        private readonly Dictionary<byte, string> _bolidDict = new()
         {
             { 1, "Сигнал-20" },
             { 2, "Сигнал-20П, Сигнал-20П исп.01" },
@@ -72,8 +70,6 @@ namespace DeviceTunerNET.Services
         }
 
         public byte CurrentDeviceAdderess { get; set; }
-
-
 
         public bool SetDeviceAddress(SerialPort comPortName, byte deviceAddress, byte newDeviceAddress)
         {
@@ -135,29 +131,25 @@ namespace DeviceTunerNET.Services
             return deviceModel?.Length > 1;
         }
 
-        
-
-        public Dictionary<byte, string> SearchOnlineDevices(SerialPort comPortName, SearchStatus searchStatus)
+        public Dictionary<byte, string> SearchOnlineDevices(SerialPort comPortName, Action<int> progressStatus)
         {
             var sPort = comPortName;
 
+            var progress = 1.0;
+            var progressStep = 0.7874;
+
+            progressStatus(Convert.ToInt32(progress));
             var result = new Dictionary<byte, string>();
             for (byte devAddr = 1; devAddr <= 127; devAddr++)
             {
-                var OnlineDevicesModel = GetDeviceModel(comPortName, devAddr);
+                var OnlineDevicesModel = GetDeviceModel(sPort, devAddr);
                 if (OnlineDevicesModel != string.Empty)
                 {
                     result.Add(devAddr, OnlineDevicesModel);
                 }
 
-                searchStatus?.Invoke(devAddr);
-                /*
-                _ea.GetEvent<MessageSentEvent>().Publish(new Message
-                {
-                    ActionCode = MessageSentEvent.UpdateRS485SearchProgressBar,
-                    AttachedObject = (int)devAddr
-                });
-                */
+                progressStatus(Convert.ToInt32(progress));
+                progress += progressStep;
             }
 
             return result;

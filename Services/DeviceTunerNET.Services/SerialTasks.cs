@@ -186,7 +186,7 @@ namespace DeviceTunerNET.Services
             return ISerialTasks.ResultCode.ok;
         }
 
-        public IEnumerable<RS485device> GetOnlineDevices(string comPort)
+        public IEnumerable<RS485device> GetOnlineDevices(string comPort, Action<int> progressStatus)
         {
             _comPort = new SerialPort(comPort);
             try
@@ -197,9 +197,22 @@ namespace DeviceTunerNET.Services
             {
                 yield break;
             }
-            //var _comPort = ComPort;
 
-            for (byte currAddr = FIRST_ADDRESS; currAddr <= LAST_ADDRESS; currAddr++)
+            var progress = 1.0;
+            var progressStep = 0.7874;
+            progressStatus(Convert.ToInt32(progress));
+
+            var firstDevType = _serialSender.GetDeviceModel(_comPort, LAST_ADDRESS);
+            if (firstDevType.Length > 0)
+            {
+                yield return new RS485device()
+                {
+                    AddressRS485 = LAST_ADDRESS,
+                    DeviceType = firstDevType
+                };
+            }
+
+            for (byte currAddr = FIRST_ADDRESS; currAddr <= LAST_ADDRESS - 1; currAddr++)
             {
                 var devType = _serialSender.GetDeviceModel(_comPort, currAddr);
                 if (devType.Length > 0)
@@ -210,7 +223,10 @@ namespace DeviceTunerNET.Services
                         DeviceType = devType
                     };
                 }
+                progressStatus(Convert.ToInt32(progress));
+                progress += progressStep;
             }
+            _comPort.Close();
         }
     }
 }

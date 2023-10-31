@@ -126,9 +126,9 @@
         </StackPanel>
 
         <StackPanel Grid.Row="0" Grid.Column="2">
-            <RadioButton Content="По шкафам" GroupName="WorkType" IsChecked="{Binding IsCheckedByCabinets}" />
-            <RadioButton Content="По площадкам" GroupName="WorkType" IsChecked="{Binding IsCheckedByArea}"/>
-            <RadioButton Content="Проверка RS-485" GroupName="WorkType" IsChecked="{Binding IsCheckedComplexVerification}"/>
+            <RadioButton Content="По шкафам" IsEnabled="True" GroupName="WorkType" IsChecked="{Binding IsCheckedByCabinets}" />
+            <RadioButton Content="По площадкам" IsEnabled="True" GroupName="WorkType" IsChecked="{Binding IsCheckedByArea}"/>
+            <RadioButton Content="Проверка RS-485" IsEnabled="True" GroupName="WorkType" IsChecked="{Binding IsCheckedComplexVerification}"/>
         </StackPanel>
 
         <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="2">

@@ -253,9 +253,14 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         //We must override default implementaition of the Setup() because in C2000-Ethernet we need upload config and after that change address
         public override bool Setup(Action<int> progressStatus)
         {
-            if (GetModelCode((byte)defaultAddress) != ModelCode)
+            var result = GetModelCode((byte)defaultAddress, out var currentDeviceCode);
+            
+            if(!result)
+                return false;
+
+            if (currentDeviceCode != ModelCode)
             {
-                throw new Exception("Device code with new address is not equal with expected code!");
+                return false;
             }
 
             WriteBaseConfig(progressStatus);

@@ -31,18 +31,6 @@ namespace DeviceTunerNET
     {
         private IEventAggregator _ea;
         private SerialPort _sp;
-        /*
-        public List<System.Type> MyProperty 
-        { 
-            get => new List<System.Type>() { typeof(Eltex) };
-            
-        }
-
-        private List<System.Type> _strategies = new List<System.Type>() { typeof(Eltex) };
-
-        
-        enum Strategies { eltex };
-        */
 
         enum SrvKey { telnetKey, sshKey };
         protected override Window CreateShell()

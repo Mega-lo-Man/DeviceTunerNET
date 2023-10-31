@@ -149,7 +149,7 @@ namespace DeviceTunerNET.Services
             // формируем команду на отправку
             var cmdString = new byte[] { 0x0D, 0x00, 0x00 };
 
-            var repeat = 3;// кол-во попыток получить модель прибора
+            var repeat = 2;// кол-во попыток получить модель прибора
             for(int i = 0; i < repeat; i++)
             {
                 var deviceModel = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);

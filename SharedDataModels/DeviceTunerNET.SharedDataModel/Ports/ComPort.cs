@@ -58,10 +58,10 @@ namespace DeviceTunerNET.SharedDataModel.Ports
                 if (IsReceivePacketComplete())
                     break;
             }
-
+            /*
             if (_readBuffer.Count == 0)
                 throw new Exception("Device is not responding!");
-
+            */
             return _readBuffer.ToArray();
             
         }

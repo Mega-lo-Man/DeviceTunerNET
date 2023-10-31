@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.SharedDataModel;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -41,8 +42,9 @@ namespace DeviceTunerNET.Services.Interfaces
         /// Get all online devices on the RS-485 Line
         /// </summary>
         /// <param name="comPort">Com port name</param>
+        /// <param name="progress">Progress bar</param>
         /// <returns>Collection of all found RS485-devices</returns>
-        public IEnumerable<RS485device> GetOnlineDevices(string comPort);
+        public IEnumerable<RS485device> GetOnlineDevices(string comPort, Action<int> progress);
 
         public ResultCode CheckOnlineDevice(string comPort, byte address, string deviceModel);
 

@@ -78,15 +78,17 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 .ObservesProperty(() => IsCheckedByArea)
                 .ObservesProperty(() => IsCheckedByCabinets)
                 .ObservesProperty(() => IsCheckedComplexVerification)
-                .ObservesProperty(() => SerialTextBox);
+                .ObservesProperty(() => SerialTextBox)
+                .ObservesProperty(() => DevicesForProgramWasFill);
 
             CheckCommand = new DelegateCommand(async () => await CheckCommandExecuteAsync(), CheckCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => CurrentProtocol)
                 .ObservesProperty(() => IsCheckedByArea)
                 .ObservesProperty(() => IsCheckedByCabinets)
-                .ObservesProperty(() => IsCheckedComplexVerification);
-        }
+                .ObservesProperty(() => IsCheckedComplexVerification)
+                .ObservesProperty(() => DevicesForProgramWasFill);
+        } 
 
         private bool CheckCommandCanExecute()
         {
@@ -232,6 +234,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             if (GetDevicesWithoutSerial(DevicesForProgramming).Count() == 1)
             {
                 var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
+
                 Download(device, serial);
 
                 // Обновляем всю коллекцию в UI целиком
@@ -355,9 +358,15 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         };
                     }
 
-                    orionDevice.Setup(UpdateProgressBar());
+                    var isSutupComplite = orionDevice.Setup(UpdateProgressBar());
 
                     serialPort.Close();
+                    if(!isSutupComplite)
+                    {
+                        MessageBox.Show("Не удалось настроить прибор: " + orionDevice.Model + "; с обозначением: " + orionDevice.Designation);
+                        StartButtonEnable = true;// unlock start button
+                        return;
+                    }
                     SaveSerial(orionDevice, serialNumb);
                 }
             }
@@ -387,44 +396,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 }));
             };
         }
-        /*
-        private void Download2(Device device, string serialNumb)
-        {
-            _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
-
-            if (device.GetType() == typeof(RS485device))
-            {
-                var sendResult = _serialTasks.SendConfig(device,
-                    CurrentRS485Port,
-                    DefaultRS485Address);
-                SendResponseProcessing(sendResult, device, serialNumb);
-            }
-            else if (device.GetType() == typeof(C2000Ethernet))
-            {
-                var c2000Ethernet = (C2000Ethernet) device;
-                c2000Ethernet.Netmask = IPMask;
-                if (c2000Ethernet.NetworkMode == C2000Ethernet.Mode.master)
-                {
-                    c2000Ethernet.RemoteIpTrasparentMode = RemoteDefaultFirstIP;
-                }
-
-                var sendResult = _serialTasks.SendConfig(c2000Ethernet,
-                    CurrentRS485Port,
-                    DefaultRS485Address);
-                SendResponseProcessing(sendResult, device, serialNumb);
-            }
-            else
-            {
-                MessageBox.Show("Устройство в очереди неизвестного типа!");
-            }
-
-            // Обновляем всю коллекцию в UI целиком
-            _dispatcher.BeginInvoke(new Action(() =>
-            {
-                CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
-            }));
-        }
-        */
+        
         private int GetNumberOfDeviceWithoutSerial(IEnumerable<object> devices)
         {
             return devices.Cast<RS485device>().Count(device => string.IsNullOrEmpty(device.Serial));
@@ -455,53 +427,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return devices.Cast<RS485device>().Where(device => !string.IsNullOrEmpty(device.Serial));
         }
 
-        /*
-        private IEnumerable<RS485device> GetDevicesWithoutQualityControl(IEnumerable<object> devices)
-        {
-            return devices.Cast<RS485device>().Where(device => device.QualityControlPassed == false).ToList();
-        }
-       
-        private void SendResponseProcessing(ISerialTasks.ResultCode sendResult, Device device1, string serialNumb)
-        {
-            switch (sendResult)
-            {
-                case ISerialTasks.ResultCode.ok:
-                    device1.Serial = serialNumb;
-                    
-                    if (!_dataRepositoryService.SaveSerialNumber(device1.Id, device1.Serial))
-                    {
-                        _dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            Clipboard.SetText(device1.Serial ?? string.Empty);
-                        }));
-                        
-                        MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
-                    }
-                    //erialTextBox = ""; // Очищаем строку ввода серийника для ввода следующего
-                    break;
-                case ISerialTasks.ResultCode.deviceNotRespond:
-                    MessageBox.Show("Прибор с адресом 127 не отвечает!");
-                    break;
-                case ISerialTasks.ResultCode.deviceTypeMismatch:
-                    MessageBox.Show("Тип обнаруженного прибора не совпадает с ожидаемым типом!");
-                    break;
-                case ISerialTasks.ResultCode.addressFieldNotValid:
-                    MessageBox.Show("Неверный адрес!");
-                    break;
-                case ISerialTasks.ResultCode.undefinedError:
-                    MessageBox.Show("Неопознанная ошибка!");
-                    break;
-                case ISerialTasks.ResultCode.errorConfigDownload:
-                    MessageBox.Show("Ошибка заливки конфигурации в С2000-Ethernet!");
-                    break;
-                case ISerialTasks.ResultCode.comPortBusy:
-                    MessageBox.Show("COM порт занят! Возможно запущен UProg.");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(sendResult), sendResult, null);
-            }
-        }
- */
         private void SaveSerial(Device device, string serialNumb)
         {
             device.Serial = serialNumb;
@@ -541,7 +466,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     {
                         DevicesForProgramming.Clear();
                         DevicesForProgramming.Add((C2000Ethernet)message.AttachedObject);
-                        
+                        DevicesForProgramWasFill = true;
                     }
                     else if (dev.GetType() == typeof(Cabinet)) //Юзер кликнул на шкаф в дереве
                     {
@@ -550,12 +475,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         foreach (var item in cab.GetAllDevicesList)//GetDevicesList<RS485device>())
                         {
                             DevicesForProgramming.Add(item);
+                            DevicesForProgramWasFill = true;
                         }
                     }
                     else if (dev is RS485device) // Юзер кликнул на прибор RS485 в дереве
                     {
                         DevicesForProgramming.Clear();
                         DevicesForProgramming.Add((RS485device)message.AttachedObject);
+                        DevicesForProgramWasFill = true;
                     } 
                     
                 }
@@ -568,6 +495,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         foreach (var item in cab.GetAllDevicesList)//GetDevicesList<RS485device>())
                         {
                             DevicesForProgramming.Add(item);
+                            DevicesForProgramWasFill = true;
                         }
                     }
                 }

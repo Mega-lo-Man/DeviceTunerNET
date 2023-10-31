@@ -87,19 +87,25 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public bool IsDeviceOnline()
         {
-            return ModelCode == GetModelCode((byte)AddressRS485);
+            return GetModelCode((byte)AddressRS485, out _);
         }
 
-        public byte GetModelCode(byte deviceAddress)
+        public bool GetModelCode(byte deviceAddress, out byte deviceCode)
         {
             // формируем команду на отправку
             var cmdString = new byte[] { (byte)OrionCommands.GetModel, 0x00, 0x00 };
+            
+            deviceCode = 0;
 
             for (int i = 0; i < TransmissionAttempts; i++)
             {
                 var deviceResponse = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
-                return deviceResponse[ResponseDeviceModelOffset];
+                if(deviceResponse.Length == 0)
+                    return false;
+                
+                deviceCode = deviceResponse[ResponseDeviceModelOffset];
+                return true;
             }
             throw new Exception("Device model getting failed!");
         }
@@ -131,6 +137,8 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private static byte[] GetResponseWithoutAuxiliaryData(byte[] responseArray)
         {
             var response = responseArray.ToList();
+            if (responseArray.Length < 2)
+                return responseArray;
             // Удаляем последний байт (CRC8)
             response.RemoveAt(response.Count - 1);
             // Удаляем первый байт (Адрес ответившего устройства)
@@ -141,7 +149,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return response.ToArray();
         }
 
-        private byte[] GetComplitePacket(/*SerialPort serialPort, */byte[] sendArray)
+        private byte[] GetComplitePacket(byte[] sendArray)
         {
             byte bytesCounter = 2; //сразу начнём считать с двойки, т.к. всё равно придётся добавить два байта(сам байт длины команды, и счётчик команд)
             var lst = new List<byte>();
@@ -164,9 +172,19 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public virtual bool Setup(Action<int> updateProgressBar)
         {
+            if(!GetModelCode((byte)defaultAddress, out var deviceCode))
+                return false;
+
+            if (deviceCode != ModelCode)
+            {
+                throw new Exception("Device code with new address is not equal with expected code!");
+            }
             SetAddress();
 
-            if (GetModelCode((byte)AddressRS485) != ModelCode)
+            if (!GetModelCode((byte)AddressRS485, out var deviceCodeWithNewAddress))
+                return false;
+
+            if (deviceCodeWithNewAddress != ModelCode)
             {
                 throw new Exception("Device code with new address is not equal with expected code!");
             }
