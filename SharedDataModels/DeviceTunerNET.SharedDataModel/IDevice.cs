@@ -1,6 +1,10 @@
-﻿namespace DeviceTunerNET.SharedDataModel
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace DeviceTunerNET.SharedDataModel
 {
-    public class Device : SimplestСomponent, IDevice
+    public interface IDevice : ISimplestComponent
     {
         /// <summary>
         /// Серийный номер прибора ("456426")

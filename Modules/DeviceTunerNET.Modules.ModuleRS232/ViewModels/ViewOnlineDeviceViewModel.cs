@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 {
     public class ViewOnlineDeviceViewModel : BindableBase
     {
-        public IRS485device Device { get; private set; }
+        public IOrionDevice Device { get; private set; }
         
         #region Props
 
@@ -21,8 +22,8 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             set => SetProperty(ref _model, value);
         }
 
-        private string _address;
-        public string Address
+        private uint _address;
+        public uint Address
         {
             get => _address;
             set => SetProperty(ref _address, value);
@@ -30,11 +31,16 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
         #endregion Props
 
-        public ViewOnlineDeviceViewModel(IRS485device device)
+        public void Refresh()
+        {
+            Model = string.Join("; ", Device.SupportedModels);
+            Address = Device.AddressRS485;
+        }
+
+        public ViewOnlineDeviceViewModel(IOrionDevice device)
         {
             Device = device;
-            Model = string.Join("; ", Device.SupportedModels);
-            Address = Device.AddressRS485.ToString();
+            Refresh();
         }
     }
 }

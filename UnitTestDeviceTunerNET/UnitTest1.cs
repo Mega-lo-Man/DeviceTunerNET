@@ -78,10 +78,10 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
 
             var device = new Signal20P(port);
 
-            var result = device.GetModelCode(127).ToString();
+            var result = device.GetModelCode(127, out var deviceCode).ToString();
 
             
-            Assert.AreEqual(result, device.ModelCode.ToString());
+            Assert.AreEqual(deviceCode, device.ModelCode);
         }
 
         [TestMethod]

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public class SimplestСomponent
+    public class SimplestСomponent : ISimplestComponent
     {
         public int Id { get; set; }
 

@@ -7,10 +7,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
     class RS485DeviceViewModel : TreeViewItemViewModel
     {
-        private readonly RS485device _device;
+        private readonly IOrionDevice _device;
         private readonly IEventAggregator _ea;
 
-        public RS485DeviceViewModel(RS485device device, CabinetViewModel cabinetParent, IEventAggregator ea)
+        public RS485DeviceViewModel(IOrionDevice device, CabinetViewModel cabinetParent, IEventAggregator ea)
             : base(cabinetParent, false)
         {
             _ea = ea;

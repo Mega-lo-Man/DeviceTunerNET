@@ -18,35 +18,7 @@ namespace DeviceTunerNET.Services.Interfaces
             comPortBusy = -5
         }
 
-        /// <summary>
-        /// Send config into RS-devices
-        /// </summary>
-        /// <typeparam name="T">Device type</typeparam>
-        /// <param name="device">Device</param>
-        /// <param name="comPort">Com port name</param>
-        /// <param name="rsAddress">Device address </param>
-        /// <returns>Error code</returns>
-        public ResultCode SendConfig<T>(T device, string comPort, int rsAddress);
-
-        /// <summary>
-        /// Shifting devices addresses
-        /// </summary>
-        /// <param name="comPort">Com port name</param>
-        /// <param name="startAddress"></param>
-        /// <param name="targetAddress"></param>
-        /// <param name="range">Address range</param>
-        /// <returns></returns>
         public ResultCode ShiftDevicesAddresses(string comPort, int startAddress, int targetAddress, int range);
-
-        /// <summary>
-        /// Get all online devices on the RS-485 Line
-        /// </summary>
-        /// <param name="comPort">Com port name</param>
-        /// <param name="progress">Progress bar</param>
-        /// <returns>Collection of all found RS485-devices</returns>
-        public IEnumerable<RS485device> GetOnlineDevices(string comPort, Action<int> progress);
-
-        public ResultCode CheckOnlineDevice(string comPort, byte address, string deviceModel);
 
         public ObservableCollection<string> GetAvailableCOMPorts();
     }

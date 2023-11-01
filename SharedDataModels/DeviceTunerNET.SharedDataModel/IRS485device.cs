@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Ports;
+using System.Text;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public interface IRS485device
+    public interface Irs485device : IDevice
     {
-        uint AddressRS485 { get; set; }
+        /// <summary>
+        /// Адрес прибора на линии RS-485 ("23").
+        /// </summary>
+        public uint AddressRS485 { get; set; }
 
-        IEnumerable<string> SupportedModels { get; set; }
-
-        void WriteConfig(Action<int> searchStatus);
+        public IEnumerable<string> SupportedModels { get; set; }
     }
 }

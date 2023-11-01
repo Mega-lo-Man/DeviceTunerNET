@@ -1,6 +1,7 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
+using DeviceTunerNET.SharedDataModel.Devices;
 using Prism.Events;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace DeviceTunerNET.Services
 {
     public class DataRepositoryService : IDataRepositoryService
     {
-        private List<Cabinet> _cabinetsLst = new List<Cabinet>();
+        private List<Cabinet> _cabinetsLst = new();
 
         private readonly IEventAggregator _ea;
         private readonly IExcelDataDecoder _excelDataDecoder;
@@ -58,8 +59,8 @@ namespace DeviceTunerNET.Services
         }
 
         public IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()
-            where T1 : SimplestСomponent
-            where T2 : SimplestСomponent
+            where T1 : ISimplestComponent
+            where T2 : ISimplestComponent
         {
             var cabinetsWithdevs = new List<Cabinet>();
             foreach (var cabinet in _cabinetsLst)
@@ -92,7 +93,7 @@ namespace DeviceTunerNET.Services
             return cabinetsWithdevs;
         }
 
-        public IList<Cabinet> GetCabinetsWithDevices<T>() where T : SimplestСomponent
+        public IList<Cabinet> GetCabinetsWithDevices<T>() where T : ISimplestComponent
         {
             var cabinetsWithdevs = new List<Cabinet>();
             foreach (var cabinet in _cabinetsLst)
@@ -121,7 +122,7 @@ namespace DeviceTunerNET.Services
             return _cabinetsLst;
         }
 
-        public IList<T> GetAllDevices<T>() where T : SimplestСomponent
+        public IList<T> GetAllDevices<T>() where T : ISimplestComponent
         {
             var cabinets = GetCabinetsWithDevices<T>();
             var resultDevices = new List<T>();
@@ -146,7 +147,7 @@ namespace DeviceTunerNET.Services
                     Designation = cab485.Designation
                 };
 
-                foreach (RS485device device485 in cab485.GetAllDevicesList)
+                foreach (IOrionDevice device485 in cab485.GetAllDevicesList)
                 {
 
                     newCab.AddItem(device485);
@@ -186,7 +187,7 @@ namespace DeviceTunerNET.Services
             return cabOut;
         }
 
-        public IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : SimplestСomponent
+        public IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : ISimplestComponent
         {
 
             foreach(var cabinet in GetFullCabinets())

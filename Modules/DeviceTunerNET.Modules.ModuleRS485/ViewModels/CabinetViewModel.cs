@@ -22,7 +22,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         protected override void LoadChildren()
         {
-            foreach (var device in _cabinet.GetDevicesList<RS485device>())
+            foreach (var device in _cabinet.GetDevicesList<OrionDevice>())
             {
                 if (device is C2000Ethernet c2000Ethernet)
                 {

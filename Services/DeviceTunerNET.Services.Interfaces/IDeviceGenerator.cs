@@ -15,6 +15,6 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <param name="name">Device model</param>
         /// <param name="device"></param>
         /// <returns></returns>
-        bool TryGetDevice(string name, out RS485device device);
+        bool TryGetDevice(string name, out IOrionDevice device);
     }
 }

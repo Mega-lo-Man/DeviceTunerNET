@@ -207,7 +207,7 @@ namespace DeviceTunerNET.Services
 
         }
 
-        private RS485device GetDeviceWithSettings(RS485device device, DeviceDataSet settings)
+        private IOrionDevice GetDeviceWithSettings(IOrionDevice device, DeviceDataSet settings)
         {
             if (device is EthernetSwitch ethernetSwitch)
             {

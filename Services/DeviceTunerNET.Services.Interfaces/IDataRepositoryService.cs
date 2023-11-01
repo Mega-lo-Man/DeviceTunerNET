@@ -15,7 +15,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// </summary>
         /// <typeparam name="T">тип прибора унаследованный от SimplestComponent</typeparam>
         /// <returns>Список шкафов с приборами типа Т</returns>
-        IList<Cabinet> GetCabinetsWithDevices<T>() where T : SimplestСomponent;
+        IList<Cabinet> GetCabinetsWithDevices<T>() where T : ISimplestComponent;
 
         /// <summary>
         /// Получить список шкафов с приборами заданных типов T1 и T2 для настройки.
@@ -25,15 +25,15 @@ namespace DeviceTunerNET.Services.Interfaces
         /// <typeparam name="T2">Второй тип приборов</typeparam>
         /// <returns>Список шкафов с приборами типа T1 и/или T2</returns>
         IList<Cabinet> GetCabinetsWithTwoTypeDevices<T1, T2>()
-            where T1 : SimplestСomponent
-            where T2 : SimplestСomponent;
+            where T1 : ISimplestComponent
+            where T2 : ISimplestComponent;
 
         /// <summary>
         /// Получить список шкафов с приборами исключая заданный тип T для настройки
         /// </summary>
         /// <typeparam name="T">Тип прибора</typeparam>
         /// <returns></returns>
-        IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : SimplestСomponent;
+        IEnumerable<Cabinet> GetCabinetsWithoutExcludeDevices<T>() where T : ISimplestComponent;
 
         /// <summary>
         /// Получить список шкафов со всеми приборами внутри
@@ -55,7 +55,7 @@ namespace DeviceTunerNET.Services.Interfaces
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        IList<T> GetAllDevices<T>() where T : SimplestСomponent;
+        IList<T> GetAllDevices<T>() where T : ISimplestComponent;
 
 
         /// <summary>

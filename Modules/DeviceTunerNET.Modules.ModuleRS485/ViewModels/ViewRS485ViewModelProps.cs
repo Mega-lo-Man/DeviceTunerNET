@@ -107,7 +107,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 {
                     DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
 
-                    foreach (var item in _dataRepositoryService.GetAllDevices<RS485device>())
+                    foreach (var item in _dataRepositoryService.GetAllDevices<OrionDevice>())
                     {
                         DevicesForProgramming.Add(item);
                     }

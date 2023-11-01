@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-
 namespace DeviceTunerNET.SharedDataModel
 {
-    public class Cabinet : SimplestСomponent
+    public class Cabinet : SimplestСomponent, ISimplestComponent
     {
-        private List<object> objLst = new List<object>(); // контейнер для хранения всех дивайсов внутри шкафа
+        private List<ISimplestComponent> objLst = new(); // контейнер для хранения всех дивайсов внутри шкафа
 
-        public IList<object> GetAllDevicesList
+        public IList<ISimplestComponent> GetAllDevicesList
         {
             get
             {
-                var childNodes = new List<object>();
+                var childNodes = new List<ISimplestComponent>();
 
                 foreach (var item in objLst)
                 {
@@ -24,12 +23,12 @@ namespace DeviceTunerNET.SharedDataModel
         }
 
         #region common
-        public IList<T> GetDevicesList<T>() where T : SimplestСomponent
+        public IList<T> GetDevicesList<T>() where T : ISimplestComponent
         {
             List<T> lst = new List<T>();
             foreach (var item in objLst)
             {
-                if (item is T component/*item.GetType() == typeof(T)*/)
+                if (item is T component)
                 {
                     lst.Add(component);
                 }
@@ -37,14 +36,14 @@ namespace DeviceTunerNET.SharedDataModel
             return lst;
         }
 
-        public void AddItem<T>(T arg) where T : SimplestСomponent
+        public void AddItem<T>(T arg) where T : ISimplestComponent
         {
             objLst.Add(arg);
         }
 
-        public void AddItems<T>(IEnumerable<T> args) where T : SimplestСomponent
+        public void AddItems<T>(IEnumerable<T> args) where T : ISimplestComponent
         {
-            objLst.AddRange(args);
+            objLst.AddRange((IEnumerable<ISimplestComponent>)args);
         }
 
         public void ClearItems()
@@ -52,43 +51,5 @@ namespace DeviceTunerNET.SharedDataModel
             objLst.Clear();
         }
         #endregion
-
-        /*
-        private bool _isExpanded = false;
-        /// <summary>
-        /// Gets/sets whether the TreeViewItem 
-        /// associated with this object is expanded.
-        /// </summary>
-        public bool IsExpanded
-        {
-            get => _isExpanded;
-            set
-            {
-                if (value != _isExpanded)
-                {
-                    //SetProperty(ref _isExpanded, value);
-                }
-            }
-        }
-
-        
-
-        private bool _isSelected = false;
-        /// <summary>
-        /// Gets/sets whether the TreeViewItem 
-        /// associated with this object is selected.
-        /// </summary>
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set
-            {
-                if (value != _isSelected)
-                {
-                    //SetProperty(ref _isSelected, value);
-                }
-            }
-        }
-        */
     }
 }

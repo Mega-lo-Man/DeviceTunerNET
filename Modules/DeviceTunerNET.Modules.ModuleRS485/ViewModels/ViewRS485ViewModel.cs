@@ -249,7 +249,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     return;
                 }
 
-                var passedQc = QualityControl(new List<RS485device>() { device });
+                var passedQc = QualityControl(new List<IOrionDevice>() { device });
             }
 
             _dispatcher.BeginInvoke(new Action(() =>
@@ -270,7 +270,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = true;// unlock start button
         }
 
-        private int QualityControl(IEnumerable<RS485device> devices)
+        private int QualityControl(IEnumerable<IOrionDevice> devices)
         {
             var result = 0;
             var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
@@ -332,7 +332,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = true; // unlock start button
         }
 
-        private void Download(RS485device device, string serialNumb)
+        private void Download(IOrionDevice device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
             var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
@@ -395,7 +395,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         
         private int GetNumberOfDeviceWithoutSerial(IEnumerable<object> devices)
         {
-            return devices.Cast<RS485device>().Count(device => string.IsNullOrEmpty(device.Serial));
+            return devices.Cast<IOrionDevice>().Count(device => string.IsNullOrEmpty(device.Serial));
         }
 
         private int GetNumberOfDeviceWithoutQcPassed(IEnumerable<object> devices)
@@ -411,16 +411,16 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return counter;
         }
 
-        private IEnumerable<RS485device> GetDevicesWithoutSerial(IEnumerable<object> devices)
+        private IEnumerable<IOrionDevice> GetDevicesWithoutSerial(IEnumerable<object> devices)
         {
             //исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
-            return devices.Cast<RS485device>().Where(device => string.IsNullOrEmpty(device.Serial));
+            return devices.Cast<IOrionDevice>().Where(device => string.IsNullOrEmpty(device.Serial));
         }
 
-        private IEnumerable<RS485device> GetDevicesWithSerial(IEnumerable<object> devices)
+        private IEnumerable<IOrionDevice> GetDevicesWithSerial(IEnumerable<object> devices)
         {
             //исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
-            return devices.Cast<RS485device>().Where(device => !string.IsNullOrEmpty(device.Serial));
+            return devices.Cast<IOrionDevice>().Where(device => !string.IsNullOrEmpty(device.Serial));
         }
 
         private void SaveSerial(Device device, string serialNumb)
@@ -474,10 +474,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                             DevicesForProgramWasFill = true;
                         }
                     }
-                    else if (dev is RS485device) // Юзер кликнул на прибор RS485 в дереве
+                    else if (dev is IOrionDevice) // Юзер кликнул на прибор RS485 в дереве
                     {
                         DevicesForProgramming.Clear();
-                        DevicesForProgramming.Add((RS485device)message.AttachedObject);
+                        DevicesForProgramming.Add((IOrionDevice)message.AttachedObject);
                         DevicesForProgramWasFill = true;
                     } 
                     

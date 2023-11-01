@@ -18,7 +18,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         protected readonly uint defaultAddress = 127;
         private static byte commandCounter;
 
-        protected OrionDevice(IPort port)
+        public OrionDevice(IPort port)
         {
             Port = port;
         }
@@ -87,8 +87,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         public bool IsDeviceOnline()
         {
             Port.MaxRepetitions = 3;
-            var result = GetModelCode((byte)AddressRS485, out _);
+            var result = GetModelCode((byte)AddressRS485, out var deviceCode);
             Port.MaxRepetitions = 15;
+            if(deviceCode != ModelCode)
+                return false;
             return result;
         }
 
@@ -109,6 +111,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         }
 
         public virtual void WriteBaseConfig(Action<int> progressStatus)
+        {
+
+        }
+
+        public virtual void WriteConfig(Action<int> progressStatus)
         {
 
         }

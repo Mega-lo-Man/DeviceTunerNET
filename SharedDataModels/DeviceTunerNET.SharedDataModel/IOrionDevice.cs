@@ -5,7 +5,7 @@ using System.IO.Ports;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public interface IOrionDevice : IRS485device
+    public interface IOrionDevice : Irs485device
     {
         /// <summary>
         /// Код прибора (зашит в каждом приборе Болид'а)
@@ -28,7 +28,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// <param name="newDeviceAddress"></param>
         /// <returns>Возвращает true если адрес был успешно изменен</returns>
         bool ChangeDeviceAddress(byte newDeviceAddress);
-        
+
         /// <summary>
         /// Присвоить адрес прибору с дефолтным адресом 127
         /// </summary>
