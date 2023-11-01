@@ -81,6 +81,24 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             set => SetProperty(ref _searchProgressBar, value);
         }
 
+        private bool _sliderIsChecked = false;
+        public bool SliderIsChecked
+        {
+            get => _sliderIsChecked;
+            set => SetProperty(ref _sliderIsChecked, value);
+        }
+
+        private bool _isCanDoStart = true;
+        public bool IsCanDoStart
+        {
+            get => _isCanDoStart;
+            set
+            {
+                CheckedScanNetworkCommand.RaiseCanExecuteChanged();
+                SetProperty(ref _isCanDoStart, value);
+            }
+        }
+
         #endregion Properties
     }
 }

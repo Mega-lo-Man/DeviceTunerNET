@@ -7,8 +7,21 @@
              xmlns:validators="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Validators"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
-             xmlns:prism="http://prismlibrary.com/"
+             xmlns:prism="http://prismlibrary.com/" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              prism:ViewModelLocator.AutoWireViewModel="True" >
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryStyles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <d:DesignSwitchConverter x:Key="ItemColorConverter"
+                                 ImagePathOK="{StaticResource ResourceKey=OkImage}"
+                                 ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -118,19 +131,19 @@
             </Grid>
         </StackPanel>
 
-        <ListBox x:Name="DeviceListBox"
+        <ListView x:Name="DeviceListView"
                  ItemsSource="{Binding Path=OnlineDevicesList}"
                  SelectedItem="{Binding Path=SelectedDevice}"
                  Grid.Column="0"
                  Grid.Row="1"
                  Grid.RowSpan="2"
                  Margin="0,0,10,10" >
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.ItemTemplate>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -143,16 +156,29 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="{Binding Model}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
-                        <TextBlock Text="{Binding Address}" Grid.Row="0" Grid.Column="1"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+                            <TextBox Text="{Binding Address}" />
+                            <Button Content=">" Margin="5 0 5 0" Command="{Binding ChangeAddressCommand}"/>
+                        </StackPanel>
+                        
 
                     </Grid>
                 </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            </ListView.ItemTemplate>
+        </ListView>
 
         
         <StackPanel Grid.Row="0" Grid.Column="2">
-            <Button Content="Сканировать сеть" Grid.Row="1" Grid.Column="2" Margin="5" Command="{Binding ScanNetworkCommand}" />
+            <ToggleButton IsEnabled="{Binding IsCanDoStart}" Margin="5" Grid.Row="2" Content="SCAN" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=SliderIsChecked, Mode=TwoWay}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Checked">
+                        <i:InvokeCommandAction Command="{Binding Path=CheckedScanNetworkCommand}"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="Unchecked">
+                        <i:InvokeCommandAction Command="{Binding Path=UncheckedScanNetworkCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ToggleButton>
             <ProgressBar Name="SearchPBar" Minimum="0" Maximum="100" Value="{Binding SearchProgressBar}" Height="20" VerticalAlignment="Bottom"/>
             <Button Content="Сдвинуть адреса" Grid.Row="0" Grid.Column="2" Margin="5" Command="{Binding ShiftAddressesCommand}" />
         </StackPanel>

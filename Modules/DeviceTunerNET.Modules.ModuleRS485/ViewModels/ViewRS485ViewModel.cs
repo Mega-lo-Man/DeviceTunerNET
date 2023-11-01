@@ -273,15 +273,16 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private int QualityControl(IEnumerable<RS485device> devices)
         {
             var result = 0;
+            var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
+            serialPort.Open();
+
             foreach (var device in devices)
             {
 
                 var checkAddress = Convert.ToByte(device.AddressRS485);
                 if(device is OrionDevice orionDevice)
                 {
-                    var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
                     orionDevice.Port = new ComPort() { SerialPort = serialPort };
-                    serialPort.Open();
                     if (orionDevice.IsDeviceOnline())
                     {
                         device.QualityControlPassed = true;
@@ -291,7 +292,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     {
                         device.QualityControlPassed = false;
                     }
-                    serialPort.Close();
+                    
                 }
                 
                 _dataRepositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
@@ -302,6 +303,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
                 }));
             }
+            serialPort.Close();
             return result;
         }
 
@@ -335,31 +337,25 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
             var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
             try
-            {    
-                
+            {
                 if (device is OrionDevice orionDevice)
                 {
                     if (CurrentProtocol.Equals("COM"))
                     {
-                        
                         orionDevice.Port = new ComPort() { SerialPort = serialPort };
                         serialPort.Open();
                     }
-                
                     else
                     {
                         var ip = IPAddress.Parse("10.10.10.1");
                         orionDevice.Port = new BolidUdpClient(8100)
                         {
-                            
                             RemoteServerIp = ip,
                             RemoteServerUdpPort = 12000
-
                         };
                     }
 
                     var isSutupComplite = orionDevice.Setup(UpdateProgressBar());
-
                     serialPort.Close();
                     if(!isSutupComplite)
                     {

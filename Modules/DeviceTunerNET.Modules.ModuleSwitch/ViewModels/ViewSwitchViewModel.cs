@@ -164,8 +164,6 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             }
             if (IsCheckedByArea)
             {
-                
-
                 foreach (var ethernetSwitch in SwitchList)
                 {
                     //исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)

@@ -15,7 +15,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private const int ResponseNewAddressOffset = 2;
         private const int ResponseDeviceModelOffset = 1;
-        private const int TransmissionAttempts = 3; // кол-во попыток получить модель прибора
         protected readonly uint defaultAddress = 127;
         private static byte commandCounter;
 
@@ -87,7 +86,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public bool IsDeviceOnline()
         {
-            return GetModelCode((byte)AddressRS485, out _);
+            Port.MaxRepetitions = 3;
+            var result = GetModelCode((byte)AddressRS485, out _);
+            Port.MaxRepetitions = 15;
+            return result;
         }
 
         public bool GetModelCode(byte deviceAddress, out byte deviceCode)
@@ -97,17 +99,13 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             
             deviceCode = 0;
 
-            for (int i = 0; i < TransmissionAttempts; i++)
-            {
-                var deviceResponse = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
+            var deviceResponse = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
-                if(deviceResponse.Length == 0)
-                    return false;
+            if(deviceResponse.Length == 0)
+                return false;
                 
-                deviceCode = deviceResponse[ResponseDeviceModelOffset];
-                return true;
-            }
-            throw new Exception("Device model getting failed!");
+            deviceCode = deviceResponse[ResponseDeviceModelOffset];
+            return true;
         }
 
         public virtual void WriteBaseConfig(Action<int> progressStatus)
@@ -162,9 +160,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             lst.Insert(1, bytesCounter); //вставляем вторым байтом в пакет длину всего пакета + байт длины пакета
             lst.Insert(2, commandCounter); //вставляем третьим байтом в пакет счётчик команд
             var cmd = lst.ToArray();
- //           Port.Send(cmd);
- //           var response = Port.Send(OrionCRC.GetCrc8(cmd));
-            
+
             commandCounter += (byte)(bytesCounter + 0x01); // увеличиваем счётчик комманд на кол-во отправленных байт
 
             return cmd;
@@ -176,18 +172,15 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 return false;
 
             if (deviceCode != ModelCode)
-            {
-                throw new Exception("Device code with new address is not equal with expected code!");
-            }
+                return false;
+
             SetAddress();
 
             if (!GetModelCode((byte)AddressRS485, out var deviceCodeWithNewAddress))
                 return false;
 
             if (deviceCodeWithNewAddress != ModelCode)
-            {
-                throw new Exception("Device code with new address is not equal with expected code!");
-            }
+                return false;
 
             WriteBaseConfig(updateProgressBar);
 

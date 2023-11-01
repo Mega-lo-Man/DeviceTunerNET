@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace DeviceTunerNET.SharedDataModel.Devices
@@ -62,15 +63,22 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             ModelCode = 0;
         }
 
-        public IEnumerable<RS485device> SearchOnlineDevices(Action<int> progressStatus)
+        public IEnumerable<RS485device> SearchOnlineDevices(Action<int> progressStatus, CancellationToken token)
         {
             var progress = 1.0;
             var progressStep = 0.7874;
 
             progressStatus(Convert.ToInt32(progress));
             var result = new Dictionary<byte, string>();
-            for (byte devAddr = 1; devAddr <= 127; devAddr++)
+            Port.MaxRepetitions = 2;
+            
+            for (byte i = 0; i < 127; i++)
             {
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+                byte devAddr = (byte)((i == 0) ? 127 : i); // Start searching from 127 (default bolid address
                 var isSearchSuccess = GetModelCode(devAddr, out var deviceCode);
                 if (!isSearchSuccess)
                 {
@@ -88,6 +96,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 progressStatus(Convert.ToInt32(progress));
                 progress += progressStep;
             }
+            Port.MaxRepetitions = 15;
         }
     }
 }
