@@ -36,7 +36,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             if (result.Length <= ResponseNewAddressOffset)
                 throw new Exception("Device response was not valid or null");
 
-            return result[ResponseNewAddressOffset] == newDeviceAddress;
+            var success = result[ResponseNewAddressOffset] == newDeviceAddress;
+
+            return success;
         }
 
         public bool SetAddress()

@@ -156,21 +156,30 @@
                         <TextBlock Text="{Binding Model}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
                             <TextBox
+                                Width="30"
+                                TextAlignment="Right"
                                 Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <i:Interaction.Behaviors>
                                    
                                 </i:Interaction.Behaviors>
                             </TextBox>
                             <Button 
-                                Content=">" 
+                                Content="V"
+                                Width="20"
+                                Margin="10 0 0 0" 
+                                Command="{Binding Path=DataContext.SetFirstFreeAddressCommand, 
+                                          RelativeSource={RelativeSource 
+                                          AncestorType={x:Type local:ViewRS232}}}"
+                                CommandParameter="{Binding}"/>
+                            <Button 
+                                Content=">"
+                                Width="20"
                                 Margin="5 0 5 0" 
                                 Command="{Binding Path=DataContext.ChangeAddressCommand, 
                                           RelativeSource={RelativeSource 
                                           AncestorType={x:Type local:ViewRS232}}}"
                                 CommandParameter="{Binding}"/>
                         </StackPanel>
-                        
-
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

@@ -34,6 +34,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         public DelegateCommand WaitingNewDeviceCommand { get; }
         public DelegateCommand StopWaitingNewDeviceCommand { get; }
         public DelegateCommand<ViewOnlineDeviceViewModel> ChangeAddressCommand { get; }
+        public DelegateCommand<ViewOnlineDeviceViewModel> SetFirstFreeAddressCommand { get; }
         public DelegateCommand ShiftAddressesCommand { get; }
         public DelegateCommand CheckedScanNetworkCommand { get; }
         public DelegateCommand UncheckedScanNetworkCommand { get; }
@@ -57,6 +58,9 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
             dispatcher = Dispatcher.CurrentDispatcher;
 
+            SetFirstFreeAddressCommand = new DelegateCommand<ViewOnlineDeviceViewModel>(async (param) => await SetFirstFreeAddressCommandExecuteAsync(param))
+                .ObservesProperty(() => CurrentRS485Port);
+
             WaitingNewDeviceCommand = new DelegateCommand(async () => await WaitingNewDeviceCommandExecuteAsync(), WaitingNewDeviceCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port);
 
@@ -74,6 +78,12 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             ShiftAddressesCommand = new DelegateCommand(async () => await ShiftAddressesCommandExecuteAsync(), ShiftAddressesCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => StartAddress);
+        }
+
+        private Task SetFirstFreeAddressCommandExecuteAsync(ViewOnlineDeviceViewModel param)
+        {
+            TryToCancelCurrentNetWorking();
+            return Task.Run(() => { ChangeAddressToFirstFree(param); });
         }
 
         private bool StopWaitingNewDeviceCommandCanExecute()
@@ -100,11 +110,6 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             _token = new MyCancellationTokenSource();
             var token = _token.Token;
             return Task.Run(() => { WaitingNewDeviceLoop(token); });
-        }
-
-        private bool ChangeAddressCommandCanExecute()
-        {
-            return CurrentRS485Port != null;
         }
 
         private Task ChangeAddressCommandExecuteAsync(ViewOnlineDeviceViewModel param)
@@ -153,12 +158,8 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
 
             try
             {
-                _port.Open();
-                var comPort = new ComPort
-                {
-                    SerialPort = _port
-                };
-                var c2000M = new C2000M(comPort);
+
+                var c2000M = new C2000M(port);
 
                 while (!_token.IsCancellationRequested)
                 {
@@ -172,6 +173,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             finally
             {
                 _port.Close();
+                _port.Dispose();
             }
             
         }
@@ -202,38 +204,67 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             var result = TryOpenSerialPort(_port, out var port);
             if (!result)
                 return;
+
+            var currentDevice = onlineDeviceViewModel.Device;
+
+            currentDevice.Port = port;
+            var allAddresses = OnlineDevicesList.Select(o => o.Device.AddressRS485).ToList();
+
+            if (allAddresses.Contains(onlineDeviceViewModel.Address))
+            {
+                MessageBox.Show("Address " + onlineDeviceViewModel.Address + " is busy!");
+                onlineDeviceViewModel.Refresh();
+                return;
+            }
+            if (onlineDeviceViewModel.Address <= 0 || onlineDeviceViewModel.Address > 127)
+            {
+                MessageBox.Show("Address is wrong!");
+                return;
+            }
+            TryToChangeDeviceAddress(onlineDeviceViewModel.Address, currentDevice);
+        }
+
+        private void ChangeAddressToFirstFree(ViewOnlineDeviceViewModel onlineDeviceViewModel)
+        {
+            var result = TryOpenSerialPort(_port, out var port);
+            if (!result)
+                return;
+
+            var currentDevice = onlineDeviceViewModel.Device;
+
+            currentDevice.Port = port;
+            var allAddresses = OnlineDevicesList.Select(o => o.Device.AddressRS485).ToList();
+            var newAddress = GetFirstMissing(allAddresses);
+            TryToChangeDeviceAddress(newAddress, currentDevice);
+            dispatcher.Invoke(() =>
+            {
+                onlineDeviceViewModel.Refresh();
+            });
+        }
+
+        private void TryToChangeDeviceAddress(uint address, IOrionDevice currentDevice)
+        {
+            bool changeAddressSuccess = false;
             try
             {
-                var currentDevice = onlineDeviceViewModel.Device;
-
-                currentDevice.Port = port;
-                var allAddresses = OnlineDevicesList.Select(o => o.Device.AddressRS485).ToList();
-
-                if (allAddresses.Contains(onlineDeviceViewModel.Address))
-                {
-                    MessageBox.Show("Address " + onlineDeviceViewModel.Address + " is busy!");
-                    onlineDeviceViewModel.Refresh();
-                    return;
-                }
-                if (onlineDeviceViewModel.Address <= 0 || onlineDeviceViewModel.Address > 127)
-                {
-                    MessageBox.Show("Address is wrong!");
-                    return;
-                }
-                currentDevice.ChangeDeviceAddress((byte)onlineDeviceViewModel.Address);
+                changeAddressSuccess = currentDevice.ChangeDeviceAddress((byte)address);
             }
             catch (Exception ex)
             {
-
             }
             finally
             {
                 StopWaitingNewDeviceCommandExecuteAsync();
                 UncheckedScanNetworkCommandExecuteAsync();
                 _port.Close();
+                _port.Dispose();
             }
-
+            if (changeAddressSuccess)
+            {
+                currentDevice.AddressRS485 = address;
+            }
         }
+
 
         private void SearchDevices(CancellationToken token)
         {
@@ -257,6 +288,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
                 });
             }
             port.SerialPort.Close();
+            port.SerialPort.Dispose();
             ScanSliderIsChecked = false;
         }
 
