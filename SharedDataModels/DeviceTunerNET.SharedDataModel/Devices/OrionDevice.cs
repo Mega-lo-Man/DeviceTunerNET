@@ -23,14 +23,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             Port = port;
         }
 
-        public int ModelCode { get; set; }     
+        public static int Code;
+        public int ModelCode { get => Code; }     
         
-        public IPort Port
-        {
-            get;
-            set;
-        }
-
         public bool ChangeDeviceAddress(byte newDeviceAddress)
         {
 

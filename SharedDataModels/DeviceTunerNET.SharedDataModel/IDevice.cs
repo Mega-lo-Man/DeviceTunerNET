@@ -35,5 +35,10 @@ namespace DeviceTunerNET.SharedDataModel
         /// Наименование шкафа в котором находится этот прибор ("ШКО1")
         /// </summary>
         public string Cabinet { get; set; }
+
+        /// <summary>
+        /// Список всех наименований приборов с этим конфигом
+        /// </summary>
+        public IEnumerable<string> SupportedModels { get; set; }
     }
 }

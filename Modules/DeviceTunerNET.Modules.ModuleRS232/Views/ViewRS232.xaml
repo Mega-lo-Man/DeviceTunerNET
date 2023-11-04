@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Views"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:validators="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Validators"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"            
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              xmlns:prism="http://prismlibrary.com/" 
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behavior="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Behaviors"
              prism:ViewModelLocator.AutoWireViewModel="True" >
 
     <UserControl.Resources>
@@ -17,9 +17,7 @@
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryStyles.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <d:DesignSwitchConverter x:Key="ItemColorConverter"
-                                 ImagePathOK="{StaticResource ResourceKey=OkImage}"
-                                 ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
+            
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -32,7 +30,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1.5*"/>
             <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1.5*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" >
             <Grid>
@@ -137,7 +135,7 @@
                  Grid.Column="0"
                  Grid.Row="1"
                  Grid.RowSpan="2"
-                 Margin="0,0,10,10" >
+                 Margin="0,10,0,10" >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -157,7 +155,12 @@
 
                         <TextBlock Text="{Binding Model}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-                            <TextBox Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <i:Interaction.Behaviors>
+                                   
+                                </i:Interaction.Behaviors>
+                            </TextBox>
                             <Button 
                                 Content=">" 
                                 Margin="5 0 5 0" 
@@ -175,18 +178,53 @@
 
         
         <StackPanel Grid.Row="0" Grid.Column="2">
-            <ToggleButton IsEnabled="{Binding IsCanDoStart}" Margin="5" Grid.Row="2" Content="SCAN" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=SliderIsChecked, Mode=TwoWay}">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Checked">
-                        <i:InvokeCommandAction Command="{Binding Path=CheckedScanNetworkCommand}"/>
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="Unchecked">
-                        <i:InvokeCommandAction Command="{Binding Path=UncheckedScanNetworkCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </ToggleButton>
-            <ProgressBar Name="SearchPBar" Minimum="0" Maximum="100" Value="{Binding SearchProgressBar}" Height="20" VerticalAlignment="Bottom"/>
-            <Button Content="Сдвинуть адреса" Grid.Row="0" Grid.Column="2" Margin="5" Command="{Binding ShiftAddressesCommand}" />
+
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <ToggleButton IsEnabled="{Binding CanDoStartWaiting}" Margin="5" Grid.Row="0" Grid.Column="0" Content="ASAP:" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=WaitingSliderIsChecked, Mode=TwoWay}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Checked">
+                            <i:InvokeCommandAction Command="{Binding Path=WaitingNewDeviceCommand}"/>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="Unchecked">
+                            <i:InvokeCommandAction Command="{Binding Path=StopWaitingNewDeviceCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ToggleButton>
+
+                <ToggleButton IsEnabled="{Binding CanDoStartScan}" Margin="5" Grid.Row="0" Grid.Column="1" Content="SCAN:" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=ScanSliderIsChecked, Mode=TwoWay}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Checked">
+                            <i:InvokeCommandAction Command="{Binding Path=CheckedScanNetworkCommand}"/>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="Unchecked">
+                            <i:InvokeCommandAction Command="{Binding Path=UncheckedScanNetworkCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ToggleButton>
+            </Grid>
+           
+            <ProgressBar 
+                Name="SearchPBar" 
+                Minimum="0" 
+                Maximum="100" 
+                Value="{Binding SearchProgressBar}" 
+                Height="20" 
+                VerticalAlignment="Bottom"/>
+            
+            <Button 
+                Content="Сдвинуть адреса" 
+                Grid.Row="0" 
+                Grid.Column="2" 
+                Margin="5" 
+                Command="{Binding ShiftAddressesCommand}" />
         </StackPanel>
 
     </Grid>

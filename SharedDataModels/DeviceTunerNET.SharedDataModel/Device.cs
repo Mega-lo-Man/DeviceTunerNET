@@ -1,4 +1,6 @@
-﻿namespace DeviceTunerNET.SharedDataModel
+﻿using System.Collections.Generic;
+
+namespace DeviceTunerNET.SharedDataModel
 {
     public class Device : SimplestСomponent, IDevice
     {
@@ -31,5 +33,10 @@
         /// Наименование шкафа в котором находится этот прибор ("ШКО1")
         /// </summary>
         public string Cabinet { get; set; }
+
+        /// <summary>
+        /// Список всех наименований приборов с этим конфигом
+        /// </summary>
+        public IEnumerable<string> SupportedModels { get; set; }
     }
 }

@@ -14,6 +14,8 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private readonly int relayNumber = 3;
         //private readonly int supervisedRelayNumber = 2;
 
+        public new const int Code = 2;
+
         #region Enums
         /// <summary>
         /// Acccording with columns names in the Uprog table (Inputs)
@@ -74,11 +76,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         #region Constructor
         public Signal20P(IPort port) : base(port)
         {
-            ModelCode = 2;
+            Model = "Сигнал-20П";
             SupportedModels = SupportedModels = new List<string> 
             {
-                "Сигнал - 20П",
-                "Сигнал - 20П исп.01"
+                Model,
+                "Сигнал-20П исп.01"
             };  
 
             var inputs = new List<Shleif>();

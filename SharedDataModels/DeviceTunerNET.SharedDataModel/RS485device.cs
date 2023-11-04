@@ -6,13 +6,11 @@ using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public class RS485device : Device, Irs485device
+    public class RS485device : CommunicationDevice, Irs485device
     {
         /// <summary>
         /// Адрес прибора на линии RS-485 ("23").
         /// </summary>
-        public uint AddressRS485 { get; set; }
-
-        public IEnumerable<string> SupportedModels { get; set; }        
+        public uint AddressRS485 { get; set; }     
     }
 }

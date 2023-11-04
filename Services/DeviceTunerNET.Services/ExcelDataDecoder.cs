@@ -207,43 +207,62 @@ namespace DeviceTunerNET.Services
 
         }
 
-        private IOrionDevice GetDeviceWithSettings(IOrionDevice device, DeviceDataSet settings)
+        private static ICommunicationDevice GetDeviceWithSettings(ICommunicationDevice device, DeviceDataSet settings)
         {
             if (device is EthernetSwitch ethernetSwitch)
             {
-                ethernetSwitch.Id = settings.Id;
-                ethernetSwitch.Designation = settings.DevName;
-                ethernetSwitch.Model = settings.DevModel;
-                ethernetSwitch.Serial = settings.DevSerial;
-                ethernetSwitch.AddressIP = settings.DevIPAddr;
-                ethernetSwitch.QualityControlPassed = settings.DevQcPassed;
+                FillEthernetSwitchSettings(settings, ethernetSwitch);
 
                 return ethernetSwitch;
             }
 
             if (device is C2000Ethernet C2000Ethernet)
             {
-                C2000Ethernet.Id = settings.Id;
-                C2000Ethernet.Designation = settings.DevName;
-                C2000Ethernet.Model = settings.DevModel;
-                C2000Ethernet.Serial = settings.DevSerial;
-                C2000Ethernet.AddressRS485 = (uint)settings.DevRS485Addr;
-                C2000Ethernet.AddressRS232 = settings.DevRS232Addr;
-                C2000Ethernet.AddressIP = settings.DevIPAddr;
-                C2000Ethernet.NetName = settings.DevName;
-                C2000Ethernet.QualityControlPassed = settings.DevQcPassed;
+                FillC2000EthernetSettings(settings, C2000Ethernet);
 
                 return C2000Ethernet;
             }
 
+            if (device is RS485device rS485Device)
+            {
+                device = FillRS485Settings(rS485Device, settings);
+            }
+
+            return device;
+        }
+
+        private static ICommunicationDevice FillRS485Settings(RS485device device, DeviceDataSet settings)
+        {
             device.Id = settings.Id;
             device.Designation = settings.DevName;
             device.Model = settings.DevModel;
             device.Serial = settings.DevSerial;
             device.AddressRS485 = (uint)settings.DevRS485Addr;
             device.QualityControlPassed = settings.DevQcPassed;
-
             return device;
+        }
+
+        private static void FillC2000EthernetSettings(DeviceDataSet settings, C2000Ethernet C2000Ethernet)
+        {
+            C2000Ethernet.Id = settings.Id;
+            C2000Ethernet.Designation = settings.DevName;
+            C2000Ethernet.Model = settings.DevModel;
+            C2000Ethernet.Serial = settings.DevSerial;
+            C2000Ethernet.AddressRS485 = (uint)settings.DevRS485Addr;
+            C2000Ethernet.AddressRS232 = settings.DevRS232Addr;
+            C2000Ethernet.AddressIP = settings.DevIPAddr;
+            C2000Ethernet.NetName = settings.DevName;
+            C2000Ethernet.QualityControlPassed = settings.DevQcPassed;
+        }
+
+        private static void FillEthernetSwitchSettings(DeviceDataSet settings, EthernetSwitch ethernetSwitch)
+        {
+            ethernetSwitch.Id = settings.Id;
+            ethernetSwitch.Designation = settings.DevName;
+            ethernetSwitch.Model = settings.DevModel;
+            ethernetSwitch.Serial = settings.DevSerial;
+            ethernetSwitch.AddressIP = settings.DevIPAddr;
+            ethernetSwitch.QualityControlPassed = settings.DevQcPassed;
         }
 
         private void FindColumnIndexesByHeader()

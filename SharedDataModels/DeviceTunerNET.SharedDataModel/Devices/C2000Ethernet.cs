@@ -16,6 +16,8 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private const int MacAddressLength = 6;
 
+        public new const int Code = 29;
+
         #region Enums
         public enum Duplex
         {
@@ -205,8 +207,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         #region Constructors
         public C2000Ethernet(IPort port) : base(port)
         {
-            ModelCode = 29;
-            SupportedModels = new List<string> { "С2000-Ethernet" };
+            Model = "С2000-Ethernet";
+            SupportedModels = new List<string>
+            {
+                Model,
+            };
 
             AddressIP = "192.168.2.11";
             Netmask = "255.255.252.0";

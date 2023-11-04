@@ -2,13 +2,14 @@
 using DeviceTunerNET.SharedDataModel;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 
 namespace DeviceTunerNET.Services
 {
     public class DeviceGenerator : IDeviceGenerator
     {
-        private static readonly Dictionary<string, Func<IOrionDevice>> _deviceFactory = new()
+        private readonly Dictionary<string, Func<IOrionDevice>> _orionDevices= new()
         {
             {"С2000М", () => new C2000M(null)},                             
             {"Сигнал-20", () => new OrionDevice(null) },                        
@@ -60,23 +61,62 @@ namespace DeviceTunerNET.Services
             {"С2000-КДЛ-Modbus", () => new OrionDevice(null) },
             {"Рупор исп.03", () => new OrionDevice(null) },
             {"Рупор-300", () => new OrionDevice(null) },
+        };
+
+        private readonly Dictionary<string, Func<IEthernetDevice>> _ethernetSwitches = new()
+        {
             {"MES3508", () => new EthernetSwitch(null) },
             {"MES3508P", () => new EthernetSwitch(null) },
             {"MES2308", () => new EthernetSwitch(null) },
+            {"MES2308_AC", () => new EthernetSwitch(null) },
+            {"MES2308_DC", () => new EthernetSwitch(null) },
             {"MES2308P", () => new EthernetSwitch(null) },
+            {"MES2308P_AC", () => new EthernetSwitch(null) },
+            {"MES2308P_DC", () => new EthernetSwitch(null) },
             {"MES2324", () => new EthernetSwitch(null) },
-
+            {"MES2324_AC", () => new EthernetSwitch(null) },
+            {"MES2324_DC", () => new EthernetSwitch(null) },
         };
 
-        public bool TryGetDevice(string name, out IOrionDevice device)
+        public DeviceGenerator()
         {
-            if(!_deviceFactory.ContainsKey(name))
+
+        }
+
+        public bool TryGetDevice(string name, out ICommunicationDevice device)
+        {
+            device = default;
+            if (_ethernetSwitches.ContainsKey(name))
             {
-                device = default;
-                return false;
+                device = _ethernetSwitches[name]();
+                return true;
             }
-            device = (IOrionDevice)_deviceFactory[name]();// _deviceFactory[name]();
-            return true;
+
+            if (_orionDevices.ContainsKey(name))
+            {
+                device = _orionDevices[name]();
+                return true;
+            }
+            
+            return false;
+        }
+
+        public bool TryGetDeviceByCode(int code, out IOrionDevice device)
+        {
+            foreach (var kvp in _orionDevices)
+            {
+                object obj = kvp.Value().GetType().GetField("Code")?.GetValue(kvp.Value());
+                if (obj == null) 
+                    continue;
+                if (obj is int deviceCode && deviceCode == code)
+                {
+                    device = kvp.Value();
+                    return true;
+                }
+            }
+
+            device = null;
+            return false;
         }
     }
 }

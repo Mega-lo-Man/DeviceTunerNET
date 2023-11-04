@@ -4,11 +4,11 @@ using System.Text;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public interface Irs485device : ICommunicationDevice
+    public interface ICommunicationDevice : IDevice
     {
         /// <summary>
-        /// Адрес прибора на линии RS-485 ("23").
+        /// Порт
         /// </summary>
-        public uint AddressRS485 { get; set; }
+        IPort Port { get; set; }
     }
 }

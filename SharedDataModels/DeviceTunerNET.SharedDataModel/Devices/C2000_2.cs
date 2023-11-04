@@ -12,6 +12,8 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private readonly int inputsCount = 2;
 
+        public new const int Code = 16;
+
         #region Properties
         
         public IEnumerable<Shleif> Shleifs { get; set; }
@@ -21,10 +23,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public C2000_2(IPort port) : base (port)
         {
-            ModelCode = 16;
+            Model = "С2000-2";
             SupportedModels = new List<string>
             {
-                "С2000-2",
+                Model,
             };
 
             var inputs = new List<Shleif>();

@@ -81,21 +81,39 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
             set => SetProperty(ref _searchProgressBar, value);
         }
 
-        private bool _sliderIsChecked = false;
-        public bool SliderIsChecked
+        private bool _waitingSliderIsChecked = false;
+        public bool WaitingSliderIsChecked
         {
-            get => _sliderIsChecked;
-            set => SetProperty(ref _sliderIsChecked, value);
+            get => _waitingSliderIsChecked;
+            set => SetProperty(ref _waitingSliderIsChecked, value);
         }
 
-        private bool _isCanDoStart = true;
-        public bool IsCanDoStart
+        private bool _scanSliderIsChecked = false;
+        public bool ScanSliderIsChecked
         {
-            get => _isCanDoStart;
+            get => _scanSliderIsChecked;
+            set => SetProperty(ref _scanSliderIsChecked, value);
+        }
+
+        private bool _canDoStartScan = true;
+        public bool CanDoStartScan
+        {
+            get => _canDoStartScan;
             set
             {
                 CheckedScanNetworkCommand.RaiseCanExecuteChanged();
-                SetProperty(ref _isCanDoStart, value);
+                SetProperty(ref _canDoStartScan, value);
+            }
+        }
+
+        private bool _canDoStartWaiting = true;
+        public bool CanDoStartWaiting
+        {
+            get => _canDoStartWaiting;
+            set
+            {
+                CheckedScanNetworkCommand.RaiseCanExecuteChanged();
+                SetProperty(ref _canDoStartWaiting, value);
             }
         }
 

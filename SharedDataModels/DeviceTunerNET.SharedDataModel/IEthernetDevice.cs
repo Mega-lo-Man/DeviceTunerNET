@@ -1,16 +1,11 @@
-﻿using DeviceTunerNET.SharedDataModel.Devices;
-using System;
-using System.IO.Ports;
-using static System.String;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public class EthernetOrionDevice : OrionDevice, IEthernetDevice
+    public interface IEthernetDevice : ICommunicationDevice
     {
-        public EthernetOrionDevice(IPort port) : base(port)
-        {
-        }
-
         /// <summary>
         /// IP адрес прибора ("192.168.2.12")
         /// </summary>
@@ -18,17 +13,18 @@ namespace DeviceTunerNET.SharedDataModel
 
         public string Netmask { get; set; }
 
-        public int CIDR
-        {
-            get => EthernetUtils.ConvertToCidr(Netmask);
-            set => Netmask = EthernetUtils.CidrToString(value);
-        }
-
         /// <summary>
         /// MAC-адрес прибора
         /// </summary>
         public string MACaddress { get; set; }
 
         public string DefaultGateway { get; set; }
+
+        public int CIDR
+        {
+            get;
+            set;
+        }
+
     }
 }

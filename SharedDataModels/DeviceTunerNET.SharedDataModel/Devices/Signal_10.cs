@@ -6,9 +6,15 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class Signal_10 : OrionDevice
     {
+        public new const int Code = 34;
+
         public Signal_10(IPort port) : base(port)
         {
-            ModelCode = 34;
+            Model = "Сигнал-10";
+            SupportedModels = new List<string>
+            {
+                Model,
+            };
         }
     }
 }

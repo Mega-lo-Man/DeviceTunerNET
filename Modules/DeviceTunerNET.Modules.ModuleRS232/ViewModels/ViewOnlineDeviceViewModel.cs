@@ -26,14 +26,22 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         public uint Address
         {
             get => _address;
-            set => SetProperty(ref _address, value);
+            set
+            {
+                if (value <= 0 && value > 127)
+                    return;
+
+                if (_address == value) return;
+
+                SetProperty(ref _address, value);
+            }
         }
 
         #endregion Props
 
         public void Refresh()
         {
-            Model = string.Join("; ", Device.SupportedModels);
+            Model = (Device.SupportedModels == null) ? Model : string.Join("; ", Device.SupportedModels);
             Address = Device.AddressRS485;
         }
 

@@ -6,9 +6,14 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class C2000_Kdl : OrionDevice
     {
+        public new const int Code = 9;
         public C2000_Kdl(IPort port) : base(port)
         {
-            ModelCode = 9;
+            Model = "С2000-КДЛ";
+            SupportedModels = new List<string>
+            {
+                Model,
+            };
         }
     }
 }
