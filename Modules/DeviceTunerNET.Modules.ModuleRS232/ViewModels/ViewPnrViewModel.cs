@@ -16,11 +16,10 @@ using System.Threading.Tasks;
 using System.Web.Services.Description;
 using System.Windows;
 using System.Windows.Threading;
-//using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
-namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
+namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 {
-    public partial class ViewRS232ViewModel : BindableBase
+    public partial class ViewPnrViewModel : BindableBase
     {
         private string _message;
         private MyCancellationTokenSource _token;
@@ -42,7 +41,7 @@ namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
         #endregion Commands
 
         #region Constructor
-        public ViewRS232ViewModel(ISerialTasks serialTasks,
+        public ViewPnrViewModel(ISerialTasks serialTasks,
                                   IDeviceGenerator deviceGenerator,
                                   IEventAggregator ea)
         {

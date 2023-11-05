@@ -1,14 +1,14 @@
-﻿<UserControl x:Class="DeviceTunerNET.Modules.ModuleRS232.Views.ViewRS232"
+﻿<UserControl x:Class="DeviceTunerNET.Modules.ModulePnr.Views.ViewPnr"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Views"
+             xmlns:local="clr-namespace:DeviceTunerNET.Modules.ModulePnr.Views"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"            
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              xmlns:prism="http://prismlibrary.com/" 
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:behavior="clr-namespace:DeviceTunerNET.Modules.ModuleRS232.Behaviors"
+             xmlns:behavior="clr-namespace:DeviceTunerNET.Modules.ModulePnr.Behaviors"
              prism:ViewModelLocator.AutoWireViewModel="True" >
 
     <UserControl.Resources>
@@ -169,7 +169,7 @@
                                 Margin="10 0 0 0" 
                                 Command="{Binding Path=DataContext.SetFirstFreeAddressCommand, 
                                           RelativeSource={RelativeSource 
-                                          AncestorType={x:Type local:ViewRS232}}}"
+                                          AncestorType={x:Type local:ViewPnr}}}"
                                 CommandParameter="{Binding}"/>
                             <Button 
                                 Content=">"
@@ -177,7 +177,7 @@
                                 Margin="5 0 5 0" 
                                 Command="{Binding Path=DataContext.ChangeAddressCommand, 
                                           RelativeSource={RelativeSource 
-                                          AncestorType={x:Type local:ViewRS232}}}"
+                                          AncestorType={x:Type local:ViewPnr}}}"
                                 CommandParameter="{Binding}"/>
                         </StackPanel>
                     </Grid>

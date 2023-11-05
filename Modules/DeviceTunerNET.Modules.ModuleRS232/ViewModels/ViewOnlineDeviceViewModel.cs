@@ -1,13 +1,7 @@
 ﻿using DeviceTunerNET.SharedDataModel;
 using Prism.Mvvm;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
-namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
+namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 {
     public class ViewOnlineDeviceViewModel : BindableBase
     {

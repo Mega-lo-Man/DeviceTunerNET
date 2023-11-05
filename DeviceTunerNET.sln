@@ -3,37 +3,37 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET", "DeviceTunerNET\DeviceTunerNET.csproj", "{9463B0A1-5B8D-4C18-9893-D62F83D1414B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET", "DeviceTunerNET\DeviceTunerNET.csproj", "{9463B0A1-5B8D-4C18-9893-D62F83D1414B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Core", "DeviceTunerNET.Core\DeviceTunerNET.Core.csproj", "{E894DF23-8056-4B80-8707-2089566E6515}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET.Core", "DeviceTunerNET.Core\DeviceTunerNET.Core.csproj", "{E894DF23-8056-4B80-8707-2089566E6515}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{AA122C2F-45F2-45DE-A22F-C3292DDCCD40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Services", "Services\DeviceTunerNET.Services\DeviceTunerNET.Services.csproj", "{2615071C-14B0-46DB-A7DC-1637F3CAFBF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET.Services", "Services\DeviceTunerNET.Services\DeviceTunerNET.Services.csproj", "{2615071C-14B0-46DB-A7DC-1637F3CAFBF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Services.Interfaces", "Services\DeviceTunerNET.Services.Interfaces\DeviceTunerNET.Services.Interfaces.csproj", "{CF97FA8A-EE79-4CB1-9FF2-F6C5C3F3C0C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET.Services.Interfaces", "Services\DeviceTunerNET.Services.Interfaces\DeviceTunerNET.Services.Interfaces.csproj", "{CF97FA8A-EE79-4CB1-9FF2-F6C5C3F3C0C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExtendedPackages", "ExtendedPackages", "{D4375B68-4CAA-4288-B89D-8A2AE3033258}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{C4D757DA-7A50-4F48-976E-7CE0EEF8EA54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Modules.ModuleRS485", "Modules\DeviceTunerNET.Modules.ModuleRS485\DeviceTunerNET.Modules.ModuleRS485.csproj", "{A679D134-A249-4DBB-BC8E-E1F1D1A359ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET.Modules.ModuleRS485", "Modules\DeviceTunerNET.Modules.ModuleRS485\DeviceTunerNET.Modules.ModuleRS485.csproj", "{A679D134-A249-4DBB-BC8E-E1F1D1A359ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Modules.ModuleSwitch", "Modules\DeviceTunerNET.Modules.ModuleSwitch\DeviceTunerNET.Modules.ModuleSwitch.csproj", "{2FF824DF-74A6-40ED-9953-0222FD52045A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET.Modules.ModuleSwitch", "Modules\DeviceTunerNET.Modules.ModuleSwitch\DeviceTunerNET.Modules.ModuleSwitch.csproj", "{2FF824DF-74A6-40ED-9953-0222FD52045A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedDataModels", "SharedDataModels", "{33B3BBFC-DE9F-43E7-82D6-A33777B90756}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.SharedDataModel", "SharedDataModels\DeviceTunerNET.SharedDataModel\DeviceTunerNET.SharedDataModel.csproj", "{3A424B22-FF53-4C43-B4E9-5BF93E32E376}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET.SharedDataModel", "SharedDataModels\DeviceTunerNET.SharedDataModel\DeviceTunerNET.SharedDataModel.csproj", "{3A424B22-FF53-4C43-B4E9-5BF93E32E376}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalisticTelnet", "ExtendedPackages\MinimalisticTelnet\MinimalisticTelnet\MinimalisticTelnet.csproj", "{D2DA0E59-7BB0-4F71-8BC5-D2B2384F04AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalisticTelnet", "ExtendedPackages\MinimalisticTelnet\MinimalisticTelnet\MinimalisticTelnet.csproj", "{D2DA0E59-7BB0-4F71-8BC5-D2B2384F04AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PrintModules", "PrintModules", "{A9E926B6-99CD-48D0-8A44-05AFBB41DDF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DymoModule", "PrintModules\DymoModule\DymoModule.csproj", "{0E1EFC35-96D6-4FF4-8B4D-005426E8AC21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DymoModule", "PrintModules\DymoModule\DymoModule.csproj", "{0E1EFC35-96D6-4FF4-8B4D-005426E8AC21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTunerNET.Modules.ModuleRS232", "Modules\DeviceTunerNET.Modules.ModuleRS232\DeviceTunerNET.Modules.ModuleRS232.csproj", "{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTunerNET.Modules.ModulePnr", "Modules\DeviceTunerNET.Modules.ModuleRS232\DeviceTunerNET.Modules.ModulePnr.csproj", "{874B1341-3AC9-4FF5-8E60-D78D8EEDF94B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestDeviceTunerNET", "UnitTestDeviceTunerNET\UnitTestDeviceTunerNET.csproj", "{2571F9CA-8C51-4097-B78D-0F62F66BCB07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTestDeviceTunerNET", "UnitTestDeviceTunerNET\UnitTestDeviceTunerNET.csproj", "{2571F9CA-8C51-4097-B78D-0F62F66BCB07}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tftp.Net", "..\tftp.net\Tftp.Net\Tftp.Net.csproj", "{F45CA915-C3EC-4C0A-8101-85F8DED2F7A1}"
 EndProject

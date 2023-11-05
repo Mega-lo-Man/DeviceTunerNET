@@ -5,5 +5,5 @@
     <BitmapImage x:Key="CancelImage" UriSource="pack://application:,,,/DeviceTunerNET.Core;component/Resources/Images/cancel.png"/>
     <BitmapImage x:Key="CabinetImage" UriSource="pack://application:,,,/DeviceTunerNET.Core;component/Resources/Images/cabinet_flash_16x16.png"/>
     <BitmapImage x:Key="DevRS485Image" UriSource="pack://application:,,,/DeviceTunerNET.Core;component/Resources/Images/Default-Icon-icon.png"/>
-    <BitmapImage x:Key="DevRS232Image" UriSource="pack://application:,,,/DeviceTunerNET.Core;component/Resources/Images/drive_link.png"/>
+    <BitmapImage x:Key="DevPnrImage" UriSource="pack://application:,,,/DeviceTunerNET.Core;component/Resources/Images/drive_link.png"/>
 </ResourceDictionary>

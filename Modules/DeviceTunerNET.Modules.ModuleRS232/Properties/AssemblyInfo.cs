@@ -5,11 +5,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DeviceTunerNET.Modules.ModuleRS232")]
+[assembly: AssemblyTitle("DeviceTunerNET.Modules.ModulePnr")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DeviceTunerNET.Modules.ModuleRS232")]
+[assembly: AssemblyProduct("DeviceTunerNET.Modules.ModulePnr")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

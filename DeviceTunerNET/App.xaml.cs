@@ -1,6 +1,5 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.DymoModules;
-using DeviceTunerNET.Modules.ModuleRS232;
 using DeviceTunerNET.Modules.ModuleRS485;
 using DeviceTunerNET.Modules.ModuleSwitch;
 using DeviceTunerNET.Services;
@@ -21,6 +20,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System;
+using DeviceTunerNET.Modules.ModulePnr;
 
 namespace DeviceTunerNET
 {
@@ -92,7 +92,7 @@ namespace DeviceTunerNET
         {
             moduleCatalog.AddModule<ModuleSwitchModule>();
             moduleCatalog.AddModule<ModuleRS485Module>();
-            moduleCatalog.AddModule<ModuleRS232Module>();
+            moduleCatalog.AddModule<ModulePnrModule>();
         }
     }
 }

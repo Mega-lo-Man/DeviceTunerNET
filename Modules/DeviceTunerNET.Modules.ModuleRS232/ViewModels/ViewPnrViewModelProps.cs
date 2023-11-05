@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using static System.Int32;
 
-namespace DeviceTunerNET.Modules.ModuleRS232.ViewModels
+namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 {
-    public partial class ViewRS232ViewModel : BindableBase
+    public partial class ViewPnrViewModel : BindableBase
     {
         #region Properties
 
