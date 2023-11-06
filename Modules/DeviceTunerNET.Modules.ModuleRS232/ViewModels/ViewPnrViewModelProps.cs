@@ -81,11 +81,18 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             set => SetProperty(ref _searchProgressBar, value);
         }
 
-        private bool _waitingSliderIsChecked = false;
-        public bool WaitingSliderIsChecked
+        private bool _isCheckedSearching = false;
+        public bool IsCheckedSearching
         {
-            get => _waitingSliderIsChecked;
-            set => SetProperty(ref _waitingSliderIsChecked, value);
+            get => _isCheckedSearching;
+            set => SetProperty(ref _isCheckedSearching, value);
+        }
+
+        private bool _isCheckedWaiting = true;
+        public bool IsCheckedWaiting
+        {
+            get => _isCheckedWaiting;
+            set => SetProperty(ref _isCheckedWaiting, value);
         }
 
         private bool _scanSliderIsChecked = false;
@@ -96,14 +103,21 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         }
 
         private bool _canDoStartScan = true;
-        public bool CanDoStartScan
+        public bool IsSliderEnable
         {
             get => _canDoStartScan;
             set
             {
-                CheckedScanNetworkCommand.RaiseCanExecuteChanged();
+                //CheckedScanNetworkCommand.RaiseCanExecuteChanged();
                 SetProperty(ref _canDoStartScan, value);
             }
+        }
+
+        private bool _isAddressChangeButtonsEnable = false;
+        public bool IsAddressChangeButtonsEnable
+        {
+            get => _isAddressChangeButtonsEnable;
+            set => SetProperty(ref _isAddressChangeButtonsEnable, value);
         }
 
         private bool _canDoStartWaiting = true;
@@ -112,8 +126,18 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             get => _canDoStartWaiting;
             set
             {
-                CheckedScanNetworkCommand.RaiseCanExecuteChanged();
+                WaitingNewDeviceCommand.RaiseCanExecuteChanged();
                 SetProperty(ref _canDoStartWaiting, value);
+            }
+        }
+
+        private bool _isModeSwitchEnable;
+        public bool IsModeSwitchEnable
+        {
+            get => _isModeSwitchEnable;
+            set
+            {
+                SetProperty(ref _isModeSwitchEnable, value);
             }
         }
 

@@ -1,9 +1,10 @@
 ﻿<prism:PrismApplication x:Class="DeviceTunerNET.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	     xmlns:prism="http://prismlibrary.com/"
-             xmlns:local="clr-namespace:DeviceTunerNET">
+    	     xmlns:prism="http://prismlibrary.com/"
+             xmlns:local="clr-namespace:DeviceTunerNET" 
+             xmlns:core="clr-namespace:DeviceTunerNET.Core;assembly=DeviceTunerNET.Core">
     <Application.Resources>
-         
+
     </Application.Resources>
 </prism:PrismApplication>

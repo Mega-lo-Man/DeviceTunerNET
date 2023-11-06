@@ -5,10 +5,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"            
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
+             
              xmlns:prism="http://prismlibrary.com/" 
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:behavior="clr-namespace:DeviceTunerNET.Modules.ModulePnr.Behaviors"
+             xmlns:behavior="clr-namespace:DeviceTunerNET.Modules.ModulePnr.Behaviors" 
+             xmlns:viewmodels="clr-namespace:DeviceTunerNET.Modules.ModulePnr.ViewModels" 
+             d:DataContext="{d:DesignInstance Type=viewmodels:ViewPnrViewModel}"
              prism:ViewModelLocator.AutoWireViewModel="True" >
 
     <UserControl.Resources>
@@ -17,7 +19,7 @@
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryStyles.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -166,18 +168,20 @@
                             <Button 
                                 Content="V"
                                 Width="20"
-                                Margin="10 0 0 0" 
+                                Margin="10 0 0 0"
+                                IsEnabled="{Binding Path=DataContext.IsAddressChangeButtonsEnable, 
+                                            RelativeSource={RelativeSource AncestorType={x:Type local:ViewPnr}}}"
                                 Command="{Binding Path=DataContext.SetFirstFreeAddressCommand, 
-                                          RelativeSource={RelativeSource 
-                                          AncestorType={x:Type local:ViewPnr}}}"
+                                          RelativeSource={RelativeSource AncestorType={x:Type local:ViewPnr}}}"
                                 CommandParameter="{Binding}"/>
                             <Button 
                                 Content=">"
                                 Width="20"
-                                Margin="5 0 5 0" 
+                                Margin="5 0 5 0"
+                                IsEnabled="{Binding Path=DataContext.IsAddressChangeButtonsEnable, 
+                                            RelativeSource={RelativeSource AncestorType={x:Type local:ViewPnr}}}"
                                 Command="{Binding Path=DataContext.ChangeAddressCommand, 
-                                          RelativeSource={RelativeSource 
-                                          AncestorType={x:Type local:ViewPnr}}}"
+                                          RelativeSource={RelativeSource AncestorType={x:Type local:ViewPnr}}}"
                                 CommandParameter="{Binding}"/>
                         </StackPanel>
                     </Grid>
@@ -188,37 +192,35 @@
         
         <StackPanel Grid.Row="0" Grid.Column="2">
 
-            <Grid Grid.Row="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
+            <RadioButton 
+                Content="Searching" 
+                IsEnabled="{Binding IsModeSwitchEnable}" 
+                GroupName="ScanMode" 
+                IsChecked="{Binding IsCheckedSearching}" />
+            
+            <RadioButton 
+                Content="Waiting" 
+                IsEnabled="{Binding IsModeSwitchEnable}" 
+                GroupName="ScanMode" 
+                IsChecked="{Binding IsCheckedWaiting}"/>
 
-                <ToggleButton IsEnabled="{Binding CanDoStartWaiting}" Margin="5" Grid.Row="0" Grid.Column="0" Content="ASAP:" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=WaitingSliderIsChecked, Mode=TwoWay}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Checked">
-                            <i:InvokeCommandAction Command="{Binding Path=WaitingNewDeviceCommand}"/>
-                        </i:EventTrigger>
-                        <i:EventTrigger EventName="Unchecked">
-                            <i:InvokeCommandAction Command="{Binding Path=StopWaitingNewDeviceCommand}"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </ToggleButton>
-
-                <ToggleButton IsEnabled="{Binding CanDoStartScan}" Margin="5" Grid.Row="0" Grid.Column="1" Content="SCAN:" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=ScanSliderIsChecked, Mode=TwoWay}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Checked">
-                            <i:InvokeCommandAction Command="{Binding Path=CheckedScanNetworkCommand}"/>
-                        </i:EventTrigger>
-                        <i:EventTrigger EventName="Unchecked">
-                            <i:InvokeCommandAction Command="{Binding Path=UncheckedScanNetworkCommand}"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </ToggleButton>
-            </Grid>
+            <ToggleButton 
+                IsEnabled="{Binding IsSliderEnable}" 
+                Margin="10" 
+                Grid.Row="0" 
+                Grid.Column="1" 
+                Content="Scanning"
+                Style="{StaticResource ToggleButtonStyle1}" 
+                IsChecked="{Binding Path=ScanSliderIsChecked, Mode=TwoWay}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Checked">
+                        <i:InvokeCommandAction Command="{Binding Path=CheckedScanNetworkCommand}"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="Unchecked">
+                        <i:InvokeCommandAction Command="{Binding Path=UncheckedScanNetworkCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ToggleButton>
            
             <ProgressBar 
                 Name="SearchPBar" 
