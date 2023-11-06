@@ -108,7 +108,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             get => _canDoStartScan;
             set
             {
-                //CheckedScanNetworkCommand.RaiseCanExecuteChanged();
                 SetProperty(ref _canDoStartScan, value);
             }
         }

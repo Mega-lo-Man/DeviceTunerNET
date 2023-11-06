@@ -112,7 +112,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         {
             IsSliderEnable = false;
             TryToCancelCurrentNetWorking();
-
         }
         
         private bool CheckedScanNetworkCommandCanExecute()
@@ -137,6 +136,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 {
                     IsSliderEnable = true;
                     IsAddressChangeButtonsEnable = true;
+                    ScanSliderIsChecked = false;
                 });
             });
         }
@@ -175,8 +175,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             }
             finally
             {
-                serialPort.Close();
-                
+                serialPort.Close();               
             }
         }
 
@@ -192,7 +191,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
                 // We created new device with empty port!
                 orionDevice.Port = c2000M.Port;
-
 
                 orionDevice.SetAddress();
 
@@ -334,7 +332,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 };
                 try
                 {
-                    
                     serialPort.Open();
                     var c2000M = new C2000M(comPort);
                     var onlineDevices = c2000M.SearchOnlineDevices(UpdateProgressBar(), token);
@@ -357,7 +354,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                     
                 }
             }
-            
         }
 
         private bool ShiftAddressesCommandCanExecute()
@@ -381,30 +377,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                                                _targetAddress,
                                                _addressRange);
             });
-        }
-
-        private bool TryOpenSerialPort(SerialPort serialPort, out ComPort port)
-        {
-            var counter = 0;
-            port = default;
-            serialPort = null;
-            serialPort ??= new SerialPort(CurrentRS485Port);
-          
-            try
-            {
-                serialPort.Open();
-            }
-            catch
-            {
-                MessageBox.Show("Port " + serialPort.PortName + " is busy.");
-                return false;
-            }
-            var comPort = new ComPort
-            {
-                SerialPort = serialPort
-            };
-            port = comPort;
-            return true;
         }
 
         private void TryToCancelCurrentNetWorking()
@@ -435,50 +407,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                     return i;
             }
             return 127;
-        }
-
-        public bool RunUsingSerialPort(string serialPortName, Func<CancellationToken, bool> myMethod)
-        {
-            using (var serialPort = new SerialPort(serialPortName))
-            {
-                try
-                {
-                    serialPort.Open();
-                    bool result = myMethod(CancellationToken.None);
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}");
-                    return false;
-                }
-                finally
-                {
-                    if (serialPort.IsOpen)
-                    {
-                        serialPort.Close();
-                    }
-                }
-            }
-        }
-
-        private async Task<T> ExecuteTaskWithSerialPortAsync<T>(Func<Task<T>> taskToExecute)
-        {
-            using SerialPort serialPort = new(CurrentRS485Port);
-            try
-            {
-                serialPort.Open();
-                return await taskToExecute.Invoke();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Exception: " +  ex.Message );
-            }
-            finally
-            {
-                serialPort.Close();
-            }
-            return default;
         }
     }
 }
