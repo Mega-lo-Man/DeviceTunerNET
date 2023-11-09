@@ -24,6 +24,7 @@
     </UserControl.Resources>
 
     <Grid>
+                
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*"/>
@@ -241,7 +242,8 @@
                 Name="SearchPBar" 
                 Minimum="0" 
                 Maximum="100" 
-                Value="{Binding SearchProgressBar}" 
+                Value="{Binding SearchProgressBar}"
+                IsIndeterminate="{Binding IsProgressIndeterminate}"
                 Height="20" 
                 VerticalAlignment="Bottom"/>
             
@@ -253,5 +255,11 @@
                 Command="{Binding ShiftAddressesCommand}" />
         </StackPanel>
 
+        <local:ViewRelays 
+            Grid.Column="1" 
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            />
+        
     </Grid>
 </UserControl>

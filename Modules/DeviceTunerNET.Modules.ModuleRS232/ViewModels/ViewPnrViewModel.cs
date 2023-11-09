@@ -2,6 +2,7 @@
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using DeviceTunerNET.SharedDataModel.Devices;
+using DeviceTunerNET.SharedDataModel.ElectricModules;
 using DeviceTunerNET.SharedDataModel.Ports;
 using Prism.Commands;
 using Prism.Events;
@@ -9,9 +10,11 @@ using Prism.Mvvm;
 using Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Media;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Services.Description;
@@ -57,6 +60,10 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             CurrentRS485Port = AvailableComPorts.LastOrDefault();
 
             IsModeSwitchEnable = true;
+
+            ButtonLabels = new ObservableCollection<string>
+            {
+            };
 
             SetFirstFreeAddressCommand = new DelegateCommand<ViewOnlineDeviceViewModel>(async (param) => await SetFirstFreeAddressCommandExecuteAsync(param))
                 .ObservesProperty(() => CurrentRS485Port);
@@ -105,7 +112,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
         private bool UncheckedScanNetworkCommandCanExecute()
         {
-            IsModeSwitchEnable = true;
             return true;
         }
 
@@ -125,6 +131,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             IsAddressChangeButtonsEnable = false;
             IsModeSwitchEnable = false;
 
+            SearchProgressBar = 0;
             OnlineDevicesList.Clear();
 
             _token = new MyCancellationTokenSource();
@@ -138,17 +145,23 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                     IsSliderEnable = true;
                     IsAddressChangeButtonsEnable = true;
                     ScanSliderIsChecked = false;
+                    IsModeSwitchEnable = true;
+                    IsProgressIndeterminate = false;
                 });
             });
         }
 
         private void ScanningModeSelector(CancellationToken token)
         {
-            if(IsCheckedSearching)
+            if (IsCheckedSearching)
             {
                 SearchDevices(token);
             }
-            WaitingNewDeviceLoop(token);
+            if (IsCheckedWaiting) 
+            {
+                _dispatcher.Invoke(() => IsProgressIndeterminate = true);
+                WaitingNewDeviceLoop(token);
+            };
         }
 
 
@@ -302,7 +315,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 finally
                 {
                     serialPort.Close();
-                    IsModeSwitchEnable = true;
                 }
             }
                         
@@ -387,6 +399,42 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             {
                 _token?.Cancel();
                 _token?.Dispose();
+            }
+        }
+
+
+        private void PresentSelectedDevice()
+        {
+            if (SelectedDevice == null)
+                return;
+            if (SelectedDevice.Device == null)
+                return;
+
+            ButtonLabels.Clear();
+            var device = SelectedDevice.Device;
+            var deviceType = device.GetType();
+
+            var relaysPropertyInfo = deviceType.GetProperty(nameof(Signal20P.Relays));
+
+            if (relaysPropertyInfo != null)
+            {
+                var propertyValue = (IEnumerable<Relay>)relaysPropertyInfo.GetValue(device);
+                
+                foreach( var relay in propertyValue)
+                {
+                    ButtonLabels.Add(relay.RelayIndex.ToString());
+                }
+            }
+
+            var superRelaysPropertyInfo = deviceType.GetProperty(nameof(Signal20P.SupervisedRelays));
+            if (superRelaysPropertyInfo != null)
+            {
+                var propertyValue = (IEnumerable<Relay>)superRelaysPropertyInfo.GetValue(device);
+
+                foreach (var relay in propertyValue)
+                {
+                    ButtonLabels.Add(relay.RelayIndex.ToString());
+                }
             }
         }
 

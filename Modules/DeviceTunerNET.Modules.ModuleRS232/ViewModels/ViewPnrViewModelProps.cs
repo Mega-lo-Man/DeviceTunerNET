@@ -22,8 +22,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             set => SetProperty(ref _availableComPorts, value);
         }
 
-        private readonly Dispatcher dispatcher;
-
         private ObservableCollection<ViewOnlineDeviceViewModel> _onlineDevicesList = new();
         public ObservableCollection<ViewOnlineDeviceViewModel> OnlineDevicesList
         {
@@ -35,7 +33,11 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         public ViewOnlineDeviceViewModel SelectedDevice
         {
             get => _selectedDevice;
-            set => _selectedDevice = value;
+            set
+            { 
+                _selectedDevice = value;
+                PresentSelectedDevice();
+            }
         }
 
         private string _currentRS485Port;
@@ -139,6 +141,18 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 SetProperty(ref _isModeSwitchEnable, value);
             }
         }
+
+        private bool _isProgressIndeterminate = false;
+        public bool IsProgressIndeterminate
+        {
+            get => _isProgressIndeterminate;
+            set
+            {
+                SetProperty(ref _isProgressIndeterminate, value);
+            }
+        }
+
+        public ObservableCollection<string> ButtonLabels { get; set; }
 
         #endregion Properties
     }

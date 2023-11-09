@@ -22,7 +22,7 @@ namespace DeviceTunerNET.Modules.ModulePnr
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<ViewPnr>();
+            containerRegistry.RegisterForNavigation<ViewPnr>();           
         }
     }
 }
