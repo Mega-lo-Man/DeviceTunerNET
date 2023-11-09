@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Media;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Services.Description;
@@ -197,6 +198,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 _dispatcher.Invoke(() =>
                 {
                     OnlineDevicesList.Add(new ViewOnlineDeviceViewModel(orionDevice));
+                    SystemSounds.Beep.Play();
                 });
             }
         }
