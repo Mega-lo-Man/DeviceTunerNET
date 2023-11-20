@@ -5,7 +5,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 {
     public class ViewOnlineDeviceViewModel : BindableBase
     {
-        public IOrionDevice Device { get; private set; }
+        public RS485device Device { get; private set; }
         
         #region Props
 
@@ -39,7 +39,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             Address = Device.AddressRS485;
         }
 
-        public ViewOnlineDeviceViewModel(IOrionDevice device)
+        public ViewOnlineDeviceViewModel(RS485device device)
         {
             Device = device;
             Refresh();

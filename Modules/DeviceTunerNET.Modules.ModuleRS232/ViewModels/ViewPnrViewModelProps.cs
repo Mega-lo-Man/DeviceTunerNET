@@ -1,12 +1,5 @@
-﻿using DeviceTunerNET.Services.Interfaces;
-using DeviceTunerNET.SharedDataModel;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Mvvm;
-using Prism.Regions;
+﻿using Prism.Mvvm;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using static System.Int32;
 
 namespace DeviceTunerNET.Modules.ModulePnr.ViewModels

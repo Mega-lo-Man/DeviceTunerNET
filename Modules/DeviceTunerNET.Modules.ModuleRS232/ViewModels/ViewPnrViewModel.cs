@@ -7,17 +7,14 @@ using DeviceTunerNET.SharedDataModel.Ports;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Media;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Services.Description;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -27,9 +24,10 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
     {
         private string _message;
         private MyCancellationTokenSource _token;
-        private SerialPort _port;
         private readonly ISerialTasks _serialTasks;
-        private readonly IDeviceGenerator _deviceGenerator;
+        private readonly IDeviceSearcher _bolidDeviceSearcher;
+        private readonly IAddressChanger _bolidAddressChanger;
+        private readonly IEventAggregator _ea;
         private readonly Dispatcher _dispatcher;
 
         #region Commands
@@ -46,15 +44,20 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
         #region Constructor
         public ViewPnrViewModel(ISerialTasks serialTasks,
-                                  IDeviceGenerator deviceGenerator,
-                                  IEventAggregator ea)
+                                IDeviceGenerator deviceGenerator,
+                                IDeviceSearcher bolidDeviceSearcher,
+                                IAddressChanger BolidAddressChanger,
+                                IEventAggregator ea)
         {
             Title = "ПНР";
 
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             _serialTasks = serialTasks;
-            _deviceGenerator = deviceGenerator;
+            _bolidDeviceSearcher = bolidDeviceSearcher;
+            _bolidAddressChanger = BolidAddressChanger;
+            _ea = ea;
+            _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
             AvailableComPorts = _serialTasks.GetAvailableCOMPorts();
             CurrentRS485Port = AvailableComPorts.LastOrDefault();
@@ -65,6 +68,8 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             {
             };
 
+            #region InitializeCommands
+            
             SetFirstFreeAddressCommand = new DelegateCommand<ViewOnlineDeviceViewModel>(async (param) => await SetFirstFreeAddressCommandExecuteAsync(param))
                 .ObservesProperty(() => CurrentRS485Port);
 
@@ -80,6 +85,8 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             ShiftAddressesCommand = new DelegateCommand(async () => await ShiftAddressesCommandExecuteAsync(), ShiftAddressesCommandCanExecute)
                 .ObservesProperty(() => CurrentRS485Port)
                 .ObservesProperty(() => StartAddress);
+
+            #endregion InitializeCommands
         }
         #endregion Constructor
 
@@ -164,7 +171,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             };
         }
 
-
         private void WaitingNewDeviceLoop(CancellationToken token)
         {
             using SerialPort serialPort = new(CurrentRS485Port);
@@ -172,16 +178,13 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             {
                 SerialPort = serialPort
             };
-            var c2000M = new C2000M(comPort);
 
             try
             {
                 serialPort.Open();
-                
-                while (!_token.IsCancellationRequested)
-                {
-                    WaitDefaultDevice(c2000M);
-                }
+
+                _bolidAddressChanger.Port = comPort;
+                _bolidAddressChanger.ChangeDefaultAddresses(token);
             }
             catch (Exception ex)
             {
@@ -193,64 +196,9 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             }
         }
 
-        private void WaitDefaultDevice(IOrionDevice c2000M)
-        {
-            var response = c2000M.GetModelCode(127, out var deviceCode);
-            if(response)
-            {
-                if (!_deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice))
-                    return;
-
-                orionDevice.AddressRS485 = FindFreeAddress(c2000M);
-
-                // We created new device with empty port!
-                orionDevice.Port = c2000M.Port;
-
-                orionDevice.SetAddress();
-
-                _dispatcher.Invoke(() =>
-                {
-                    OnlineDevicesList.Add(new ViewOnlineDeviceViewModel(orionDevice));
-                    SystemSounds.Beep.Play();
-                });
-            }
-        }
-
-        private uint FindFreeAddress(IOrionDevice c2000M)
-        {
-            while (!_token.IsCancellationRequested)
-            {
-                var busyAddresses = OnlineDevicesList.Select(o => o.Device.AddressRS485).ToList();
-                var AddressRS485 = GetFirstMissing(busyAddresses);
-
-                var result = IsAddressFree(c2000M, AddressRS485);
-                if (result)
-                    return AddressRS485;
-            }
-            throw new Exception("There aren't free addresses!");
-        }
-
-        private bool IsAddressFree(IOrionDevice c2000M, uint addressRS485)
-        {
-            var response = c2000M.GetModelCode((byte)addressRS485, out var deviceCode);
-            if(response)
-            {
-                if (!_deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice))
-                    throw new Exception("Unknow device was found. Address: " + addressRS485);
-                orionDevice.AddressRS485 = addressRS485;
-                orionDevice.Port = c2000M.Port;
-                _dispatcher.Invoke(() =>
-                {
-                    OnlineDevicesList.Add(new ViewOnlineDeviceViewModel(orionDevice));
-                });
-                return false;
-            }
-            return true;
-        }
-
         private void ChangeAddress(ViewOnlineDeviceViewModel onlineDeviceViewModel)
         {
-            var currentDevice = onlineDeviceViewModel.Device;
+            var currentDevice = (OrionDevice)onlineDeviceViewModel.Device;
 
             var allAddresses = OnlineDevicesList.Select(o => o.Device.AddressRS485).ToList();
 
@@ -276,7 +224,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 IsModeSwitchEnable = false;
                 serialPort.Open();
                 currentDevice.Port = comPort;
-                TryToChangeDeviceAddress(onlineDeviceViewModel.Address, currentDevice);
+                _bolidAddressChanger.TryToChangeDeviceAddress(onlineDeviceViewModel.Address, currentDevice);
             }
             catch (Exception ex)
             {
@@ -290,10 +238,10 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
         private void ChangeAddressToFirstFree(ViewOnlineDeviceViewModel onlineDeviceViewModel)
         {
-            var currentDevice = onlineDeviceViewModel.Device;
+            var currentDevice = (OrionDevice)onlineDeviceViewModel.Device;
 
             var allAddresses = OnlineDevicesList.Select(o => o.Device.AddressRS485).ToList();
-            var newAddress = GetFirstMissing(allAddresses);
+            var newAddress = _bolidAddressChanger.GetFirstMissing(allAddresses, 127);
 
             using (SerialPort serialPort = new(CurrentRS485Port))
             {
@@ -306,7 +254,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                     IsModeSwitchEnable = false;
                     serialPort.Open();
                     currentDevice.Port = comPort;
-                    TryToChangeDeviceAddress(newAddress, currentDevice);
+                    _bolidAddressChanger.TryToChangeDeviceAddress(newAddress, currentDevice);
                 }
                 catch (Exception ex)
                 {
@@ -324,18 +272,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             });
         }
 
-        private void TryToChangeDeviceAddress(uint address, IOrionDevice currentDevice)
-        {
-            bool changeAddressSuccess = false;
-            changeAddressSuccess = currentDevice.ChangeDeviceAddress((byte)address);
-
-            if (changeAddressSuccess)
-            {
-                currentDevice.AddressRS485 = address;
-            }
-        }
-
-
         private void SearchDevices(CancellationToken token)
         {
             using (SerialPort serialPort = new(CurrentRS485Port))
@@ -347,14 +283,15 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 try
                 {
                     serialPort.Open();
-                    var c2000M = new C2000M(comPort);
-                    var onlineDevices = c2000M.SearchOnlineDevices(UpdateProgressBar(), token);
+
+                    _bolidDeviceSearcher.Port = comPort;
+                    var onlineDevices = _bolidDeviceSearcher.SearchDevices(token, UpdateProgressBar());
 
                     foreach (var item in onlineDevices)
                     {
                         _dispatcher.Invoke(() =>
                         {
-                            OnlineDevicesList.Add(new ViewOnlineDeviceViewModel(item));
+                            OnlineDevicesList.Add(new ViewOnlineDeviceViewModel((RS485device)item));
                         });
                     }
                 }
@@ -365,7 +302,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 finally
                 {
                     serialPort.Close();
-                    
                 }
             }
         }
@@ -401,7 +337,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 _token?.Dispose();
             }
         }
-
 
         private void PresentSelectedDevice()
         {
@@ -449,14 +384,17 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             };
         }
 
-        private static uint GetFirstMissing(IEnumerable<uint> numbers)
+        private void MessageReceived(Core.Message message)
         {
-            for (uint i = 1; i < 127;  i++)
+            if (message.ActionCode == MessageSentEvent.FoundNewOnlineDevice)
             {
-                if(!numbers.Contains(i))
-                    return i;
+                var lastDevice = _bolidAddressChanger.FoundDevices.LastOrDefault();
+                _dispatcher.Invoke(() =>
+                {
+                    OnlineDevicesList.Add(new ViewOnlineDeviceViewModel(lastDevice));
+                    SystemSounds.Beep.Play();
+                });
             }
-            return 127;
         }
     }
 }
