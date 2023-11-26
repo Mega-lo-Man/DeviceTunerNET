@@ -138,7 +138,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             if (IsCheckedByArea || IsCheckedByCabinets)
             {
-                return Task.Run(DownloadSettings);
+                return Task.Run(UploadSettings);
             }
 
             SearchProgressBar = 1;
@@ -167,41 +167,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                 var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
                 var model = device.Model;
                 var designation = device.Designation;
-
-                _dispatcher.BeginInvoke(new Action(() =>
-                {
-                    //var tcs = new TaskCompletionSource<string>();
-                    var parameters = new DialogParameters
-                    {
-                        {"title", "Ввод серийного номера."},
-                        {"message", "Серийник: "},
-                        {"model", model},
-                        {"designation", designation}
-                    };
-                    _dialogService.ShowDialog("SerialDialog", parameters, dialogResult =>
-                    {
-                        if (dialogResult.Result == ButtonResult.OK)
-                        {
-                            serial = dialogResult.Parameters.GetValue<string>("Serial");
-                            if (serial == null)
-                            {
-                                StartButtonEnable = true;// Unlock start button
-                                return;
-                            }
-
-                            VerificationCanStart = VerificationStart.canExecute;
-                        }
-
-                        else
-                        {
-                            VerificationCanStart = VerificationStart.cantExecute;
-                        }
-                    });
-                }));
+                serial = GetSerialNumberFromUser(serial, model, designation);
 
                 while (VerificationCanStart == VerificationStart.waitFor)
                 {
-
                 }
 
                 if (VerificationCanStart == VerificationStart.cantExecute)
@@ -235,7 +204,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
 
-                Download(device, serial);
+                Upload(device, serial);
 
                 // Обновляем всю коллекцию в UI целиком
                 _dispatcher.BeginInvoke(new Action(() =>
@@ -268,6 +237,55 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             MessageBox.Show("All good!");
             SerialTextBox = "";
             StartButtonEnable = true;// unlock start button
+        }
+
+        private string GetSerialNumberFromUser(string serial, string model, string designation)
+        {
+            _ = _dispatcher.BeginInvoke(new Action(() =>
+            {
+                var parameters = GetSerialDialogParams(model, designation);
+                serial = ShowSerialInputDialog(serial, parameters);
+            }));
+            return serial;
+        }
+
+        private static DialogParameters GetSerialDialogParams(string model, string designation)
+        {
+#pragma warning disable CA1416 // Validate platform compatibility
+            return new DialogParameters
+                    {
+                        {"title", "Ввод серийного номера."},
+                        {"message", "Серийник: "},
+                        {"model", model},
+                        {"designation", designation}
+                    };
+#pragma warning restore CA1416 // Validate platform compatibility
+        }
+
+        private string ShowSerialInputDialog(string serial, DialogParameters parameters)
+        {
+#pragma warning disable CA1416 // Validate platform compatibility
+            _dialogService.ShowDialog("SerialDialog", parameters, dialogResult =>
+            {
+                if (dialogResult.Result == ButtonResult.OK)
+                {
+                    serial = dialogResult.Parameters.GetValue<string>("Serial");
+                    if (serial == null)
+                    {
+                        StartButtonEnable = true;// Unlock start button
+                        return;
+                    }
+
+                    VerificationCanStart = VerificationStart.canExecute;
+                }
+
+                else
+                {
+                    VerificationCanStart = VerificationStart.cantExecute;
+                }
+            });
+#pragma warning restore CA1416 // Validate platform compatibility
+            return serial;
         }
 
         private int QualityControl(IEnumerable<IOrionDevice> devices)
@@ -307,7 +325,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             return result;
         }
 
-        private void DownloadSettings()
+        private void UploadSettings()
         {
             var device = GetDevicesWithoutSerial(DevicesForProgramming).FirstOrDefault();
 
@@ -320,7 +338,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = false; // Lock start button
             //var devSerial = "";
 
-            Download(device, SerialTextBox);
+            Upload(device, SerialTextBox);
 
             // Is Device Was Last?
             if (GetDevicesWithoutSerial(DevicesForProgramming) == null)
@@ -332,7 +350,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             StartButtonEnable = true; // unlock start button
         }
 
-        private void Download(IOrionDevice device, string serialNumb)
+        private void Upload(IOrionDevice device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
             var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
@@ -393,16 +411,16 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             };
         }
         
-        private int GetNumberOfDeviceWithoutSerial(IEnumerable<object> devices)
+        private static int GetNumberOfDeviceWithoutSerial(IEnumerable<object> devices)
         {
             return devices.Cast<IOrionDevice>().Count(device => string.IsNullOrEmpty(device.Serial));
         }
 
-        private int GetNumberOfDeviceWithoutQcPassed(IEnumerable<object> devices)
+        private static int GetNumberOfDeviceWithoutQcPassed(IEnumerable<object> devices)
         {
             //return devices.Cast<RS485device>().Count(d => d.QualityControlPassed == false);
             var counter = 0;
-            foreach (Device device in devices)
+            foreach (var device in devices.Cast<Device>())
             {
                 if (!device.QualityControlPassed)
                     counter++;

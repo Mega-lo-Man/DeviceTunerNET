@@ -31,7 +31,8 @@
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="300px"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="0.7*"/>
             <ColumnDefinition Width="0.7*"/>
         </Grid.ColumnDefinitions>
@@ -104,7 +105,14 @@
                     VerticalAlignment="Center"
                 />
             </Grid>
-
+            
+            <Button 
+                Content="Сдвинуть адреса" 
+                Grid.Row="0" 
+                Grid.Column="2" 
+                Margin="5" 
+                Command="{Binding ShiftAddressesCommand}" />
+            
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
@@ -128,8 +136,72 @@
                     Grid.ColumnSpan="2" 
                     Margin="0,2,-15,2"
                 />
-
+                
             </Grid>
+            <Border
+                Margin="0 5 0 0"
+                BorderBrush="Black" 
+                BorderThickness="1">
+            <Grid 
+                Margin="10"
+                Grid.Row="0" 
+                Grid.Column="0">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0">
+                    <RadioButton 
+                        Content="Searching" 
+                        IsEnabled="{Binding IsModeSwitchEnable}" 
+                        GroupName="ScanMode" 
+                        IsChecked="{Binding IsCheckedSearching}" />
+
+                    <RadioButton 
+                        Content="Waiting" 
+                        IsEnabled="{Binding IsModeSwitchEnable}" 
+                        GroupName="ScanMode" 
+                        IsChecked="{Binding IsCheckedWaiting}"/>
+                </StackPanel>
+
+                <ToggleButton 
+                    IsEnabled="{Binding IsSliderEnable}" 
+                    Margin="0" 
+                    Grid.Row="0" 
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource ToggleButtonStyle1}" 
+                    IsChecked="{Binding Path=ScanSliderIsChecked, Mode=TwoWay}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Checked">
+                            <i:InvokeCommandAction Command="{Binding Path=CheckedScanNetworkCommand}"/>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="Unchecked">
+                            <i:InvokeCommandAction Command="{Binding Path=UncheckedScanNetworkCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ToggleButton>
+
+                <ProgressBar 
+                    Name="SearchPBar" 
+                    Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Margin="0 5 0 0"
+                    Minimum="0" 
+                    Maximum="100" 
+                    Value="{Binding SearchProgressBar}"
+                    IsIndeterminate="{Binding IsProgressIndeterminate}"
+                    Height="20" 
+                    VerticalAlignment="Bottom"/>
+            </Grid>
+            </Border>
         </StackPanel>
 
         <ListView x:Name="DeviceListView"
@@ -194,74 +266,70 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        
-        <StackPanel Grid.Row="0" Grid.Column="2">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-                
-                <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0">
-                    <RadioButton 
-                        Content="Searching" 
-                        IsEnabled="{Binding IsModeSwitchEnable}" 
-                        GroupName="ScanMode" 
-                        IsChecked="{Binding IsCheckedSearching}" />
+        <GridSplitter 
+            Grid.Column="1"
+            Grid.RowSpan="3"
+            ShowsPreview="False" 
+            Width="3"
+            HorizontalAlignment="Center" 
+            VerticalAlignment="Stretch" />
 
-                    <RadioButton 
-                        Content="Waiting" 
-                        IsEnabled="{Binding IsModeSwitchEnable}" 
-                        GroupName="ScanMode" 
-                        IsChecked="{Binding IsCheckedWaiting}"/>
-                </StackPanel>
 
-                <ToggleButton 
-                    IsEnabled="{Binding IsSliderEnable}" 
-                    Margin="0" 
-                    Grid.Row="0" 
-                    Grid.Column="1"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource ToggleButtonStyle1}" 
-                    IsChecked="{Binding Path=ScanSliderIsChecked, Mode=TwoWay}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Checked">
-                            <i:InvokeCommandAction Command="{Binding Path=CheckedScanNetworkCommand}"/>
-                        </i:EventTrigger>
-                        <i:EventTrigger EventName="Unchecked">
-                            <i:InvokeCommandAction Command="{Binding Path=UncheckedScanNetworkCommand}"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </ToggleButton>
-            </Grid>
+
+        <ScrollViewer
+            VerticalScrollBarVisibility="Auto"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="2"
+            Grid.ColumnSpan="2">
+            <StackPanel 
+                x:Name="RelaysPanel"
             
-           
-            <ProgressBar 
-                Name="SearchPBar" 
-                Minimum="0" 
-                Maximum="100" 
-                Value="{Binding SearchProgressBar}"
-                IsIndeterminate="{Binding IsProgressIndeterminate}"
-                Height="20" 
-                VerticalAlignment="Bottom"/>
-            
-            <Button 
-                Content="Сдвинуть адреса" 
-                Grid.Row="0" 
-                Grid.Column="2" 
-                Margin="5" 
-                Command="{Binding ShiftAddressesCommand}" />
-        </StackPanel>
+                Orientation="Vertical"
+                >
+                <ItemsControl 
+                    ItemsSource="{Binding RelayViewModels}">
 
-        <local:ViewRelays 
-            Grid.Column="1" 
-            Grid.Row="1"
-            Grid.ColumnSpan="2"
-            />
-        
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel 
+                                Orientation="Horizontal" 
+                                Margin="10"/>
+                            <!-- You can also use other panels like WrapPanel or UniformGrid with horizontal orientation -->
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate >
+                        <DataTemplate>
+                            <local:ViewSingleRelay 
+                                Margin="5"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl 
+                        ItemsSource="{Binding ShleifViewModels}">
+
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel 
+                                    Orientation="Vertical" 
+                                    Margin="10"/>
+                            <!-- You can also use other panels like WrapPanel or UniformGrid with horizontal orientation -->
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate >
+                        <DataTemplate>
+                            <local:ViewSingleShleif 
+                                    Margin="5"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+
+            </StackPanel>
+        </ScrollViewer>
+
     </Grid>
 </UserControl>

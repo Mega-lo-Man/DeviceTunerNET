@@ -95,8 +95,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 
                 if (_bolidDict.TryGetValue(deviceCode, out var device))
                 {
-                    var rs485device = (IOrionDevice)_bolidDict[deviceCode]();
+                    var rs485device = _bolidDict[deviceCode]();
                     rs485device.AddressRS485 = devAddr;
+                    rs485device.Port = Port;
                     yield return rs485device;
                 }
                 progressStatus(Convert.ToInt32(progress));

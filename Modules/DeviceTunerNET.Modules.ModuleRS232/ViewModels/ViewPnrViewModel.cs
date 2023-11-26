@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.Core;
+using DeviceTunerNET.Modules.ModulePnr.Views;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using DeviceTunerNET.SharedDataModel.Devices;
@@ -13,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Media;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -39,12 +41,12 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         public DelegateCommand ShiftAddressesCommand { get; }
         public DelegateCommand CheckedScanNetworkCommand { get; }
         public DelegateCommand UncheckedScanNetworkCommand { get; }
+        
 
         #endregion Commands
 
         #region Constructor
         public ViewPnrViewModel(ISerialTasks serialTasks,
-                                IDeviceGenerator deviceGenerator,
                                 IDeviceSearcher bolidDeviceSearcher,
                                 IAddressChanger BolidAddressChanger,
                                 IEventAggregator ea)
@@ -63,10 +65,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             CurrentRS485Port = AvailableComPorts.LastOrDefault();
 
             IsModeSwitchEnable = true;
-
-            ButtonLabels = new ObservableCollection<string>
-            {
-            };
 
             #region InitializeCommands
             
@@ -146,7 +144,14 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
             return Task.Run(() =>
             {
+                _dispatcher.Invoke(() => 
+                {
+                    RelayViewModels.Clear();
+                    ShleifViewModels.Clear();
+                });
+
                 ScanningModeSelector(token);
+                
                 _dispatcher.Invoke(() =>
                 {
                     IsSliderEnable = true;
@@ -154,6 +159,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                     ScanSliderIsChecked = false;
                     IsModeSwitchEnable = true;
                     IsProgressIndeterminate = false;
+                    
                 });
             });
         }
@@ -345,19 +351,67 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             if (SelectedDevice.Device == null)
                 return;
 
-            ButtonLabels.Clear();
+            CreateRelaysControl();
+            CreateShleifsControl();
+        }
+
+        private void CreateRelaysControl()
+        {
+            RelayViewModels.Clear();
+
             var device = SelectedDevice.Device;
             var deviceType = device.GetType();
 
-            var relaysPropertyInfo = deviceType.GetProperty(nameof(Signal20P.Relays));
+            var relayViewModels = GetAllAvailableRelayViewModels(device, deviceType);
 
+            foreach (var item in relayViewModels)
+            {
+                item.IsControlEnabled = false;
+                RelayViewModels.Add(item);
+            }
+        }
+
+        private void CreateShleifsControl()
+        {
+            ShleifViewModels.Clear();
+
+            var device = SelectedDevice.Device;
+            var deviceType = device.GetType();
+
+            var shleifViewModels = GetAllAvailableShleifViewModel(device, deviceType);
+
+            foreach (var item in shleifViewModels)
+            {
+                item.IsControlEnabled = false;
+                ShleifViewModels.Add(item);
+            }
+        }
+
+        private static IEnumerable<ViewSingleShleifViewModel> GetAllAvailableShleifViewModel(RS485device device, Type deviceType)
+        {
+            var shleifPropertyInfo = deviceType.GetProperty(nameof(Signal20P.Shleifs));
+
+            if (shleifPropertyInfo != null)
+            {
+                var propertyValue = (IEnumerable<Shleif>)shleifPropertyInfo.GetValue(device);
+
+                foreach (var shleif in propertyValue)
+                {
+                    yield return new ViewSingleShleifViewModel(shleif);
+                }
+            }
+        }
+
+        private static IEnumerable<ViewSingleRelayViewModel> GetAllAvailableRelayViewModels(RS485device device, Type deviceType)
+        {
+            var relaysPropertyInfo = deviceType.GetProperty(nameof(Signal20P.Relays));
             if (relaysPropertyInfo != null)
             {
                 var propertyValue = (IEnumerable<Relay>)relaysPropertyInfo.GetValue(device);
-                
-                foreach( var relay in propertyValue)
+
+                foreach (var relay in propertyValue)
                 {
-                    ButtonLabels.Add(relay.RelayIndex.ToString());
+                    yield return new ViewSingleRelayViewModel(relay);
                 }
             }
 
@@ -368,7 +422,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
                 foreach (var relay in propertyValue)
                 {
-                    ButtonLabels.Add(relay.RelayIndex.ToString());
+                    yield return new ViewSingleRelayViewModel(relay);
                 }
             }
         }

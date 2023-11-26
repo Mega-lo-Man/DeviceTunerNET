@@ -1,4 +1,5 @@
 ﻿using Prism.Mvvm;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using static System.Int32;
 
@@ -21,6 +22,10 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             get => _onlineDevicesList;
             set => SetProperty(ref _onlineDevicesList, value);
         }
+
+        public ObservableCollection<ViewSingleRelayViewModel> RelayViewModels { get; set; } = new();
+
+        public ObservableCollection<ViewSingleShleifViewModel> ShleifViewModels { get; set; } = new();
 
         private ViewOnlineDeviceViewModel _selectedDevice;
         public ViewOnlineDeviceViewModel SelectedDevice
@@ -145,7 +150,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             }
         }
 
-        public ObservableCollection<string> ButtonLabels { get; set; }
+        
 
         #endregion Properties
     }

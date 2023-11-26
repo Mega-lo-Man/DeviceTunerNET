@@ -1,5 +1,4 @@
-﻿using DeviceTunerNET.Modules.ModulePnr.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,14 +16,15 @@ using System.Windows.Shapes;
 namespace DeviceTunerNET.Modules.ModulePnr.Views
 {
     /// <summary>
-    /// Interaction logic for ViewRelays.xaml
+    /// Interaction logic for ViewSingleShleif.xaml
     /// </summary>
-    public partial class ViewRelays : UserControl
+    public partial class ViewSingleShleif : UserControl
     {
-        public ViewRelays()
+        public ViewSingleShleif()
         {
             InitializeComponent();
-            //DataContext = new ViewRelaysViewModel();
+
+
         }
     }
 }

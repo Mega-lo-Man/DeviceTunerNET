@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\SharedDataModels\DeviceTunerNET.SharedDataModel\DeviceTunerNET.SharedDataModel.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DotNetProjects.WpfToolkit.DataVisualization" Version="6.1.94" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />

@@ -40,6 +40,36 @@ namespace DeviceTunerNET.SharedDataModel.Ports
 
         public byte[] Send(byte[] command)
         {
+            if(SerialPort == null)
+                return null;
+
+            if(SerialPort.IsOpen)
+            {
+                SendData(command);
+            }
+            else
+            {
+                try
+                {
+                    SerialPort.Open();
+                    SendData(command);
+                }
+                catch 
+                {
+
+                }
+                finally
+                {
+                    SerialPort.Close();
+                }
+            }
+
+            return _readBuffer.ToArray();
+            
+        }
+
+        private void SendData(byte[] command)
+        {
             // make DataReceived event handler
             SerialPort.DataReceived += Sp_DataReceived;
 
@@ -58,12 +88,6 @@ namespace DeviceTunerNET.SharedDataModel.Ports
                 if (IsReceivePacketComplete())
                     break;
             }
-            /*
-            if (_readBuffer.Count == 0)
-                throw new Exception("Device is not responding!");
-            */
-            return _readBuffer.ToArray();
-            
         }
 
         public void SendWithoutСonfirmation(byte[] command)

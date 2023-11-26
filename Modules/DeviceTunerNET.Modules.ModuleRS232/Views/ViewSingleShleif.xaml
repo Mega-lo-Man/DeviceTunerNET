@@ -1,0 +1,91 @@
+﻿<UserControl x:Class="DeviceTunerNET.Modules.ModulePnr.Views.ViewSingleShleif"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DeviceTunerNET.Modules.ModulePnr.Views" 
+             xmlns:chartingToolkit="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=DotNetProjects.DataVisualization.Toolkit" 
+             xmlns:viewmodels="clr-namespace:DeviceTunerNET.Modules.ModulePnr.ViewModels" xmlns:chartingprimitives="clr-namespace:System.Windows.Controls.DataVisualization.Charting.Primitives;assembly=DotNetProjects.DataVisualization.Toolkit" d:DataContext="{d:DesignInstance Type=viewmodels:ViewSingleShleifViewModel}"
+             
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <!-- Define a new style for the Chart control -->
+        <Style TargetType="chartingToolkit:Chart">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="chartingToolkit:Chart">
+                        <Border BorderThickness="0" BorderBrush="Transparent">
+                            <!-- Set BorderThickness to 0 and BorderBrush to Transparent -->
+                            <Grid>
+                                <chartingprimitives:EdgePanel x:Name="ChartArea" Style="{TemplateBinding ChartAreaStyle}">
+                                    <Grid Canvas.ZIndex="-1" Style="{TemplateBinding PlotAreaStyle}" />
+                                </chartingprimitives:EdgePanel>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LineDataPointStyle" TargetType="{x:Type chartingToolkit:LineDataPoint}">
+            <Setter Property="Background" Value="BlueViolet" ></Setter>
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+    </UserControl.Resources>
+
+    <Border BorderBrush="Black" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40px"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20px"/>
+                <ColumnDefinition Width="35px"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <CheckBox
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                IsEnabled="{Binding IsControlEnabled}"
+                IsChecked="{Binding IsActive, Mode=TwoWay}" />
+
+            <Label
+                Grid.Column="1"
+                VerticalContentAlignment="Center"
+                HorizontalAlignment="Center"
+                FontFamily="Calibri"
+                FontSize="14 pt"
+                FontWeight="Bold"
+                Content="{Binding LabelText}"/>
+
+            <chartingToolkit:Chart
+                Grid.Column="2"
+                Margin="5 0 0 0"
+                CrosshairVisibility="Hidden"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                >
+                <chartingToolkit:Chart.Axes>
+                    <chartingToolkit:LinearAxis 
+                        Minimum="{Binding MinValue}"
+                        Maximum="{Binding MaxValue}"
+                        Orientation="X">
+                        
+                    </chartingToolkit:LinearAxis>
+                </chartingToolkit:Chart.Axes>
+                <chartingToolkit:LineSeries
+                    ItemsSource="{Binding DataPoints}" 
+                    DependentValuePath="Value" 
+                    IndependentValuePath="Key"
+                    DataPointStyle="{StaticResource LineDataPointStyle}"
+                    />
+            </chartingToolkit:Chart>
+
+        </Grid>
+    </Border>
+</UserControl>

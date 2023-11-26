@@ -13,13 +13,6 @@ namespace DeviceTunerNET.SharedDataModel
         public int ModelCode { get; }
 
         /// <summary>
-        /// Модели приборов на которые распространяются настройки. Например Сигнал-20П и Сигнал-20П исп.01 или С2000-СП1 и С2000-СП1 исп.01
-        /// </summary>
-        IEnumerable<string> SupportedModels { get; set; }
-
-       
-
-        /// <summary>
         /// Изменить адрес прибора с текущего на новый. При этом прибор ищется по адресу  в поле Rs485Address.
         /// </summary>
         /// <param name="newDeviceAddress"></param>

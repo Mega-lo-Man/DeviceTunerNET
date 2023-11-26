@@ -2,9 +2,9 @@
 
 namespace DeviceTunerNET.SharedDataModel.ElectricModules
 {
-    public class Relay
+    public class Relay(IOrionDevice orionDevice, byte relayIndex)
     {
-        protected IOrionDevice parentDevice;
+        protected IOrionDevice parentDevice = orionDevice;
 
         public enum OutputTypes : byte
         {
@@ -64,18 +64,12 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         /// <summary>
         /// Relay number Relay 1, Relay, 2, Relay 3 etc.
         /// </summary>
-        public byte RelayIndex { get; set; }
+        public byte RelayIndex { get; set; } = ++relayIndex; // внутренняя нумерация в приборах Болид начинается с единицы
         public OutputTypes OutputType { get; set; } = OutputTypes.Standard;
         public ControlPrograms ControlProgram { get; set; } = ControlPrograms.NoControl;
         public ushort ControlTime { get; set; } = 0xFFFF;
         public bool Events { get; set; } = false;
         public bool EndlessControlTime = true;
-
-        public Relay(IOrionDevice orionDevice, byte relayIndex)
-        {
-            parentDevice = orionDevice;
-            RelayIndex = ++relayIndex; // внутренняя нумерация в приборах Болид начинается с единицы
-        }
 
         public bool TurnOn()
         {
