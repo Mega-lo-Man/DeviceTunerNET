@@ -30,6 +30,7 @@ namespace DeviceTunerNET.Services
         {
             _token = cancellationToken;
             var c2000M = new C2000M(Port);
+            c2000M.Port.MaxRepetitions = 1;
 
             while (!_token.IsCancellationRequested)
             {
