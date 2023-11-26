@@ -11,10 +11,12 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO.Ports;
 using System.Linq;
 using System.Media;
 using System.Reflection;
+using System.Speech.Synthesis;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -31,7 +33,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         private readonly IAddressChanger _bolidAddressChanger;
         private readonly IEventAggregator _ea;
         private readonly Dispatcher _dispatcher;
-
+        private readonly SpeechSynthesizer _synth;
         #region Commands
 
         public DelegateCommand WaitingNewDeviceCommand { get; }
@@ -54,6 +56,12 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             Title = "ПНР";
 
             _dispatcher = Dispatcher.CurrentDispatcher;
+            _synth = new SpeechSynthesizer();
+            _synth.SetOutputToDefaultAudioDevice();
+            var voices = _synth.GetInstalledVoices(new CultureInfo("ru-RU"));
+            
+            if(voices.Count > 0)
+                _synth.SelectVoice(voices[0].VoiceInfo.Name);
 
             _serialTasks = serialTasks;
             _bolidDeviceSearcher = bolidDeviceSearcher;
@@ -438,7 +446,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             };
         }
 
-        private void MessageReceived(Core.Message message)
+        private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.FoundNewOnlineDevice)
             {
@@ -446,8 +454,10 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 _dispatcher.Invoke(() =>
                 {
                     OnlineDevicesList.Add(new ViewOnlineDeviceViewModel(lastDevice));
-                    SystemSounds.Beep.Play();
                 });
+
+                if(message.MessageString.Equals(_bolidAddressChanger.DefaultDeviceFoundMessage))
+                    _synth.SpeakAsync(lastDevice.Model);
             }
         }
     }

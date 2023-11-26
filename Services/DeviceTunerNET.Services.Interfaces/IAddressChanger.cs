@@ -10,6 +10,8 @@ namespace DeviceTunerNET.Services.Interfaces
     {
         IPort Port { get; set; }
         List<RS485device> FoundDevices { get; set; }
+
+        string DefaultDeviceFoundMessage { get; }
         void ChangeDefaultAddresses(CancellationToken cancellationToken);
 
         void TryToChangeDeviceAddress(uint address, IOrionDevice currentDevice);

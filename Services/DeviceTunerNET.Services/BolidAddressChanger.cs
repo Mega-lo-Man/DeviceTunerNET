@@ -25,10 +25,12 @@ namespace DeviceTunerNET.Services
 
         public IPort Port { get; set; }
 
+        public string DefaultDeviceFoundMessage { get; private set; } = "1";
         public void ChangeDefaultAddresses(CancellationToken cancellationToken)
         {
             _token = cancellationToken;
             var c2000M = new C2000M(Port);
+
             while (!_token.IsCancellationRequested)
             {
                 var response = c2000M.GetModelCode(127, out var deviceCode);
@@ -43,7 +45,7 @@ namespace DeviceTunerNET.Services
                     orionDevice.Port = c2000M.Port;
                     orionDevice.SetAddress();
                     FoundDevices.Add((RS485device)orionDevice);
-                    MessageUpdateOnlineDevices("");
+                    MessageUpdateOnlineDevices(DefaultDeviceFoundMessage);
                 }
             }
         }
