@@ -60,6 +60,7 @@ namespace DeviceTunerNET.SharedDataModel.Ports
                 }
                 finally
                 {
+                    SerialPort.DataReceived -= Sp_DataReceived;
                     SerialPort.Close();
                 }
             }
@@ -98,7 +99,10 @@ namespace DeviceTunerNET.SharedDataModel.Ports
         private void SendPacketWithCrc(byte[] command)
         {
             // Orion-RS485 require to send two packets "Command + CRC"
-
+            if(!SerialPort.IsOpen) 
+            {
+                return;
+            }
             //send command
             SerialPort.Write(command, 0, command.Length );
 
