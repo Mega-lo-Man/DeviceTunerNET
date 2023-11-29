@@ -374,7 +374,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 
             foreach (var item in relayViewModels)
             {
-                item.IsControlEnabled = false;
+                item.IsControlEnabled = true;
                 RelayViewModels.Add(item);
             }
         }
