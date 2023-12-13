@@ -174,7 +174,7 @@
 
                     <DataTemplate DataType="{x:Type VM:C2000EthernetDeviceViewModel}">
                         <StackPanel Orientation="Horizontal">
-                            <Image Source="{StaticResource DevRS232Image}"/>
+                            <Image Source="{StaticResource DevC2000ethernetImage}"/>
                             <TextBlock Text="{Binding GetDeviceDesignation}" />
                             <!--, Converter={StaticResource DebugConverter} -->
                         </StackPanel>
