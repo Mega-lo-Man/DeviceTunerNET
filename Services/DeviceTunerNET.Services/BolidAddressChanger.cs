@@ -1,24 +1,23 @@
 ﻿using DeviceTunerNET.Core;
+using DeviceTunerNET.Core.CustomExceptions;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using DeviceTunerNET.SharedDataModel.Devices;
-using DeviceTunerNET.SharedDataModel.Ports;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace DeviceTunerNET.Services
 {
-    public class BolidAddressChanger(IDeviceGenerator deviceGenerator,
-                                             IEventAggregator ea) : IAddressChanger
+    public class BolidAddressChanger(
+        IDeviceGenerator deviceGenerator,
+        IEventAggregator ea) : IAddressChanger
     {
         private readonly IDeviceGenerator _deviceGenerator = deviceGenerator;
         private readonly IEventAggregator _ea = ea;
+        
         private CancellationToken _token;
 
         public List<RS485device> FoundDevices { get; set; } = [];
@@ -38,7 +37,9 @@ namespace DeviceTunerNET.Services
                 if (response)
                 {
                     if (!_deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice))
-                        throw new Exception("Unrecognized device!");
+                    {
+                        throw new InvalidDeviceResponseException(c2000M.Response, $"ChangeDefaultAddresses : TryGetDeviceByCode(deviceCode) => {deviceCode} doesn't exist");
+                    }
 
                     orionDevice.AddressRS485 = FindFreeAddress(c2000M);
 

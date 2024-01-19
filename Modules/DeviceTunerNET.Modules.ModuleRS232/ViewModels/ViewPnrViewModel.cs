@@ -1,4 +1,5 @@
 ﻿using DeviceTunerNET.Core;
+using DeviceTunerNET.Core.CustomExceptions;
 using DeviceTunerNET.Modules.ModulePnr.Views;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
@@ -10,17 +11,15 @@ using Prism.Events;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO.Ports;
 using System.Linq;
-using System.Media;
-using System.Reflection;
 using System.Speech.Synthesis;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Serilog;
 
 namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 {
@@ -32,6 +31,7 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         private readonly IDeviceSearcher _bolidDeviceSearcher;
         private readonly IAddressChanger _bolidAddressChanger;
         private readonly IEventAggregator _ea;
+
         private readonly Dispatcher _dispatcher;
         private readonly SpeechSynthesizer _synth;
         #region Commands
@@ -51,7 +51,8 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         public ViewPnrViewModel(ISerialTasks serialTasks,
                                 IDeviceSearcher bolidDeviceSearcher,
                                 IAddressChanger BolidAddressChanger,
-                                IEventAggregator ea)
+                                IEventAggregator ea
+                                )
         {
             Title = "ПНР";
 
@@ -200,8 +201,9 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 _bolidAddressChanger.Port = comPort;
                 _bolidAddressChanger.ChangeDefaultAddresses(token);
             }
-            catch (Exception ex)
+            catch (InvalidDeviceResponseException ex)
             {
+                Log.Error(ex, $"Response: '{Convert.ToHexString(ex.Response)}' {ex.Message}");
                 MessageBox.Show("Exception: " + ex.Message);
             }
             finally

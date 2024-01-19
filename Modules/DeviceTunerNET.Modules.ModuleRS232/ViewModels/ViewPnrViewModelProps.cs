@@ -150,8 +150,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             }
         }
 
-        
-
         #endregion Properties
     }
 }

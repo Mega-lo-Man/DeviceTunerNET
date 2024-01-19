@@ -14,13 +14,12 @@ using Prism.Modularity;
 using System.IO.Ports;
 using System.Windows;
 using DeviceTunerNET.ViewModels;
-using System.Collections.Generic;
-using System.Collections;
-using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System;
 using DeviceTunerNET.Modules.ModulePnr;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace DeviceTunerNET
 {
@@ -55,7 +54,21 @@ namespace DeviceTunerNET
                 Application.Current.Shutdown();
             }
 
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File("log.txt")
+                .CreateLogger();
+            Log.Information($"Application startup.");
+
             base.OnStartup(e);
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            Log.Error($"The application is closed.");
+            // Close and flush the Serilog logger when the application exits
+            Log.CloseAndFlush();
+
+            base.OnExit(e);
         }
 
         private void MessageReceived(Message message)

@@ -24,8 +24,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         }
 
         public static int Code;
-        public int ModelCode { get => Code; }     
-        
+        public int ModelCode { get => Code; }
+
+        public byte[] Response { get; private set; }
+
         public bool ChangeDeviceAddress(byte newDeviceAddress)
         {
 
@@ -62,23 +64,23 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         private byte[] GetRebootPacket()
         {
-            return new byte[]
-            {
+            return
+            [
                 (byte)OrionCommands.Reboot,
                 0x00,
                 0x00,
-            };
+            ];
         }
 
         private byte[] GetChangeAddressPacket(byte address)
         {
             // формируем команду на отправку
-            return new byte[]
-            {
+            return
+            [
                 (byte)OrionCommands.ChangeAddress,
                 address,
                 address
-            };
+            ];
         }
 
         public bool IsDeviceOnline()
@@ -98,12 +100,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             
             deviceCode = 0;
 
-            var deviceResponse = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
+            Response = AddressTransaction(deviceAddress, cmdString, Timeouts.readModel);
 
-            if(deviceResponse.Length == 0)
+            if(Response.Length == 0)
                 return false;
                 
-            deviceCode = deviceResponse[ResponseDeviceModelOffset];
+            deviceCode = Response[ResponseDeviceModelOffset];
             return true;
         }
 
