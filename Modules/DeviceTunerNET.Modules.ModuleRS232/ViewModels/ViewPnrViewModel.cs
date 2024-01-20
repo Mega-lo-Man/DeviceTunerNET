@@ -206,6 +206,11 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 Log.Error(ex, $"Response: '{Convert.ToHexString(ex.Response)}' {ex.Message}");
                 MessageBox.Show("Exception: " + ex.Message);
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                MessageBox.Show("Exception: " + ex.Message);
+            }
             finally
             {
                 serialPort.Close();               
