@@ -1,10 +1,4 @@
-﻿using DeviceTunerNET.SharedDataModel.Devices;
-using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
-
-namespace DeviceTunerNET.SharedDataModel
+﻿namespace DeviceTunerNET.SharedDataModel
 {
     public class RS485device : CommunicationDevice, Irs485device
     {

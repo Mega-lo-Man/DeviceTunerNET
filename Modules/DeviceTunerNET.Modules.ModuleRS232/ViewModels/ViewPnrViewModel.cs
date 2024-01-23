@@ -200,11 +200,6 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 _bolidAddressChanger.Port = comPort;
                 _bolidAddressChanger.ChangeDefaultAddresses(token);
             }
-            catch (InvalidDeviceResponseException ex)
-            {
-                Log.Error(ex, $"Response: '{Convert.ToHexString(ex.Response)}' {ex.Message}");
-                MessageBox.Show("Exception: " + ex.Message);
-            }
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);

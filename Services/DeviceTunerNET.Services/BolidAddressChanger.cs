@@ -1,9 +1,9 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
-using DeviceTunerNET.SharedDataModel.CustomExceptions;
 using DeviceTunerNET.SharedDataModel.Devices;
 using Prism.Events;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,7 @@ namespace DeviceTunerNET.Services
     {
         private readonly IDeviceGenerator _deviceGenerator = deviceGenerator;
         private readonly IEventAggregator _ea = ea;
-        
+
         private CancellationToken _token;
 
         public List<RS485device> FoundDevices { get; set; } = [];
@@ -38,7 +38,8 @@ namespace DeviceTunerNET.Services
                 {
                     if (!_deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice))
                     {
-                        throw new InvalidDeviceResponseException(c2000M.Response, $"ChangeDefaultAddresses : TryGetDeviceByCode(deviceCode) => {deviceCode} doesn't exist");
+                        Log.Error($"Invalid deviceCode: {deviceCode}. Method: _deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice)");
+                        continue;
                     }
 
                     orionDevice.AddressRS485 = FindFreeAddress(c2000M);
