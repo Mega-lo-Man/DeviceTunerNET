@@ -1,12 +1,8 @@
-﻿using DeviceTunerNET.SharedDataModel.Devices;
+﻿using DeviceTunerNET.SharedDataModel.CustomExceptions;
 using DeviceTunerNET.SharedDataModel.Utils;
 using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 
 namespace DeviceTunerNET.SharedDataModel.Devices
@@ -36,8 +32,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var result = AddressTransaction((byte)AddressRS485, cmdString, Timeouts.addressChanging);
 
             if (result.Length <= ResponseNewAddressOffset)
-                throw new Exception("Device response was not valid or null");
-
+            {
+                throw new InvalidDeviceResponseException(result, "Device response was not valid or null");
+            }
             var success = result[ResponseNewAddressOffset] == newDeviceAddress;
 
             return success;

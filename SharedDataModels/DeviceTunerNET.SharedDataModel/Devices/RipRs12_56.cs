@@ -10,7 +10,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public RipRs12_56(IPort port) : base(port)
         {
-            Model = "РИП-12 исп.54";
+            Model = "РИП-12 исп.56";
             SupportedModels = new List<string>
             {
                 Model,

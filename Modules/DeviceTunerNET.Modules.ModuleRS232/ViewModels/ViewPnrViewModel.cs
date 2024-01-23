@@ -1,6 +1,4 @@
 ﻿using DeviceTunerNET.Core;
-using DeviceTunerNET.Core.CustomExceptions;
-using DeviceTunerNET.Modules.ModulePnr.Views;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
 using DeviceTunerNET.SharedDataModel.Devices;
@@ -20,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Serilog;
+using DeviceTunerNET.SharedDataModel.CustomExceptions;
 
 namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
 {
@@ -247,8 +246,14 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
                 currentDevice.Port = comPort;
                 _bolidAddressChanger.TryToChangeDeviceAddress(onlineDeviceViewModel.Address, currentDevice);
             }
+            catch (InvalidDeviceResponseException ex)
+            {
+                Log.Error(ex, $"Response: '{Convert.ToHexString(ex.Response)}' {ex.Message}");
+                MessageBox.Show("Exception: " + ex.Message);
+            }
             catch (Exception ex)
             {
+                Log.Error(ex, ex.Message);
                 MessageBox.Show("Exception: " + ex.Message);
             }
             finally

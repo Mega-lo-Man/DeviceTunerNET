@@ -1,7 +1,7 @@
 ﻿using DeviceTunerNET.Core;
-using DeviceTunerNET.Core.CustomExceptions;
 using DeviceTunerNET.Services.Interfaces;
 using DeviceTunerNET.SharedDataModel;
+using DeviceTunerNET.SharedDataModel.CustomExceptions;
 using DeviceTunerNET.SharedDataModel.Devices;
 using Prism.Events;
 using System;

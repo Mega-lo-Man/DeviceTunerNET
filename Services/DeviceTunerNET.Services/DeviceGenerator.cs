@@ -56,7 +56,7 @@ namespace DeviceTunerNET.Services
             {"МИП-24", () => new OrionDevice(null) },                           
             {"РИП-48 исп.01", () => new RipRs_48(null) },                   
             {"РИП-12 исп.56", () => new RipRs12_56(null) },
-            {"РИП-24 исп.56", () => new OrionDevice(null) },
+            {"РИП-24 исп.56", () => new RipRs24_56(null) },
             {"Рупор исп.02", () => new OrionDevice(null) },
             {"С2000-КДЛ-Modbus", () => new OrionDevice(null) },
             {"Рупор исп.03", () => new OrionDevice(null) },
