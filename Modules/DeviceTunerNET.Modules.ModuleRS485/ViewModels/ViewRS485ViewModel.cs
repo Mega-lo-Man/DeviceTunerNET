@@ -14,11 +14,9 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using Prism.Services.Dialogs;
 using DeviceTunerNET.SharedDataModel.Devices;
-using System.Diagnostics;
 using System.IO.Ports;
 using DeviceTunerNET.SharedDataModel.Ports;
 using System.Net;
-using System.Threading;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -28,6 +26,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly ISerialTasks _serialTasks;
         private readonly IDialogService _dialogService;
+        private readonly IAuthLoader _authLoader;
         private readonly Dispatcher _dispatcher;
 
         private enum VerificationStart
@@ -47,13 +46,15 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                                   ISerialTasks serialTasks,
                                   IDataRepositoryService dataRepositoryService,
                                   IEventAggregator ea,
-                                  IDialogService dialogService) : base(regionManager)
+                                  IDialogService dialogService,
+                                  IAuthLoader authLoader) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
             _serialTasks = serialTasks;
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
             _dialogService = dialogService;
+            _authLoader = authLoader;
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             AvailableComPorts = _serialTasks.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
@@ -64,6 +65,10 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             AvailableProtocols.Add("WIFI");
             CurrentProtocol = AvailableProtocols.FirstOrDefault();
             CurrentRS485Port = AvailableComPorts.LastOrDefault();
+
+            IsCheckedByCabinetsEnabled = _authLoader.AvailableServicesNames.Contains("BYCABINETSCHECKBOX");
+            IsCheckedByAreaEnabled = _authLoader.AvailableServicesNames.Contains("BYAREASCHECKBOX");
+            IsCheckedComplexVerificationEnabled = _authLoader.AvailableServicesNames.Contains("CHECKRS485CHECKBOX");
 
             Title = "RS485";
         }

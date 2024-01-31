@@ -19,7 +19,9 @@ using System.Runtime.InteropServices;
 using System;
 using DeviceTunerNET.Modules.ModulePnr;
 using Serilog;
-using Serilog.Formatting.Compact;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeviceTunerNET
 {
@@ -43,7 +45,7 @@ namespace DeviceTunerNET
         [DllImport("user32.dll", SetLastError = true)]
         private static extern void SwitchToThisWindow(IntPtr hWnd, bool turnOn);
         
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             var appName = Process.GetCurrentProcess().ProcessName;
             var sameProcesses = Process.GetProcessesByName(appName);
@@ -65,7 +67,6 @@ namespace DeviceTunerNET
         protected override void OnExit(ExitEventArgs e)
         {
             Log.Error($"The application is closed.");
-            // Close and flush the Serilog logger when the application exits
             Log.CloseAndFlush();
 
             base.OnExit(e);
@@ -81,8 +82,10 @@ namespace DeviceTunerNET
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterSingleton<IAuthLoader, AuthLoader>();
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
             containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
+            
             containerRegistry.Register<IFileDialogService, FileDialogService>();
             containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
             containerRegistry.Register<IPrintService, DymoModule>();
@@ -103,11 +106,17 @@ namespace DeviceTunerNET
             containerRegistry.RegisterDialog<SerialDialog, SerialDialogViewModel>("SerialDialog");
         }
 
-        protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+        protected override async void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
-            moduleCatalog.AddModule<ModuleSwitchModule>();
-            moduleCatalog.AddModule<ModuleRS485Module>();
-            moduleCatalog.AddModule<ModulePnrModule>();
+            var authLoader = Container.Resolve<IAuthLoader>();
+            var availableServices = Task.Run(authLoader.GetAvailableServices).Result;
+            
+            if(availableServices.Contains("RS485PAGE"))
+                moduleCatalog.AddModule<ModuleRS485Module>();
+            if (availableServices.Contains("SWITCHPAGE"))
+                moduleCatalog.AddModule<ModuleSwitchModule>();
+            if (availableServices.Contains("PNRPAGE"))
+                moduleCatalog.AddModule<ModulePnrModule>();
         }
     }
 }

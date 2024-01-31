@@ -211,6 +211,26 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _devicesForProgramWasFill, value);
         }
 
+        private bool _isCheckedByCabinetsEnabled;
+        public bool IsCheckedByCabinetsEnabled 
+        {
+            get => _isCheckedByCabinetsEnabled;
+            set => SetProperty(ref _isCheckedByCabinetsEnabled, value);
+        }
+
+        private bool _isCheckedByAreaEnabled;
+        public bool IsCheckedByAreaEnabled
+        {
+            get => _isCheckedByAreaEnabled;
+            set => SetProperty(ref _isCheckedByAreaEnabled, value);
+        }
+
+        private bool _isCheckedComplexVerificationEnabled;
+        public bool IsCheckedComplexVerificationEnabled
+        {
+            get => _isCheckedComplexVerificationEnabled;
+            set => SetProperty(ref _isCheckedComplexVerificationEnabled, value);
+        }
         #endregion
 
 
