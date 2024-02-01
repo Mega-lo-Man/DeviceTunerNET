@@ -7,7 +7,7 @@ namespace DeviceTunerNET.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private string _title = "Device Tuner";
+        private string _title = "Шей да пори!";
         public string Title
         {
             get => _title;
