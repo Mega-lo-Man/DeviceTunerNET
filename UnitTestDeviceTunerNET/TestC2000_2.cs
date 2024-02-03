@@ -16,7 +16,7 @@ namespace UnitTestDeviceTunerNET
     public class TestC2000_2
     {
 
-        private const string portName = "COM3";
+        private const string portName = "COM4";
         private readonly uint deviceAddress = 127;
 
         [TestMethod]
@@ -60,6 +60,32 @@ namespace UnitTestDeviceTunerNET
             serialPort.Close();
 
             Assert.AreEqual(States.RemovedGuard, result);
+        }
+
+        [TestMethod]
+        public void TestDoor()
+        {
+            var port = new ComPort
+            {
+                SerialPort = new SerialPort()
+                {
+                    PortName = portName,
+                }
+            };
+            port.SerialPort.Open();
+
+            var testDevice = new C2000_2(port)
+            {
+                AddressRS485 = deviceAddress
+            };
+
+            var packet = new byte[] { 0x23, 0x00, 0x02};
+
+            var result = testDevice.Access.ProvidingAccess();
+
+            port.SerialPort.Close();
+
+            Assert.IsTrue(result.Length>0);
         }
     }
 }

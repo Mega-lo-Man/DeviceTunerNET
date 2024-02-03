@@ -75,7 +75,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         {
             var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
-            var result = parentDevice.AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x01 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var result = parentDevice.AddressTransaction(address, [0x15, RelayIndex, 0x01], IOrionNetTimeouts.Timeouts.addressChanging);
             
             if (result == null || result.Length < 3)
                 return false;
@@ -89,7 +89,7 @@ namespace DeviceTunerNET.SharedDataModel.ElectricModules
         {
             var serialPort = parentDevice.Port;
             var address = (byte)parentDevice.AddressRS485;
-            var result = parentDevice.AddressTransaction(address, new byte[] { 0x15, RelayIndex, 0x02 }, IOrionNetTimeouts.Timeouts.addressChanging);
+            var result = parentDevice.AddressTransaction(address, [0x15, RelayIndex, 0x02], IOrionNetTimeouts.Timeouts.addressChanging);
             
             if (result == null || result.Length < 3)
                 return false;
