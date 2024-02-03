@@ -36,7 +36,7 @@ namespace DeviceTunerNET.Services
                 var response = c2000M.GetModelCode(127, out var deviceCode);
                 if (response)
                 {
-                    if (!_deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice))
+                    if (!C2000M.TryGetDeviceByCode(deviceCode, out var orionDevice))
                     {
                         Log.Error($"Invalid deviceCode: {deviceCode}. Method: _deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice)");
                         continue;
@@ -89,7 +89,7 @@ namespace DeviceTunerNET.Services
             var response = c2000M.GetModelCode((byte)addressRS485, out var deviceCode);
             if (response)
             {
-                if (!_deviceGenerator.TryGetDeviceByCode(deviceCode, out var orionDevice))
+                if (!C2000M.TryGetDeviceByCode(deviceCode, out var orionDevice))
                     throw new Exception("Unknow device was found. Address: " + addressRS485);
                 orionDevice.AddressRS485 = addressRS485;
                 orionDevice.Port = c2000M.Port;
