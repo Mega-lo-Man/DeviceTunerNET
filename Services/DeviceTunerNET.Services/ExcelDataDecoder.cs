@@ -85,10 +85,12 @@ namespace DeviceTunerNET.Services
                 TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out var devRS232Addr);
                 TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out var devRS485Addr);
 
+                var currentParent = (worksheet.Cells[rowIndex, parentCol].Value?.ToString()) ?? lastDevParent;
+
                 var deviceDataSet = new DeviceDataSet
                 {
                     Id = rowIndex,
-                    DevParent = worksheet.Cells[rowIndex, parentCol].Value?.ToString(),
+                    DevParent = currentParent,
                     DevName = worksheet.Cells[rowIndex, nameCol].Value?.ToString(),
                     DevModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString(),
                     DevIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString(),
