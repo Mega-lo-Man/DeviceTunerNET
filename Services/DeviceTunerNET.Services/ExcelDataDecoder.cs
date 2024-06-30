@@ -30,7 +30,9 @@ namespace DeviceTunerNET.Services
         private int CaptionRow = 1; // Table caption row index
         private int rangCol = 0; // Index of the column containing networkRelationship (master, slave, Transparent)
         private int qcCol = 0; // Index of the column contaning quality control passed mark
+        private int projectCol = 0; // Project column (Площадка)
 
+        private const string ColProjectCaption = "Площадка"; //Заголовок столбца с наименованием проекта
         private const string ColIPAddressCaption = "IP"; //Заголовок столбца с IP-адресами
         private const string ColRS485AddressCaption = "RS485"; //Заголовок столбца с адресами RS485
         private const string ColRS232AddressCaption = "RS232"; //Заголовок столбца с адресами RS232
@@ -79,18 +81,18 @@ namespace DeviceTunerNET.Services
         {
             var cabinetsLst = new List<Cabinet>();
             var cabinet = new Cabinet();
-            var lastDevParent = "";
+            var lastDevCabinet = "";
+            var lastDevProject = "";
             for (var rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
             {
                 TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out var devRS232Addr);
                 TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out var devRS485Addr);
 
-                var currentParent = (worksheet.Cells[rowIndex, parentCol].Value?.ToString()) ?? lastDevParent;
-
                 var deviceDataSet = new DeviceDataSet
                 {
                     Id = rowIndex,
-                    DevParent = currentParent,
+                    DevProject = (worksheet.Cells[rowIndex, projectCol].Value?.ToString()) ?? lastDevProject,
+                    DevCabinet = (worksheet.Cells[rowIndex, parentCol].Value?.ToString()) ?? lastDevCabinet,
                     DevName = worksheet.Cells[rowIndex, nameCol].Value?.ToString(),
                     DevModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString(),
                     DevIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString(),
@@ -101,14 +103,15 @@ namespace DeviceTunerNET.Services
                     DevQcPassed = GetQcStatus(worksheet.Cells[rowIndex, qcCol].Value?.ToString())
                 };
 
-                if (!string.Equals(deviceDataSet.DevParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
+                if (!string.Equals(deviceDataSet.DevCabinet, lastDevCabinet)) // Если новый шкаф - сохранить старый в список шкафов
                 {
                     if (rowIndex != CaptionRow + 1) 
                         cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
                     
                     cabinet = new Cabinet
                     {
-                        Designation = deviceDataSet.DevParent
+                        Designation = deviceDataSet.DevCabinet,
+                        ParentName = deviceDataSet.DevProject,
                     };
                 }
 
@@ -130,7 +133,8 @@ namespace DeviceTunerNET.Services
                 {
                     cabinetsLst.Add(cabinet);
                 }
-                lastDevParent = deviceDataSet.DevParent;
+                lastDevCabinet = deviceDataSet.DevCabinet;
+                lastDevProject = deviceDataSet.DevProject;
             }
             FillDevicesDependencies(dictC2000Ethernet, master, slave);
             FillDevicesDependencies(dictC2000Ethernet, slave, master);
@@ -282,6 +286,7 @@ namespace DeviceTunerNET.Services
                 if (content == ColParentCaption) { parentCol = colIndex; }
                 if (content == ColNetRelationship) { rangCol = colIndex; }
                 if (content == ColQualityControl) { qcCol = colIndex; }
+                if (content == ColProjectCaption) { projectCol = colIndex; }
             }
         }
 
@@ -327,7 +332,8 @@ namespace DeviceTunerNET.Services
     internal class DeviceDataSet
     {
         internal int Id { get; set; }
-        internal string DevParent { get; set; } = "";
+        internal string DevProject { get; set; } = "";
+        internal string DevCabinet { get; set; } = "";
         internal string DevName { get; set; } = "";
         internal string DevModel { get; set; } = "";
         internal string DevIPAddr { get; set; } = "";

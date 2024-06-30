@@ -26,6 +26,6 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// Обозначение шкафа в котором находится этот дивайс
         /// </summary>
-        public string ParentCabinetDesignation { get; set; }
+        public string ParentName { get; set; }
     }
 }

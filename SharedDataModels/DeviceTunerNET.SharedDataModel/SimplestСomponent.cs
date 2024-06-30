@@ -25,7 +25,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// Обозначение шкафа в котором находится этот дивайс
         /// </summary>
-        public string ParentCabinetDesignation { get; set; }
+        public string ParentName { get; set; }
 
         public bool Equals(SimplestСomponent obj)
         {
@@ -51,8 +51,8 @@ namespace DeviceTunerNET.SharedDataModel
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DeviceType);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Designation);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Designation);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ParentCabinetDesignation);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ParentCabinetDesignation);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ParentName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ParentName);
             return hashCode;
         }
     }

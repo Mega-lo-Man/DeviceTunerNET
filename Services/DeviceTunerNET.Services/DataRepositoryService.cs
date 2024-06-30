@@ -196,6 +196,7 @@ namespace DeviceTunerNET.Services
                 {
                     Designation = cabinet.Designation,
                     DeviceType = cabinet.DeviceType,
+                    ParentName = cabinet.ParentName,
                 };
 
                 var devices = cabinet.GetAllDevicesList.Where(c => c is not T).Cast<SimplestСomponent>();

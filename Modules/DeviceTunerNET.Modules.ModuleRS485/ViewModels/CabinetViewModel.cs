@@ -11,14 +11,20 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
     {
         private readonly Cabinet _cabinet;
         private readonly IEventAggregator _ea;
+        private string _cabinetDesignation = "";
+        private string _projectName = "";
 
         public CabinetViewModel(Cabinet cabinet, IEventAggregator ea) : base(null, true)
         {
             _ea = ea;
             _cabinet = cabinet;
+            _cabinetDesignation = _cabinet.Designation;
+            _projectName = _cabinet.ParentName;
         }
 
-        public string GetCabinetDesignation => _cabinet.Designation;
+        public string GetCabinetDesignation => _cabinetDesignation;
+        public string GetProjectName => _projectName;
+        public string GetCombinedName => _projectName + " : " + _cabinetDesignation;
 
         protected override void LoadChildren()
         {

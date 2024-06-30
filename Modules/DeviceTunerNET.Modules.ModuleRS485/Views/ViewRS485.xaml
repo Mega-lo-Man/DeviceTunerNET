@@ -184,7 +184,7 @@
                             ItemsSource="{Binding Children}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="{StaticResource CabinetImage}"/>
-                                <TextBlock Text="{Binding GetCabinetDesignation}" />
+                                <TextBlock Text="{Binding GetCombinedName}" />
                             </StackPanel>
                         </HierarchicalDataTemplate>
 
