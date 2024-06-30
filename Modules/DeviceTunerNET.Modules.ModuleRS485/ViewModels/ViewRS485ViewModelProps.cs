@@ -34,7 +34,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _remoteDefaultFirstIP, value);
         }
 
-        private string _ipMask = "255.255.252.0";
+        private string _ipMask = "255.255.254.0"; //"255.255.252.0";
         public string IPMask
         {
             get => _ipMask;
