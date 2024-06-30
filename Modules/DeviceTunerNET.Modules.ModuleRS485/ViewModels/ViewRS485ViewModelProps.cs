@@ -152,8 +152,15 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             set => SetProperty(ref _cabinetList, value);
         }
 
-        private ObservableCollection<CabinetViewModel> _cabsVM = new();
-        public ObservableCollection<CabinetViewModel> CabsVM
+        private ObservableCollection<CabinetViewModel> _filteredCabsVM = new();
+        public ObservableCollection<CabinetViewModel> FilteredCabsVM
+        {
+            get => _filteredCabsVM;
+            set => SetProperty(ref _filteredCabsVM, value);
+        }
+
+        private List<CabinetViewModel> _cabsVM = new();
+        public List<CabinetViewModel> CabsVM
         {
             get => _cabsVM;
             set => SetProperty(ref _cabsVM, value);
@@ -231,6 +238,18 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             get => _isCheckedComplexVerificationEnabled;
             set => SetProperty(ref _isCheckedComplexVerificationEnabled, value);
         }
+
+        private string _filterTreeText = "";
+        public string FilterTreeText
+        {
+            get => _filterTreeText;
+            set
+            {
+                SetProperty(ref _filterTreeText, value);
+                AddToFilteredCabsVM(_filterTreeText);
+            }
+        }
+
         #endregion
 
 

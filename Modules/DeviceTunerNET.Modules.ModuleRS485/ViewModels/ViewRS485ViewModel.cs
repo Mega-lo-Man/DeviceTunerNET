@@ -461,19 +461,39 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
         }
 
+        private void AddToFilteredCabsVM(string text)
+        {
+            FilteredCabsVM.Clear();
+            foreach (CabinetViewModel item in _cabsVM)
+            {
+                var designation = item.GetCabinetDesignation;
+                if (designation == null)
+                {
+                    continue;
+                }
+                if (text.Length == 0 || designation.StartsWith(text))
+                {
+                    FilteredCabsVM.Add(item);
+                }
+            }
+        }
+
         private void MessageReceived(Message message)
         {
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
             {
                 CabinetList.Clear();
                 CabsVM.Clear();
+                FilteredCabsVM.Clear();
 
                 var cabOut = _dataRepositoryService.GetCabinetsWithoutExcludeDevices<EthernetSwitch>();
 
                 foreach (var cabinet in cabOut)
                 {
                     CabinetList.Add(cabinet);
-                    CabsVM.Add(new CabinetViewModel(cabinet, _ea));// Fill the TreeView with cabinets
+                    var cabinetViewModel = new CabinetViewModel(cabinet, _ea);
+                    CabsVM.Add(cabinetViewModel);// Fill the TreeView with cabinets
+                    FilteredCabsVM.Add(cabinetViewModel);
                 }
             }
             if (message.ActionCode == MessageSentEvent.UserSelectedItemInTreeView)

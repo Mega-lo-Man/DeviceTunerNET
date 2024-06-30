@@ -9,6 +9,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              xmlns:prism="http://prismlibrary.com/"
+             d:DataContext="{d:DesignInstance Type=VM:ViewRS485ViewModel}"
              prism:ViewModelLocator.AutoWireViewModel="True" >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -153,47 +154,58 @@
                 <ColumnDefinition Width="143*"/>
             </Grid.ColumnDefinitions>
 
-            <TreeView ItemsSource="{Binding Path=CabsVM}" Grid.Column="0" Margin="5" Grid.ColumnSpan="3" >
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type TreeViewItem}">
-                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                        <Setter Property="FontWeight" Value="Normal" />
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="FontWeight" Value="Bold" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </TreeView.ItemContainerStyle>
-                <TreeView.Resources>
-                    <HierarchicalDataTemplate 
-                        DataType="{x:Type VM:CabinetViewModel}"
-                        ItemsSource="{Binding Children}">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{StaticResource CabinetImage}"/>
-                            <TextBlock Text="{Binding GetCabinetDesignation}" />
-                        </StackPanel>
-                    </HierarchicalDataTemplate>
+            <Grid Grid.Column="0" Margin="5" Grid.ColumnSpan="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
 
-                    <DataTemplate DataType="{x:Type VM:RS485DeviceViewModel}">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{StaticResource DevRS485Image}"/>
-                            <TextBlock Text="{Binding GetDeviceDesignation}" />
-                            <!--, Converter={StaticResource DebugConverter} -->
-                        </StackPanel>
-                    </DataTemplate>
+                <TextBox 
+                    Grid.Row="0" 
+                    Margin="0 0 0 5" 
+                    Text="{Binding FilterTreeText, UpdateSourceTrigger=PropertyChanged}"/>
 
-                    <DataTemplate DataType="{x:Type VM:C2000EthernetDeviceViewModel}">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{StaticResource DevC2000ethernetImage}"/>
-                            <TextBlock Text="{Binding GetDeviceDesignation}" />
-                            <!--, Converter={StaticResource DebugConverter} -->
-                        </StackPanel>
-                    </DataTemplate>
-                </TreeView.Resources>
-            </TreeView>
+                <TreeView ItemsSource="{Binding Path=FilteredCabsVM}" Grid.Row="1">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                            <Setter Property="FontWeight" Value="Normal" />
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate 
+                            DataType="{x:Type VM:CabinetViewModel}"
+                            ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{StaticResource CabinetImage}"/>
+                                <TextBlock Text="{Binding GetCabinetDesignation}" />
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
 
+                        <DataTemplate DataType="{x:Type VM:RS485DeviceViewModel}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{StaticResource DevRS485Image}"/>
+                                <TextBlock Text="{Binding GetDeviceDesignation}" />
+                                <!--, Converter={StaticResource DebugConverter} -->
+                            </StackPanel>
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type VM:C2000EthernetDeviceViewModel}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{StaticResource DevC2000ethernetImage}"/>
+                                <TextBlock Text="{Binding GetDeviceDesignation}" />
+                                <!--, Converter={StaticResource DebugConverter} -->
+                            </StackPanel>
+                        </DataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
+            </Grid>
             <GridSplitter Grid.Column="3" ShowsPreview="False" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch" />
 
             <ListView x:Name="DeviceListBox" 
