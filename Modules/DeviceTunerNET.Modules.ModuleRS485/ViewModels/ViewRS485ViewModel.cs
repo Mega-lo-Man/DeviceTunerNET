@@ -466,12 +466,12 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             FilteredCabsVM.Clear();
             foreach (CabinetViewModel item in _cabsVM)
             {
-                var designation = item.GetCabinetDesignation;
+                var designation = item.GetCombinedName;
                 if (designation == null)
                 {
                     continue;
                 }
-                if (text.Length == 0 || designation.StartsWith(text))
+                if (text.Length == 0 || designation.ToUpper().Contains(text.ToUpper()))
                 {
                     FilteredCabsVM.Add(item);
                 }
