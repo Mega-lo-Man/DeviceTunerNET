@@ -38,7 +38,7 @@ namespace DeviceTunerNET.Services
                     password,
                 };
 
-                var loginUrl = "http://www.elatale.site:3001/api/auth/login";
+                var loginUrl = "http://5.181.23.124:3001/api/auth/login";
                 using var httpClient = new HttpClient();
                 var loginResponse = await httpClient.PostAsJsonAsync(loginUrl, loginData);
                 loginResponse.EnsureSuccessStatusCode();
@@ -51,7 +51,7 @@ namespace DeviceTunerNET.Services
                 };
 
                 var hexSerial = Uri.EscapeDataString(_serial);
-                var deviceUrl = $"http://www.elatale.site:3001/api/hardware/?serial={_serial}";
+                var deviceUrl = $"http://5.181.23.124:3001/api/hardware/?serial={_serial}";
                 var request = new HttpRequestMessage(HttpMethod.Get, deviceUrl);
 
                 foreach(var header in headers)
