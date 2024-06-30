@@ -86,7 +86,7 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             set => SetProperty(ref _defaultIP, value);
         }
 
-        private int _ipMask = 22;
+        private int _ipMask = 23;
         public int IPMask
         {
             get => _ipMask;

@@ -272,6 +272,31 @@ namespace DeviceTunerNET.Modules.ModuleSwitch.ViewModels
             {
                 ObserveConsole += message.MessageString + "\r\n";// Ответы коммутатора в консоль
             }
+            if (message.ActionCode == MessageSentEvent.UserSelectedItemInTreeView)
+            {
+                var attachedObjType = message.AttachedObject.GetType();
+                if (attachedObjType == typeof(Cabinet))
+                {
+                    var cabinetId = ((Cabinet)message.AttachedObject).Id;
+                    SwitchList.Clear();
+                    var cabinets = (List<Cabinet>)_dataRepositoryService.GetCabinetsWithDevices<EthernetSwitch>();
+                    foreach (var cabinet in cabinets) 
+                    { 
+                        if(cabinet.Id != cabinetId)
+                        {
+                            continue;
+                        }
+                        var switches = cabinet.GetDevicesList<EthernetSwitch>();
+                        foreach (var item in switches)
+                        {
+                            SwitchList.Add(item);
+                        }
+                    }
+
+                    if (SwitchList.Count > 0)
+                        IsCanDoStart = true;
+                }
+            }
         }
 
         public override void OnNavigatedTo(NavigationContext navigationContext)

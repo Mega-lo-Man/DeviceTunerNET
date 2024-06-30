@@ -110,6 +110,7 @@ namespace DeviceTunerNET.Services
                     
                     cabinet = new Cabinet
                     {
+                        Id = rowIndex,
                         Designation = deviceDataSet.DevCabinet,
                         ParentName = deviceDataSet.DevProject,
                     };

@@ -75,6 +75,8 @@ namespace DeviceTunerNET.Services
                 // В возвращаемом из метода списке будем создавать новые шкафы
                 var newCabinet = new Cabinet
                 {
+                    Id = cabinet.Id,
+                    ParentName = cabinet.ParentName,
                     Designation = cabinet.Designation,
                     DeviceType = cabinet.DeviceType
                 };
@@ -104,6 +106,8 @@ namespace DeviceTunerNET.Services
 
                 var newCabinet = new Cabinet
                 {
+                    Id = cabinet.Id,
+                    ParentName = cabinet.ParentName,
                     Designation = cabinet.Designation,
                     DeviceType = cabinet.DeviceType
                 };
@@ -144,6 +148,8 @@ namespace DeviceTunerNET.Services
             {
                 var newCab = new Cabinet
                 {
+                    Id = cab485.Id,
+                    ParentName = cab485.ParentName,
                     Designation = cab485.Designation
                 };
 
@@ -194,6 +200,7 @@ namespace DeviceTunerNET.Services
             {
                 var newCabinet = new Cabinet()
                 {
+                    Id = cabinet.Id,
                     Designation = cabinet.Designation,
                     DeviceType = cabinet.DeviceType,
                     ParentName = cabinet.ParentName,
