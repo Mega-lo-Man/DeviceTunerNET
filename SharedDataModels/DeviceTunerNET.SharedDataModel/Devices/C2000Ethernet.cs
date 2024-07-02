@@ -16,6 +16,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private const int MacAddressLength = 6;
 
+        public new const int ModelCode = 29;
         public new const int Code = 29;
 
         #region Enums
@@ -199,9 +200,8 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             };
 
             AddressIP = "192.168.2.11";
-            Netmask = "255.255.252.0";
+            Netmask = "255.255.254.0";
             DefaultGateway = "0.0.0.0";
-            Netmask = "255.255.252.0";
             DuplexMode = (int)Duplex.half;
             DestinationUdp = 40001;
             FreeConnectionUdp = 40001;
@@ -241,7 +241,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         }
 
         //We must override default implementaition of the Setup() because in C2000-Ethernet we need upload config and after that change address
-        public override bool Setup(Action<int> progressStatus)
+        public override bool Setup(Action<int> progressStatus, int modelCode = 0)
         {
             var result = GetModelCode((byte)defaultAddress, out var currentDeviceCode);
             

@@ -358,6 +358,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private void Upload(IOrionDevice device, string serialNumb)
         {
             _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
+
             var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
             try
             {

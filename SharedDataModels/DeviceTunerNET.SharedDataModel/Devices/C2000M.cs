@@ -9,6 +9,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class C2000M : OrionDevice
     {
+        public new const int ModelCode = 0;
         public new const int Code = 0;
 
         private readonly Dictionary<byte, Func<IOrionDevice>> _bolidDict = new()
@@ -104,6 +105,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 progress += progressStep;
             }
             Port.MaxRepetitions = 15;
+        }
+
+        public override bool Setup(Action<int> updateProgressBar, int modelCode = 0)
+        {
+            return base.Setup(updateProgressBar, Code);
         }
     }
 }

@@ -14,10 +14,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private readonly int inputsCount = 2;
 
+        public new const int ModelCode = 16;
         public new const int Code = 16;
 
         #region Properties
-        
+
         public IEnumerable<Shleif> Shleifs { get; set; }
         public AccessController Access { get; set; }
 
@@ -149,6 +150,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             if (deviceCode != ModelCode)
                 throw new Exception("Wrong model!");
 
+        }
+
+        public override bool Setup(Action<int> updateProgressBar, int modelCode = 0)
+        {
+            return base.Setup(updateProgressBar, Code);
         }
     }
 }

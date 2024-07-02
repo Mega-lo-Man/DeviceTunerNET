@@ -14,6 +14,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private readonly int relayNumber = 3;
         //private readonly int supervisedRelayNumber = 2;
 
+        public new const int ModelCode = 2;
         public new const int Code = 2;
 
         #region Enums
@@ -415,6 +416,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             if (deviceCode != ModelCode)
                 throw new Exception("Wrong model!");
 
+        }
+
+        public override bool Setup(Action<int> updateProgressBar, int modelCode = 0)
+        {
+            return base.Setup(updateProgressBar, Code);
         }
     }
 }

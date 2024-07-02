@@ -56,7 +56,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// </summary>
         /// <param name="progress">update progress bar</param>
         /// <returns></returns>
-        bool Setup(Action<int> progress);
+        bool Setup(Action<int> progress, int modelCode = 0);
 
         /// <summary>
         /// Последний ответ от прибора

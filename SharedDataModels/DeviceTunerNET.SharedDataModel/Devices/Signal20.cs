@@ -6,6 +6,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class Signal20 : OrionDevice
     {
+        public new const int ModelCode = 1;
         public new const int Code = 1;
         public Signal20(IPort port) : base(port)
         {
@@ -14,6 +15,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             {
                 Model
             };
+        }
+
+        public override bool Setup(Action<int> updateProgressBar, int modelCode = 0)
+        {
+            return base.Setup(updateProgressBar, Code);
         }
     }
 }

@@ -169,8 +169,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             return cmd;
         }
 
-        public virtual bool Setup(Action<int> updateProgressBar)
+        public virtual bool Setup(
+            Action<int> updateProgressBar, 
+            int modelCode = 0)
         {
+            Code = modelCode;
             if(!GetModelCode((byte)defaultAddress, out var deviceCode))
                 return false;
 

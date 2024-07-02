@@ -11,6 +11,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private readonly int relayNumber = 2;
         private const int sirenTime = 0x03C0;
 
+        public new const int ModelCode = 4;
         public new const int Code = 4;
 
         #region Properties
@@ -54,6 +55,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
 
             SupervisedRelays = supervisedRelays;
+        }
+
+        public override bool Setup(Action<int> updateProgressBar, int modelCode = 0)
+        {
+            return base.Setup(updateProgressBar, Code);
         }
     }
 }
