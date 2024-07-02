@@ -9,16 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
-using Prism.Services.Dialogs;
 using DeviceTunerNET.SharedDataModel.Devices;
 using System.IO.Ports;
 using DeviceTunerNET.SharedDataModel.Ports;
-using System.Net;
-using System.Threading;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties;
+
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -28,6 +24,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly ISerialTasks _serialTasks;
         private readonly IDialogCaller _dialogCaller;
+        private readonly IUploadSerialManager _uploadManager;
         private readonly IAuthLoader _authLoader;
         private readonly Dispatcher _dispatcher;
 
@@ -47,6 +44,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                                   ISerialTasks serialTasks,
                                   IDataRepositoryService dataRepositoryService,
                                   IDialogCaller dialogCaller,
+                                  IUploadSerialManager uploadSerialManager,
                                   IEventAggregator ea,
                                   IAuthLoader authLoader) : base(regionManager)
         {
@@ -54,6 +52,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             _dataRepositoryService = dataRepositoryService;
             _serialTasks = serialTasks;
             _dialogCaller = dialogCaller;
+            _uploadManager = uploadSerialManager;
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
             _authLoader = authLoader;
             _dispatcher = Dispatcher.CurrentDispatcher;
@@ -289,7 +288,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             }
 
             StartButtonEnable = false; // Lock start button
-            //var devSerial = "";
 
             Upload(device, SerialTextBox);
 
@@ -305,53 +303,27 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private void Upload(IOrionDevice device, string serialNumb)
         {
-            _dispatcher.BeginInvoke(new Action(() => { CurrentDeviceModel = device.Model; }));
-
-            var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
-            try
+            _dispatcher.BeginInvoke(new Action(() =>
             {
-                if (device is OrionDevice orionDevice)
-                {
-                    if (CurrentProtocol.Equals("COM"))
-                    {
-                        orionDevice.Port = new ComPort() { SerialPort = serialPort };
-                        serialPort.Open();
-                    }
-                    else
-                    {
-                        var ip = IPAddress.Parse("10.10.10.1");
-                        orionDevice.Port = new BolidUdpClient(8100)
-                        {
-                            RemoteServerIp = ip,
-                            RemoteServerUdpPort = 12000
-                        };
-                    }
+                CurrentDeviceModel = device.Model;
+            }));
 
-                    var isSutupComplete = orionDevice.Setup(UpdateProgressBar());
-                    serialPort.Close();
-                    if(!isSutupComplete)
-                    {
-                        _dialogCaller.ShowMessage("Не удалось настроить прибор: " + orionDevice.Model + "; с обозначением: " + orionDevice.Designation);
-                        StartButtonEnable = true;// unlock start button
-                        return;
-                    }
-                    SaveSerial(orionDevice, serialNumb);
-                }
-            }
-            catch (Exception ex) 
-            { 
-                serialPort?.Close();
-                _dialogCaller.ShowMessage(ex.Message);
-                StartButtonEnable = true;// unlock start button
-
-                return;
-            }
+            UploadToDevice(device, serialNumb);
 
             // Обновляем всю коллекцию в UI целиком
             _dispatcher.BeginInvoke(new Action(() =>
             {
                 CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+                StartButtonEnable = true;// unlock start button
             }));
+        }
+
+        private void UploadToDevice(IOrionDevice device, string serialNumb)
+        {
+            _uploadManager.PortName = CurrentRS485Port;
+            _uploadManager.Protocol = CurrentProtocol;
+            _uploadManager.UpdateProgressBar = UpdateProgressBar();
+            _uploadManager.Upload(device, serialNumb);
         }
 
         private Action<int> UpdateProgressBar()
@@ -372,7 +344,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private static int GetNumberOfDeviceWithoutQcPassed(IEnumerable<object> devices)
         {
-            //return devices.Cast<RS485device>().Count(d => d.QualityControlPassed == false);
             var counter = 0;
             foreach (var device in devices.Cast<Device>())
             {
@@ -393,21 +364,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         {
             //исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
             return devices.Cast<IOrionDevice>().Where(device => !string.IsNullOrEmpty(device.Serial));
-        }
-
-        private void SaveSerial(Device device, string serialNumb)
-        {
-            device.Serial = serialNumb;
-
-            if (!_dataRepositoryService.SaveSerialNumber(device.Id, device.Serial))
-            {
-                _dispatcher.BeginInvoke(new Action(() =>
-                {
-                    Clipboard.SetText(device.Serial ?? string.Empty);
-                }));
-
-                _dialogCaller.ShowMessage("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
-            }
         }
 
         private void AddToFilteredCabsVM(string text)

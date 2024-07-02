@@ -18,7 +18,7 @@ namespace UnitTestDeviceTunerNET
         {
             var ethernetSwitch = new EthernetSwitch(null);
 
-            var manager = new UploadManager(new ConfigParser(), new TftpServerManager());
+            var manager = new UploadSwitchManager(new ConfigParser(), new TftpServerManager());
             var token = new CancellationToken();
 
             //Assert.AreEqual(true, manager.UploadConfig(ethernetSwitch, token));

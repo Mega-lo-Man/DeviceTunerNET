@@ -96,6 +96,7 @@ namespace DeviceTunerNET
             containerRegistry.Register<IDeviceSearcher, BolidDeviceSearcher>();
             containerRegistry.Register<IAddressChanger, BolidAddressChanger>();
             containerRegistry.Register<IDialogCaller, DialogCaller>();
+            containerRegistry.Register<IUploadSerialManager, UploadSerialManager>();
 
             containerRegistry.GetContainer().Register<ISender, EltexTelnet>(serviceKey: SrvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, EltexSsh>(serviceKey: SrvKey.sshKey);

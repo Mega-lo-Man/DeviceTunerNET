@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DeviceTunerNET.SharedDataModel
 {
-    public interface IPort
+    public interface IPort : IDisposable
     {
         /// <summary>
         /// The maximum number of attempts to send a message

@@ -11,8 +11,6 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         
         #region Properties
 
-        private VerificationStart VerificationCanStart { get; set; }
-
         private int _deviceStatus;
         public int DeviceStatus
         {
@@ -76,7 +74,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 if (value)
                 {
-                    DevicesForProgramming.Clear(); // При переключении режима работы надо очистить список приборов для программирования
+                    //DevicesForProgramming.Clear(); // При переключении режима работы надо очистить список приборов для программирования
                     StartButtonVisibilty = true; // и показать кнопку DownloadAddressButton, если погашена.
                 }
 
@@ -92,7 +90,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 if (value)
                 {
-                    DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
+                    //DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
 
                     foreach (var item in _dataRepositoryService.GetAllDevices<OrionDevice>())
                     {
@@ -118,7 +116,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             {
                 if (value)
                 {
-                    DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
+                    //DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
                     StartButtonVisibilty = false; // и скрыть кнопку DownloadAddressButton и показать кнопку CheckButton (она покажется с помощью св-ва IsCheckedComplexVerification.
                 }
                 SetProperty(ref _isCheckedComplexVerification, value);

@@ -89,5 +89,10 @@ namespace DeviceTunerNET.SharedDataModel.Ports
             var length = (byte)data.Length;
             return new byte[] { 0x10, length, 0x00, commandCounter, 0x10 }; //0x10 0x07 0x00 0x00 0x10
         }
+
+        public void Dispose()
+        {
+            
+        }
     }
 }

@@ -125,5 +125,10 @@ namespace DeviceTunerNET.SharedDataModel.Ports
                 _readBuffer.Add(b);
             }
         }
+
+        public void Dispose()
+        {
+            SerialPort.Dispose();
+        }
     }
 }

@@ -12,7 +12,7 @@ using System.Net;
 
 namespace DeviceTunerNET.Services
 {
-    public class UploadManager //: IUploadManager
+    public class UploadSwitchManager //: IUploadManager
 
     {
         private readonly IConfigParser _configParser;
@@ -23,7 +23,7 @@ namespace DeviceTunerNET.Services
         public Dictionary<string, string> ReplaceableVariables { get; set; }
         public string ServerDirectory { get; private set; }
 
-        public UploadManager(IConfigParser configParser, ITftpServerManager tftpServerManager)
+        public UploadSwitchManager(IConfigParser configParser, ITftpServerManager tftpServerManager)
         {
             _configParser = configParser;
             _tftpServerManager = tftpServerManager;
@@ -36,9 +36,6 @@ namespace DeviceTunerNET.Services
             
             return false;
         }
-
-
-        
 
         public EthernetSwitch UploadConfig(EthernetSwitch ethernetSwitch, CancellationToken token)
         {
