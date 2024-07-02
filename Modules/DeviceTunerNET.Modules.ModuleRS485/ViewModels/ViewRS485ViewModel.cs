@@ -17,6 +17,8 @@ using DeviceTunerNET.SharedDataModel.Devices;
 using System.IO.Ports;
 using DeviceTunerNET.SharedDataModel.Ports;
 using System.Net;
+using System.Threading;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties;
 
 namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 {
@@ -25,13 +27,12 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly ISerialTasks _serialTasks;
-        private readonly IDialogService _dialogService;
+        private readonly IDialogCaller _dialogCaller;
         private readonly IAuthLoader _authLoader;
         private readonly Dispatcher _dispatcher;
 
         private enum VerificationStart
         {
-            waitFor = 2, // Waiting for user input serial
             canExecute = 1,
             cantExecute = 0
         }
@@ -45,15 +46,15 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
         public ViewRS485ViewModel(IRegionManager regionManager,
                                   ISerialTasks serialTasks,
                                   IDataRepositoryService dataRepositoryService,
+                                  IDialogCaller dialogCaller,
                                   IEventAggregator ea,
-                                  IDialogService dialogService,
                                   IAuthLoader authLoader) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
             _serialTasks = serialTasks;
+            _dialogCaller = dialogCaller;
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
-            _dialogService = dialogService;
             _authLoader = authLoader;
             _dispatcher = Dispatcher.CurrentDispatcher;
 
@@ -157,7 +158,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             var numberOfDeviceWithoutSerial = GetNumberOfDeviceWithoutSerial(DevicesForProgramming);
             if (numberOfDeviceWithoutSerial > 1)
             {
-                MessageBox.Show("В списке приборов более одного прибора не имеют серийника!");
+                _dialogCaller.ShowMessage("В списке приборов более одного прибора не имеют серийника!");
                 return;
             }
 
@@ -165,20 +166,16 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             // Displaying a window asking user to enter the serial number.
             string serial = "";
-            VerificationCanStart = VerificationStart.waitFor;
 
             if (numberOfDeviceWithoutSerial == 1)
             {
                 var device = GetDevicesWithoutSerial(DevicesForProgramming).First();
                 var model = device.Model;
                 var designation = device.Designation;
-                serial = GetSerialNumberFromUser(serial, model, designation);
 
-                while (VerificationCanStart == VerificationStart.waitFor)
-                {
-                }
-
-                if (VerificationCanStart == VerificationStart.cantExecute)
+                serial = _dialogCaller.GetSerialNumber(model, designation);
+                
+                if (string.IsNullOrEmpty(serial))
                 {
                     StartButtonEnable = true;// Unlock start button
                     return;
@@ -198,7 +195,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             if (passedQcNumb != devsWithSerial.Count())
             {
-                MessageBox.Show("Количество не ответивших приборов имеющих серийник: " + (devsWithSerial.Count() - passedQcNumb));
+                _dialogCaller.ShowMessage("Количество не ответивших приборов имеющих серийник: " + (devsWithSerial.Count() - passedQcNumb));
                 StartButtonEnable = true; // Unlock start button
                 return;
             }
@@ -234,63 +231,14 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             var numberOfDeviceWithoutQcPassed = GetNumberOfDeviceWithoutQcPassed(DevicesForProgramming);
             if (numberOfDeviceWithoutQcPassed != 0)
             {
-                MessageBox.Show("Колчиство не прошедших проверку приборов: " + numberOfDeviceWithoutQcPassed);
+                _dialogCaller.ShowMessage("Колчиство не прошедших проверку приборов: " + numberOfDeviceWithoutQcPassed);
                 StartButtonEnable = true;// unlock start button
                 return;
             }
 
-            MessageBox.Show("All good!");
+            _dialogCaller.ShowMessage("All systems are go!");
             SerialTextBox = "";
             StartButtonEnable = true;// unlock start button
-        }
-
-        private string GetSerialNumberFromUser(string serial, string model, string designation)
-        {
-            _ = _dispatcher.BeginInvoke(new Action(() =>
-            {
-                var parameters = GetSerialDialogParams(model, designation);
-                serial = ShowSerialInputDialog(serial, parameters);
-            }));
-            return serial;
-        }
-
-        private static DialogParameters GetSerialDialogParams(string model, string designation)
-        {
-#pragma warning disable CA1416 // Validate platform compatibility
-            return new DialogParameters
-                    {
-                        {"title", "Ввод серийного номера."},
-                        {"message", "Серийник: "},
-                        {"model", model},
-                        {"designation", designation}
-                    };
-#pragma warning restore CA1416 // Validate platform compatibility
-        }
-
-        private string ShowSerialInputDialog(string serial, DialogParameters parameters)
-        {
-#pragma warning disable CA1416 // Validate platform compatibility
-            _dialogService.ShowDialog("SerialDialog", parameters, dialogResult =>
-            {
-                if (dialogResult.Result == ButtonResult.OK)
-                {
-                    serial = dialogResult.Parameters.GetValue<string>("Serial");
-                    if (serial == null)
-                    {
-                        StartButtonEnable = true;// Unlock start button
-                        return;
-                    }
-
-                    VerificationCanStart = VerificationStart.canExecute;
-                }
-
-                else
-                {
-                    VerificationCanStart = VerificationStart.cantExecute;
-                }
-            });
-#pragma warning restore CA1416 // Validate platform compatibility
-            return serial;
         }
 
         private int QualityControl(IEnumerable<IOrionDevice> devices)
@@ -336,7 +284,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
             if (device == null)
             {
-                MessageBox.Show("Nothing to program!");
+                _dialogCaller.ShowMessage("Nothing to program!");
                 return;
             }
 
@@ -348,7 +296,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             // Is Device Was Last?
             if (GetDevicesWithoutSerial(DevicesForProgramming) == null)
             {
-                MessageBox.Show("Alles!");
+                _dialogCaller.ShowMessage("Alles!");
             }
 
             SerialTextBox = "";
@@ -379,11 +327,11 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                         };
                     }
 
-                    var isSutupComplite = orionDevice.Setup(UpdateProgressBar());
+                    var isSutupComplete = orionDevice.Setup(UpdateProgressBar());
                     serialPort.Close();
-                    if(!isSutupComplite)
+                    if(!isSutupComplete)
                     {
-                        MessageBox.Show("Не удалось настроить прибор: " + orionDevice.Model + "; с обозначением: " + orionDevice.Designation);
+                        _dialogCaller.ShowMessage("Не удалось настроить прибор: " + orionDevice.Model + "; с обозначением: " + orionDevice.Designation);
                         StartButtonEnable = true;// unlock start button
                         return;
                     }
@@ -393,7 +341,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
             catch (Exception ex) 
             { 
                 serialPort?.Close();
-                MessageBox.Show(ex.Message);
+                _dialogCaller.ShowMessage(ex.Message);
                 StartButtonEnable = true;// unlock start button
 
                 return;
@@ -458,7 +406,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     Clipboard.SetText(device.Serial ?? string.Empty);
                 }));
 
-                MessageBox.Show("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
+                _dialogCaller.ShowMessage("Не удалось сохранить серийный номер! Он был скопирован в буфер обмена.");
             }
         }
 
