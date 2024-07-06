@@ -14,7 +14,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private readonly int relayNumber = 3;
         //private readonly int supervisedRelayNumber = 2;
 
-        public new const int ModelCode = 2;
         public new const int Code = 2;
 
         #region Enums
@@ -413,7 +412,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             var result = GetModelCode((byte)AddressRS485, out var deviceCode);
             if(!result)
                 throw new Exception("Device doesn't respond!");
-            if (deviceCode != ModelCode)
+            if (deviceCode != Code)
                 throw new Exception("Wrong model!");
 
         }

@@ -9,7 +9,8 @@
              xmlns:prism="http://prismlibrary.com/" 
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:behavior="clr-namespace:DeviceTunerNET.Modules.ModulePnr.Behaviors" 
-             xmlns:viewmodels="clr-namespace:DeviceTunerNET.Modules.ModulePnr.ViewModels" 
+             xmlns:viewmodels="clr-namespace:DeviceTunerNET.Modules.ModulePnr.ViewModels"
+             xmlns:converters="clr-namespace:DeviceTunerNET.Core.Resources.Converters;assembly=DeviceTunerNET.Core"
              d:DataContext="{d:DesignInstance Type=viewmodels:ViewPnrViewModel}"
              prism:ViewModelLocator.AutoWireViewModel="True" >
 
@@ -18,9 +19,11 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryStyles.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DeviceTunerNET.core;component/Resources/DictionaryImages.xaml"/>
+                
             </ResourceDictionary.MergedDictionaries>
-
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
+        
     </UserControl.Resources>
 
     <Grid>
@@ -150,6 +153,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
@@ -193,14 +197,24 @@
                     Name="SearchPBar" 
                     Grid.Row="1"
                     Grid.ColumnSpan="2"
-                    Margin="0 5 0 0"
+                    Margin="5 5 5 0"
                     Minimum="0" 
                     Maximum="100" 
                     Value="{Binding SearchProgressBar}"
                     IsIndeterminate="{Binding IsProgressIndeterminate}"
                     Height="20" 
                     VerticalAlignment="Bottom"/>
-            </Grid>
+                <Slider
+                    Name="SearchSlider" 
+                    Grid.Row="2"
+                    Grid.ColumnSpan="2"
+                    Minimum="1"
+                    Maximum="126"
+                    TickPlacement="TopLeft"
+                    TickFrequency="6"
+                    Visibility="{Binding SearchSliderVisibility, UpdateSourceTrigger=PropertyChanged}"
+                />
+                </Grid>
             </Border>
         </StackPanel>
 

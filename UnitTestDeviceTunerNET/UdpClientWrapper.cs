@@ -51,6 +51,11 @@ namespace UnitTestDeviceTunerNET
 
         public int Timeout { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
+        public void Dispose()
+        {
+            
+        }
+
         public byte[] Send(byte[] data)
         {
             // Send the data to the remote server

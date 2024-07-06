@@ -1,6 +1,7 @@
 ﻿using Prism.Mvvm;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using static System.Int32;
 
 namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
@@ -85,14 +86,22 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
         public bool IsCheckedSearching
         {
             get => _isCheckedSearching;
-            set => SetProperty(ref _isCheckedSearching, value);
+            set
+            {
+                SearchSliderVisibility = Visibility.Hidden;
+                SetProperty(ref _isCheckedSearching, value);
+            }
         }
 
         private bool _isCheckedWaiting = true;
         public bool IsCheckedWaiting
         {
             get => _isCheckedWaiting;
-            set => SetProperty(ref _isCheckedWaiting, value);
+            set
+            {
+                SearchSliderVisibility = Visibility.Visible;
+                SetProperty(ref _isCheckedWaiting, value);
+            }
         }
 
         private bool _scanSliderIsChecked = false;
@@ -147,6 +156,16 @@ namespace DeviceTunerNET.Modules.ModulePnr.ViewModels
             set
             {
                 SetProperty(ref _isProgressIndeterminate, value);
+            }
+        }
+
+        private Visibility _searchSliderVisibility = Visibility.Hidden;
+        public Visibility SearchSliderVisibility
+        {
+            get => _searchSliderVisibility;
+            set 
+            {
+                SetProperty(ref _searchSliderVisibility, value);
             }
         }
 

@@ -81,7 +81,7 @@ gi1/0/10 1G-Combo-C     --      --     --     --  Down (nc)         --         -
             var result = device.GetModelCode(127, out var deviceCode).ToString();
 
             
-            Assert.AreEqual(deviceCode, device.ModelCode);
+            Assert.AreEqual(deviceCode, 2);
         }
 
         [TestMethod]
