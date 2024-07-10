@@ -11,8 +11,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private readonly int relayNumber = 2;
         private const int sirenTime = 0x03C0;
 
-        public new const int ModelCode = 4;
-        public new const int Code = 4;
+        public const int Code = 4;
 
         #region Properties
         public IEnumerable<Shleif> Shleifs { get; set; }
@@ -22,6 +21,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public C2000_4(IPort port) : base(port)
         {
+            ModelCode = Code;
             Model = "С2000-4";
             SupportedModels = new List<string>
             {

@@ -6,10 +6,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class C2000_Kdl2i : C2000_Kdl
     {
-        public new const int ModelCode = 41;
-        public new const int Code = 41;
+        public const int Code = 41;
         public C2000_Kdl2i(IPort port) : base(port)
         {
+            ModelCode = Code;
             Model = "С2000-КДЛ-2И";
             SupportedModels = new List<string>
             {

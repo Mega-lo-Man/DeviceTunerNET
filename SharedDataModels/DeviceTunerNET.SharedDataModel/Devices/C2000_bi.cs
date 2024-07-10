@@ -6,10 +6,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class C2000_bi : OrionDevice
     {
-        public new const int ModelCode = 10;
-        public new const int Code = 10;
+        public const int Code = 10;
         public C2000_bi(IPort port) : base(port)
         {
+            ModelCode = Code;
             Model = "С2000-БИ/БКИ";
             SupportedModels = new List<string>
             {

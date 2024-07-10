@@ -14,7 +14,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         private readonly int relayNumber = 3;
         //private readonly int supervisedRelayNumber = 2;
 
-        public new const int Code = 2;
+        public const int Code = 2;
 
         #region Enums
         /// <summary>
@@ -76,6 +76,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
         #region Constructor
         public Signal20P(IPort port) : base(port)
         {
+            ModelCode = Code;
             Model = "Сигнал-20П";
             SupportedModels = SupportedModels = new List<string> 
             {

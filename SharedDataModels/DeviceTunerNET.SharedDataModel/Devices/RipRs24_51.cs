@@ -6,11 +6,11 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class RipRs24_51 : RipRs
     {
-        public new const int ModelCode = 39;
-        public new const int Code = 39;
+        public const int Code = 39;
 
         public RipRs24_51(IPort port) : base(port)
         {
+            ModelCode = Code;
             Model = "РИП-24 исп.51";
             SupportedModels = new List<string>
             {

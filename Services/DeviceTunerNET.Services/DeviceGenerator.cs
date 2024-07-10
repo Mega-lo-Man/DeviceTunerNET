@@ -99,6 +99,7 @@ namespace DeviceTunerNET.Services
             if (_orionDevices.ContainsKey(name))
             {
                 device = _orionDevices[name]();
+
                 return true;
             }
             

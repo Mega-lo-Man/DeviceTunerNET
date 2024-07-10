@@ -9,12 +9,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private readonly int relayNumber = 4;
 
-        public new const int ModelCode = 3;
-        public new const int Code = 3;
+        public const int Code = 3;
         public IEnumerable<Relay> Relays { get; set; }
 
         public C2000sp1(IPort port) : base(port)
-        { 
+        {
+            ModelCode = Code;
             Model = "С2000-СП1";
             SupportedModels = new List<string>
             {

@@ -219,7 +219,7 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     return;
                 }
 
-                var passedQc = QualityControl(new List<IOrionDevice>() { device });
+                var passedQc = QualityControl([device]);
             }
 
             _dispatcher.BeginInvoke(new Action(() =>
@@ -242,30 +242,15 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private int QualityControl(IEnumerable<IOrionDevice> devices)
         {
-            var result = 0;
-            var serialPort = new SerialPort(CurrentRS485Port ?? "COM1");
-            serialPort.Open();
+            var deviceCounter = 0;
 
             foreach (var device in devices)
             {
-
-                var checkAddress = Convert.ToByte(device.AddressRS485);
-                if(device is OrionDevice orionDevice)
+                SetupUploadManager();
+                if (_uploadManager.QualityControl(device))
                 {
-                    orionDevice.Port = new ComPort() { SerialPort = serialPort };
-                    if (orionDevice.IsDeviceOnline())
-                    {
-                        device.QualityControlPassed = true;
-                        result++;
-                    }
-                    else
-                    {
-                        device.QualityControlPassed = false;
-                    }
-                    
+                    deviceCounter++;
                 }
-                
-                _dataRepositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
 
                 // Обновляем всю коллекцию в UI целиком
                 _dispatcher.BeginInvoke(new Action(() =>
@@ -273,8 +258,15 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
                     CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
                 }));
             }
-            serialPort.Close();
-            return result;
+            _uploadManager.Dispose();
+            return deviceCounter;
+        }
+
+        private void SetupUploadManager()
+        {
+            _uploadManager.PortName = CurrentRS485Port;
+            _uploadManager.Protocol = CurrentProtocol;
+            _uploadManager.UpdateProgressBar = UpdateProgressBar();
         }
 
         private void UploadSettings()
@@ -320,10 +312,13 @@ namespace DeviceTunerNET.Modules.ModuleRS485.ViewModels
 
         private void UploadToDevice(IOrionDevice device, string serialNumb)
         {
-            _uploadManager.PortName = CurrentRS485Port;
-            _uploadManager.Protocol = CurrentProtocol;
-            _uploadManager.UpdateProgressBar = UpdateProgressBar();
-            _uploadManager.Upload(device, serialNumb);
+            SetupUploadManager();
+            var result = _uploadManager.Upload(device, serialNumb);
+            if (!result)
+            {
+                _dialogCaller.ShowMessage("Не удалось открыть порт");
+            }
+            _uploadManager.Dispose();
         }
 
         private Action<int> UpdateProgressBar()

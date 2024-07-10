@@ -6,10 +6,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class Mip_24 : OrionDevice
     {
-        public new const int ModelCode = 49;
-        public new const int Code = 49;
+        public const int Code = 49;
         public Mip_24(IPort port) : base(port)
         {
+            ModelCode = Code;
             Model = "МИП-24";
             SupportedModels = new List<string>
             {

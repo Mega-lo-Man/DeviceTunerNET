@@ -19,8 +19,9 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             Port = port;
         }
 
-        public static int Code;
-        public int ModelCode { get => Code; }
+        //public static int Code;
+
+        public int ModelCode { get; set; }
 
         public byte[] Response { get; private set; }
 
@@ -173,7 +174,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
             Action<int> updateProgressBar, 
             int modelCode = 0)
         {
-            Code = modelCode;
             if(!GetModelCode((byte)defaultAddress, out var deviceCode))
                 return false;
 
@@ -190,6 +190,20 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
             WriteBaseConfig(updateProgressBar);
 
+            return true;
+        }
+
+        public bool CheckDeviceType()
+        {
+            var result = GetModelCode((byte)AddressRS485, out var deviceCode);
+            if (!result)
+            {
+                throw new Exception("Device didn't respond!");
+            }
+            if (deviceCode != ModelCode)
+            { 
+                return false;
+            }
             return true;
         }
     }

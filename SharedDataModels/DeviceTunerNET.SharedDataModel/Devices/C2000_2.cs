@@ -14,8 +14,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private readonly int inputsCount = 2;
 
-        public new const int ModelCode = 16;
-        public new const int Code = 16;
+        private const int Code = 16;
 
         #region Properties
 
@@ -53,11 +52,12 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public C2000_2(IPort port) : base (port)
         {
+            ModelCode = Code;
             Model = "С2000-2";
-            SupportedModels = new List<string>
-            {
+            SupportedModels =
+            [
                 Model,
-            };
+            ];
 
             var inputs = new List<Shleif>();
             for (byte i = 0; i < inputsCount; i++)
@@ -76,7 +76,10 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public override void WriteBaseConfig(Action<int> progressStatus)
         {
-            CheckDeviceType();
+            if (!CheckDeviceType())
+            {
+                return;
+            }
             var progress = 0.0;
 
             foreach (var command in GetBaseConfig())
@@ -140,16 +143,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
                 0x00,
                 controlByte[0]
             ];
-        }
-
-        private void CheckDeviceType()
-        {
-            var result = GetModelCode((byte)AddressRS485, out var deviceCode);
-            if (!result)
-                throw new Exception("Device doesn't respond!");
-            if (deviceCode != ModelCode)
-                throw new Exception("Wrong model!");
-
         }
 
         public override bool Setup(Action<int> updateProgressBar, int modelCode = 0)

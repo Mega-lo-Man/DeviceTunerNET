@@ -9,7 +9,6 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 {
     public class C2000M : OrionDevice
     {
-        public new const int ModelCode = 0;
         public new const int Code = 0;
 
         private readonly Dictionary<byte, Func<IOrionDevice>> _bolidDict = new()
@@ -63,6 +62,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
 
         public C2000M(IPort port) : base(port)
         {
+            ModelCode = Code;
             Model = "С2000М";
             SupportedModels = new List<string>
             {

@@ -6,13 +6,16 @@ using System;
 using System.IO.Ports;
 using System.Net;
 using System.Windows;
+using System.Reflection;
+
 
 namespace DeviceTunerNET.Services
 {
-    public class UploadSerialManager(IDialogCaller dialogCaller, IDataRepositoryService repositoryService): IUploadSerialManager
+    public class UploadSerialManager(IDialogCaller dialogCaller, IDataRepositoryService repositoryService) : IUploadSerialManager
     {
         private readonly IDialogCaller _dialogCaller = dialogCaller;
         private readonly IDataRepositoryService _repositoryService = repositoryService;
+        private IPort _port;
 
         private void SaveSerial(Device device, string serialNumb)
         {
@@ -33,12 +36,48 @@ namespace DeviceTunerNET.Services
         public string PortName { get; set; } = string.Empty;
         public Action<int> UpdateProgressBar { get; set; }
 
+        public bool QualityControl(IOrionDevice device)
+        {
+
+            if (!SetPort())
+            {
+                return false;
+            }
+            device.QualityControlPassed = false;
+            device.Port = _port;
+
+            try
+            {
+                device.QualityControlPassed = device.CheckDeviceType();
+            }
+            catch (Exception ex)
+            {
+                _dialogCaller.ShowMessage(ex.Message);
+                return false;
+            }
+            device.Port.Dispose();
+            if (!device.QualityControlPassed)
+            {
+                _dialogCaller.ShowMessage("Не удалось настроить прибор: " + device.Model + "; с обозначением: " + device.Designation);
+
+                return false;
+            }
+
+            var wasSaved = _repositoryService.SaveQualityControlPassed(device.Id, device.QualityControlPassed);
+
+            return device.QualityControlPassed;
+        }
+
         public bool Upload(IOrionDevice device, string serialNumb)
         {
             if (device is OrionDevice orionDevice)
             {
                 var isSutupComplete = false;
-                orionDevice.Port = GetPort();
+                if (!SetPort()) 
+                { 
+                    return false; 
+                }
+                orionDevice.Port = _port;
                 try
                 {
                     isSutupComplete = orionDevice.Setup(UpdateProgressBar);
@@ -56,12 +95,13 @@ namespace DeviceTunerNET.Services
                     return false;
                 }
                 SaveSerial(orionDevice, serialNumb);
+                return true;
             }
             
-            return true;
+            return false;
         }
 
-        private IPort GetPort()
+        private bool SetPort()
         {
             if (Protocol.Equals("COM"))
             {
@@ -76,20 +116,24 @@ namespace DeviceTunerNET.Services
                 catch (Exception ex)
                 {
                     _dialogCaller.ShowMessage(ex.Message);
-                    return null;
+                    return false;
                 }
-                return port;
+                _port = port;
+                return true;
             }
             if (Protocol.Equals("WIFI"))
             {
                 var ip = IPAddress.Parse("10.10.10.1");
-                return new BolidUdpClient(8100)
+                _port = new BolidUdpClient(8100)
                 {
                     RemoteServerIp = ip,
                     RemoteServerUdpPort = 12000
                 };
+                return true;
             }
-            return null;
+            return false;
         }
+
+        public void Dispose() => _port?.Dispose();
     }
 }

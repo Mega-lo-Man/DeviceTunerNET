@@ -10,7 +10,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// <summary>
         /// Код прибора (зашит в каждом приборе Болид'а)
         /// </summary>
-        int ModelCode { get; }
+        int ModelCode { get; set; }
 
         /// <summary>
         /// Изменить адрес прибора с текущего на новый. При этом прибор ищется по адресу  в поле Rs485Address.
@@ -62,5 +62,7 @@ namespace DeviceTunerNET.SharedDataModel
         /// Последний ответ от прибора
         /// </summary>
         byte[] Response { get; }
+
+        public bool CheckDeviceType();
     }
 }
