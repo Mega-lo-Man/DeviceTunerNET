@@ -70,7 +70,7 @@ namespace DeviceTunerNET.Services.SwitchesStrategies
             NetworkSwitch = ethernetSwitch;
             SettingsDict = settingsDict;
 
-            Stream = _sshClient.CreateShellStream("", 0, 0, 0, 0, 0);
+            Stream = _sshClient.CreateShellStream("stream", 0, 0, 0, 0, 1024);
 
             SendPacket();
 

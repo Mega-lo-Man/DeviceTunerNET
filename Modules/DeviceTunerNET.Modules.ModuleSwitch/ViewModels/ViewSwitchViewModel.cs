@@ -1,8 +1,6 @@
 ﻿using DeviceTunerNET.Core;
 using DeviceTunerNET.Core.Mvvm;
-using DeviceTunerNET.Modules.ModuleSwitch.Models;
 using DeviceTunerNET.Services.Interfaces;
-using DeviceTunerNET.Services.SwitchesStrategies;
 using DeviceTunerNET.SharedDataModel;
 using Prism.Commands;
 using Prism.Events;
@@ -10,7 +8,6 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
