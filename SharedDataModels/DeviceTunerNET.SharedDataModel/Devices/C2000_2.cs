@@ -3,9 +3,6 @@ using DeviceTunerNET.SharedDataModel.ElectricModules.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static DeviceTunerNET.SharedDataModel.Devices.IOrionNetTimeouts;
 
 namespace DeviceTunerNET.SharedDataModel.Devices
@@ -14,7 +11,7 @@ namespace DeviceTunerNET.SharedDataModel.Devices
     {
         private readonly int inputsCount = 2;
 
-        private const int Code = 16;
+        public const int Code = 16;
 
         #region Properties
 
